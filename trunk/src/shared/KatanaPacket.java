@@ -1,3 +1,4 @@
+package shared;
 
 public class KatanaPacket
 {
