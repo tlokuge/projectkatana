@@ -4,6 +4,9 @@ package server;
 import java.io.InputStream;
 import java.net.Socket;
 
+import shared.Constants;
+import shared.KatanaPacket;
+
 
 public class KatanaClientWorker implements Runnable
 {

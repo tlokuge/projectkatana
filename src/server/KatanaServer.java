@@ -3,6 +3,9 @@ package server;
 
 import java.net.ServerSocket;
 
+import shared.Constants;
+import shared.KatanaPacket;
+
 public class KatanaServer implements Runnable
 {
     ServerSocket listener;
