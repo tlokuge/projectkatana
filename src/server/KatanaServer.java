@@ -14,7 +14,7 @@ public class KatanaServer implements Runnable
     public KatanaServer() 
     {
         listener = null;
-        thread = new Thread(this, "KatanaServerThread");
+        thread = new Thread(this, "KatanaServer-Thread");
         thread.start();
     }
     

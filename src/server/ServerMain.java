@@ -8,7 +8,7 @@ import shared.KatanaPacket;
 import shared.KatanaSocket;
 import shared.Opcode;
 
-public class CommsMain
+public class ServerMain
 {
     public static void main(String[] args) throws UnknownHostException, InterruptedException
     {
@@ -18,16 +18,17 @@ public class CommsMain
         System.out.println(" |  <   / /\\ \\ | | / /\\ \\ | . ` | / /\\ \\  ");
         System.out.println(" | . \\ / ____ \\| |/ ____ \\| |\\  |/ ____ \\ ");
         System.out.println(" |_|\\_|_/    \\_\\_/_/    \\_\\_| \\_/_/    \\_\\");
+        
+        
         KatanaServer katana = new KatanaServer();
         PingServer ping = new PingServer();
         
-        KatanaSocket socket = new KatanaSocket(5555);
-        socket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(0, Opcode.C_LOGIN));
-        socket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(0, Opcode.C_LOGOUT));
         
-        socket =new KatanaSocket(5556);
-        socket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(1, Opcode.S_AUTH_NO));
-        socket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(1, Opcode.S_AUTH_OK));
+        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(0, Opcode.C_LOGIN));
+        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(0, Opcode.C_LOGOUT));
+        
+        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(1, Opcode.S_AUTH_NO));
+        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(1, Opcode.S_AUTH_OK));
         
     }
 }
