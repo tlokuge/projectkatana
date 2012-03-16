@@ -17,13 +17,15 @@ public class PingServer implements Runnable
         {
             // TODO
             Thread.sleep(10000);
-            System.gc();
-            System.runFinalization();
+            SQLHandler.instance().executeQuery("SELECT 1 FROM `users` LIMIT 1");
         }
         catch(Exception ex)
         {
             ex.printStackTrace();
         }
+
+        // Loop forever~~
+        pingLoop();
     }
     
     public void run()

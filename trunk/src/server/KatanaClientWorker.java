@@ -16,7 +16,6 @@ public class KatanaClientWorker implements Runnable
     public KatanaClientWorker(Socket client)
     {
         this.client = client;
-        System.out.println("New KCW - " + client);
         thread = new Thread(this);
         thread.start();
     }
@@ -40,11 +39,10 @@ public class KatanaClientWorker implements Runnable
     
     protected void finalize() throws Throwable
     {
-        System.out.println("finalize");
         try
         {
             super.finalize();
-            System.out.println("finalize():" + client);
+            System.out.println("ClientWorker: Closing socket: " + client);
             client.close();
         }
         catch(Exception ex)
