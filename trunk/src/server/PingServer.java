@@ -1,3 +1,5 @@
+package server;
+
 
 public class PingServer implements Runnable
 {

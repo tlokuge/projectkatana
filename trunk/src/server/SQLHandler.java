@@ -1,4 +1,4 @@
-package comms;
+package server;
 
 
 import java.sql.Connection;
