@@ -29,7 +29,10 @@ public class KatanaClientWorker implements Runnable
             in.read(buffer);
             KatanaPacket packet = KatanaPacket.createPacketFromBuffer(new String(buffer));
             if(packet != null)
+            {
                 System.out.println("[" + client.getInetAddress().getHostAddress() + ":" + client.getPort() + "] - " + packet.getPacketId() + " - " + packet.getOpcode().name());
+                PacketHandler.handlePacket(packet);
+            }
         }
         catch(Exception ex)
         {
