@@ -4,8 +4,8 @@ package server;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
 import java.sql.Statement;
+
 import shared.Constants;
 
 
@@ -76,7 +76,16 @@ public class SQLHandler implements Runnable
         }
     }
     
-    public static SQLHandler instance() { return instance; }
+    public static SQLHandler instance() 
+    {
+        if(instance == null)
+        {
+            System.err.println("MySQL: Singleton lost");
+            System.exit(Constants.ERR_SQL_SINGLETON_LOST);
+        }
+        
+        return instance; 
+    }
     
     public void initConnection()
     {
