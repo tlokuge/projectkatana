@@ -11,7 +11,12 @@ public abstract class Constants
     public final static String CONFIG_SQL_PASSWORD = "SQL_PASSWORD";
     public final static String CONFIG_PING_INTERVAL= "PING_INTERVAL";
     
-    public final static String PACKET_FORMATTER = "%d\n%d\n%d\n%s";
+    /** KatanaPacket **/
+    public final static String PACKET_DATA_SEPERATOR = System.getProperty("line.separator");
+    public final static String PACKET_FORMATTER = "%d" + PACKET_DATA_SEPERATOR 
+                                                + "%d" + PACKET_DATA_SEPERATOR 
+                                                + "%d" + PACKET_DATA_SEPERATOR 
+                                                + "%s";
     
     public static final int MAX_PACKET_BUF = 1024;
     public static final int SERVER_LISTEN_PORT = 59140;
