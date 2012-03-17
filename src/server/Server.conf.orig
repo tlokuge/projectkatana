@@ -1,0 +1,17 @@
+/**************************************************************/
+*               MySQL Database Information                    *
+* SQL_HOSTNAME: Hostname (address) of the MySQL server        *
+* SQL_DATABASE: Name of the database used by Katana           *
+* SQL_USERNAME: Username to login to the MySQL server         *
+* SQL_PASSWORD: Password needed to login to the MySQL server  *
+/*************************************************************/
+SQL_HOSTNAME: host
+SQL_DATABASE: database
+SQL_USERNAME: username
+SQL_PASSWORD: password
+
+/***************************************************************/
+* PING_INTERVAL: Interval (in ms) with which to send out pings *
+*                (default 10000 ms, cannot go lower)           *
+****************************************************************/
+PING_INTERVAL: 10000
