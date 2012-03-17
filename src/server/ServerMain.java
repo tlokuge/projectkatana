@@ -33,10 +33,10 @@ public class ServerMain
     {
         try
         {
-            KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_CREATE);
-            packet.addData("1"); // location
-            packet.addData("0"); // difficulty
-            packet.addData("1"); // max_players
+            KatanaPacket packet = new KatanaPacket(0, Opcode.C_LOGIN);
+            packet.addData("katana"); // username
+            packet.addData("password"); // password
+            packet.addData("321.19, 291.32"); // location
             
             KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, packet);
         }
