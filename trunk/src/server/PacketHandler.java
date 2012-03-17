@@ -2,6 +2,7 @@
 package server;
 
 import java.util.ArrayList;
+import shared.Constants;
 import shared.KatanaPacket;
 
 public abstract class PacketHandler
@@ -15,8 +16,7 @@ public abstract class PacketHandler
         {
             case C_REGISTER: handleRegisterPacket(packet); break;
                 
-            case C_LOGIN:
-                break;
+            case C_LOGIN: handleLoginPacket(packet); break;
                 
             case C_LOGOUT:
                 break;
@@ -56,7 +56,7 @@ public abstract class PacketHandler
     private static void handleRegisterPacket(KatanaPacket packet)
     {
         System.out.println("handleRegisterPacket: INCOMPLETE");
-        String[] data = packet.getData().split("\n");
+        String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
         if(data.length < 3)
         {
             System.err.println("handleRegisterPacket: Invalid data in packet (" + packet.getData() + ")");
@@ -81,11 +81,40 @@ public abstract class PacketHandler
         
     }
     
+    // Data format: username, password, location
+    private static void handleLoginPacket(KatanaPacket packet)
+    {
+        System.out.println("handleLoginPacket: INCOMPLETE");
+        String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
+        if(data.length < 3)
+        {
+            System.err.println("handleLoginPacket: Invalid data in packet (" + packet.getData() + ")");
+            // TODO: Send response to client
+            return;
+        }
+        
+        String username = data[0];
+        String password = data[1];
+        String location = data[2];
+        
+        SQLHandler sql = SQLHandler.instance();
+        ArrayList results = sql.execute("SELECT * FROM `users` WHERE `username` LIKE '" + username + "' AND `password` LIKE SHA1('" + password + "');");
+        if(results == null || results.size() != 1) // Bad login
+        {
+            System.out.println("handleLoginPacket: Bad login - " + username + " / " + password);
+            // TODO: Client response
+            return;
+        }
+        
+        // TODO: Login success!
+        System.out.println("handleLoginPacket: User [" + username + "] logged in");
+    }
+    
     // Data format: Location ID, difficulty, max_players
     private static void handleRoomCreatePacket(KatanaPacket packet)
     {
         System.out.println("handleRoomCreatePacket: INCOMPLETE");
-        String[] data = packet.getData().split("\n");
+        String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
         if(data.length < 3)
         {
             System.err.println("handleRoomCreatePacket: Invalid data in packet (" + packet.getData() + ")");
