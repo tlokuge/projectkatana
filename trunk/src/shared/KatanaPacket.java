@@ -32,7 +32,7 @@ public class KatanaPacket
     
     public void addData(String data)
     {
-        this.data += data + "\n";
+        this.data += data + Constants.PACKET_DATA_SEPERATOR;
     }
 
     public void setPlayerId(int player_id){ this.player_id = player_id; }
@@ -45,15 +45,12 @@ public class KatanaPacket
     
     public String toString()
     {
-        return packet_id + "\n" +
-               player_id + "\n" +
-               opcode + "\n" +
-               data;
+        return String.format(Constants.PACKET_FORMATTER, packet_id, player_id, opcode.ordinal(), data);
     }
     
     public static KatanaPacket createPacketFromBuffer(String buf)
     {
-        String split[] = buf.split("\n");
+        String split[] = buf.split(Constants.PACKET_DATA_SEPERATOR);
         try
         {
             int pack_id = Integer.parseInt(split[0]);
@@ -61,7 +58,7 @@ public class KatanaPacket
             Opcode op = Opcode.getOpcode(Integer.parseInt(split[2]));
             String pack_data = split[3];
             for(int i = 4; i < split.length; ++i)
-                pack_data += "\n" + split[i];
+                pack_data += Constants.PACKET_DATA_SEPERATOR + split[i];
 
             return new KatanaPacket(pack_id, play_id, op, pack_data);
         }
