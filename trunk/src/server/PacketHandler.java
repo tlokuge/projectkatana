@@ -2,6 +2,7 @@
 package server;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import shared.Constants;
 import shared.KatanaPacket;
 
@@ -14,24 +15,13 @@ public abstract class PacketHandler
         
         switch(packet.getOpcode())
         {
-            case C_REGISTER: handleRegisterPacket(packet); break;
-                
-            case C_LOGIN: handleLoginPacket(packet); break;
-                
-            case C_LOGOUT:
-                break;
-                
-            case C_PONG:
-                break;
-                
-            case C_ROOM_CREATE: handleRoomCreatePacket(packet); break;
-                
-            case C_ROOM_DESTROY:
-                break;
-                
-            case C_ROOM_JOIN:
-                break;
-                
+            case C_REGISTER:        handleRegisterPacket(packet);   break;
+            case C_LOGIN:           handleLoginPacket(packet);      break;
+            case C_LOGOUT:          handleLogoutPacket(packet);     break;
+            case C_PONG:            handlePongPacket(packet);       break;
+            case C_ROOM_CREATE:     handleRoomCreatePacket(packet); break;
+            case C_ROOM_DESTROY:    handleRoomDestroyPacket(packet);break;
+            case C_ROOM_JOIN:       handleRoomJoinPacket(packet);   break;
             case C_ROOM_LIST:
                 break;
                 
@@ -110,6 +100,18 @@ public abstract class PacketHandler
         System.out.println("handleLoginPacket: User [" + username + "] logged in");
     }
     
+    // No data
+    private static void handleLogoutPacket(KatanaPacket packet)
+    {
+        System.out.println("handleLogoutPacket: INCOMPLETE");
+    }
+    
+    // No data
+    private static void handlePongPacket(KatanaPacket packet)
+    {
+        System.out.println("handlePongPacket: INCOMPLETE");
+    }
+    
     // Data format: Location ID, difficulty, max_players
     private static void handleRoomCreatePacket(KatanaPacket packet)
     {
@@ -158,4 +160,52 @@ public abstract class PacketHandler
         
     }
     
+    // Room ID? Is it necessary? Room ID should be stored inside player.
+    public static void handleRoomDestroyPacket(KatanaPacket packet)
+    {
+        System.out.println("handleRoomDestroyPacket: INCOMPLETE");
+    }
+    
+    // Room ID
+    public static void handleRoomJoinPacket(KatanaPacket packet)
+    {
+        System.out.println("handleRoomJoinPacket: INCOMPLETE");
+        
+        String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
+        int room_id;
+        try
+        {
+            room_id = Integer.parseInt(data[0].trim());
+        }
+        catch(NumberFormatException ex)
+        {
+            System.err.println("handleRoomJoinPacket: NumberFormatException in packet data (" + packet.getData() + ")");
+            // TODO: send response to client
+            return;
+        }
+        
+        SQLHandler sql = SQLHandler.instance();
+        ArrayList<HashMap<String,Object>> results = sql.execute("SELECT r.`max_players`, COUNT(ur.`room_id`) AS `current` FROM `rooms` r INNER JOIN `user_rooms` ur ON r.`id` = ur.`room_id` WHERE r.`id` = " + room_id + ";");
+        if(results == null || results.size() != 1) // No room found or too many rooms found (should not be possible)
+        {
+            System.err.println("handleRoomJoinPacket: room id (" + room_id + ") is invalid");
+            // TODO: Response
+            return;
+        }
+        
+        // Check if the room has space for the player - this might be unnecessary if the server has Room objects containing the necessary data
+        int cur = (int)results.get(0).get("current");
+        int max = (int)results.get(0).get("max_players");
+        if((max - cur) == 0)
+        {
+            System.err.println("handleRoomJoinPacket: room id (" + room_id + ") is full");
+            // TODO: Response
+            return;
+        }
+        
+        int class_id = 0; // Player.getClassId();
+        sql.executeQuery("INSERT INTO `user_rooms` VALUES (" + packet.getPlayerId() + ", " + room_id + "," + class_id + ")");
+        // Response
+        
+    }
 }
