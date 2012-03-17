@@ -1,10 +1,13 @@
 package server;
 
 
+import com.mysql.jdbc.ResultSetMetaData;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import shared.Constants;
 
@@ -29,17 +32,25 @@ public class SQLHandler implements Runnable
         connection = null;
     }
     
-    private void checkConnection() throws SQLException
+    private void checkConnection()
     {
-        if(connection == null || connection.isClosed())
+        try
         {
-            System.err.println("MySQL: Lost Connection, attempting to reconnect...");
-            initConnection();
             if(connection == null || connection.isClosed())
             {
-                System.err.println("MySQL: Terminating");
-                System.exit(Constants.ERR_SQL_CONN_LOST);
+                System.err.println("MySQL: Lost Connection, attempting to reconnect...");
+                initConnection();
+                if(connection == null || connection.isClosed())
+                {
+                    System.err.println("MySQL: Terminating");
+                    System.exit(Constants.ERR_SQL_CONN_LOST);
+                }
             }
+        }
+        catch(Exception ex)
+        {
+            System.err.println("MySQL: Exception in checkConnection");
+            ex.printStackTrace();
         }
     }
     
@@ -72,7 +83,7 @@ public class SQLHandler implements Runnable
         if(instance == null)
         {
             instance = new SQLHandler(hostname, database, username, password);
-            new Thread(instance, "SQL-Thread").start();
+            new Thread(instance, "SQLHandler-Thread").start();
         }
     }
     
@@ -84,7 +95,42 @@ public class SQLHandler implements Runnable
             System.exit(Constants.ERR_SQL_SINGLETON_LOST);
         }
         
-        return instance; 
+        return instance;
+    }
+    
+    private static ArrayList<HashMap<String, Object>> convertResultSetToArrayList(ResultSet results)
+    {
+        if(results == null)
+            return null;
+        
+        try
+        {
+            ArrayList<HashMap<String, Object>> results_list = new ArrayList<HashMap<String, Object>>();
+            ResultSetMetaData meta = (ResultSetMetaData) results.getMetaData();
+            for(int i = 1; i < meta.getColumnCount()+1; ++i)
+                System.out.print(meta.getColumnName(i) + "\t");
+            System.out.println();
+            while(results.next())
+            {
+                HashMap<String, Object> row = new HashMap<String, Object>();
+                for(int i = 1; i < meta.getColumnCount()+1; ++i)
+                {
+                    System.out.print(results.getObject(i) + "\t");
+                    row.put(meta.getColumnName(i), results.getObject(i));
+                }
+                System.out.println();
+                results_list.add(row);
+            }
+            
+            return results_list;
+        }
+        catch(Exception ex)
+        {
+            System.err.println("MySQL: Error converting ResultSet to ArrayList");
+            ex.printStackTrace();
+        }
+        
+        return null;
     }
     
     public void initConnection()
@@ -110,8 +156,32 @@ public class SQLHandler implements Runnable
         }
     }
     
+    public ArrayList<HashMap<String, Object>> execute(String query)
+    {   
+        checkConnection();
+        
+        try
+        {
+            System.out.println("MySQL: " + query);
+            Statement statement = connection.createStatement();
+            ResultSet results = statement.executeQuery(query);
+            ArrayList<HashMap<String, Object>> results_list = convertResultSetToArrayList(results);
+            statement.close();
+            return results_list;
+        }
+        catch(Exception ex)
+        {
+            System.err.println("MySQL: Error executing resultset query '" + query + "'");
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
     public void executeQuery(String query)
     {
+        checkConnection();
+        
         try
         {
             System.out.println("MySQL: " + query);

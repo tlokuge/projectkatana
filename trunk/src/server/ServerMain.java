@@ -2,6 +2,8 @@ package server;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import shared.Constants;
 import shared.KatanaPacket;
@@ -24,7 +26,18 @@ public class ServerMain
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_PING_INTERVAL)));
     }
     
-    public static void main(String[] args) throws UnknownHostException, InterruptedException
+    public static void testStuff() throws UnknownHostException, InterruptedException, SQLException
+    {
+        // Remove this method, just for testing
+        SQLHandler.instance().execute("SELECT * FROM `users`");
+        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(0, Opcode.C_LOGIN));
+        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(0, Opcode.C_LOGOUT));
+        
+        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(1, Opcode.S_AUTH_NO));
+        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(1, Opcode.S_AUTH_OK));
+    }
+    
+    public static void main(String[] args)
     {
         System.out.println("  _  __      _______       _   _        ");
         System.out.println(" | |/ /   /\\|__   __|/\\   | \\ | |   /\\    ");
@@ -34,13 +47,6 @@ public class ServerMain
         System.out.println(" |_|\\_|_/    \\_\\_/_/    \\_\\_| \\_/_/    \\_\\");
         
         setupServer();
-        
-        
-        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(0, Opcode.C_LOGIN));
-        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(0, Opcode.C_LOGOUT));
-        
-        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(1, Opcode.S_AUTH_NO));
-        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(1, Opcode.S_AUTH_OK));
         
     }
 }

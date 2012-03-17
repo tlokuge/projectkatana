@@ -12,7 +12,7 @@ public class PingServer implements Runnable
         if(interval < 10000)
             interval = 10000;
         
-        thread = new Thread(this, "PingServer");
+        thread = new Thread(this, "PingServer-Thread");
         thread.start();
     }
     
