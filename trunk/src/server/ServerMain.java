@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import shared.Constants;
 import shared.KatanaPacket;
@@ -26,15 +27,23 @@ public class ServerMain
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_PING_INTERVAL)));
     }
     
-    public static void testStuff() throws UnknownHostException, InterruptedException, SQLException
+
+    // Remove this method, just for testing
+    public static void testStuff()
     {
-        // Remove this method, just for testing
-        SQLHandler.instance().execute("SELECT * FROM `users`");
-        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(0, Opcode.C_LOGIN));
-        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(0, Opcode.C_LOGOUT));
-        
-        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(1, Opcode.S_AUTH_NO));
-        KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, new KatanaPacket(1, Opcode.S_AUTH_OK));
+        try
+        {
+            KatanaPacket packet = new KatanaPacket(0, Opcode.C_REGISTER);
+            packet.addData("katana"); // username
+            packet.addData("password"); // password
+            packet.addData("1"); // location
+            
+            KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), Constants.SERVER_LISTEN_PORT, packet);
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
     }
     
     public static void main(String[] args)
@@ -47,6 +56,8 @@ public class ServerMain
         System.out.println(" |_|\\_|_/    \\_\\_/_/    \\_\\_| \\_/_/    \\_\\");
         
         setupServer();
+        
+        testStuff();
         
     }
 }

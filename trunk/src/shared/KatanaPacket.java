@@ -30,9 +30,9 @@ public class KatanaPacket
         return packet.getBytes();
     }
     
-    public void addData(String category, String value)
+    public void addData(String data)
     {
-        data += category + ":" + value + "\n";
+        this.data += data + "\n";
     }
 
     public void setPlayerId(int player_id){ this.player_id = player_id; }
