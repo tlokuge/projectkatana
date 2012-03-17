@@ -25,7 +25,7 @@ public abstract class Config
                 String[] split = line.split(Constants.CONFIG_LINE_SEPERATOR);
                 if(split.length == 1 || line.contains("*")) // Ignore any lines without a seperator or containing asterisks (kinda hacky)
                     continue;
-                System.out.println("Added config: [" + split[0].toUpperCase().trim() + " - '" + split[1].trim() + "']");
+                System.out.println("Loaded: [" + split[0].toUpperCase().trim() + " - '" + split[1].trim() + "']");
                 config_map.put(split[0].toUpperCase().trim(), split[1].trim());
             }
             System.out.println("Config Loaded");
