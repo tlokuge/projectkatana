@@ -194,8 +194,8 @@ public abstract class PacketHandler
         }
         
         // Check if the room has space for the player - this might be unnecessary if the server has Room objects containing the necessary data
-        int cur = (int)results.get(0).get("current");
-        int max = (int)results.get(0).get("max_players");
+        int cur = (Integer)results.get(0).get("current");
+        int max = (Integer)results.get(0).get("max_players");
         if((max - cur) == 0)
         {
             System.err.println("handleRoomJoinPacket: room id (" + room_id + ") is full");
