@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ViewFlipper xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/flipper"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent" >
+	
+	<include android:id="@+id/lobby"  
+	    layout="@layout/lobby" />
+	
+	<include android:id="@+id/waiting_room"  
+	    layout="@layout/waiting_room" />
+	
+</ViewFlipper>
