@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">LELELELELE IM A SPLASH SCREEN LELELELE</string>
+    <string name="main">:D</string>
+    <string name="login">login screen</string>
+    <string name="lobby">lobby screen</string>
+    <string name="app_name">Splash</string>
+
+	<!-- Login Screen Strings -->
+    <string name="user">Username</string>
+    <string name="pass">Password</string>
+    <string name="cpas">Confirm Password</string>
+    <string name="submit">Submit</string>
+    
+    <!-- General strings -->
+    <string name="b_close">Close</string>
+    
+    <!-- Select room lobby strings -->
+    <string name="realm_name">Realm Name</string>
+    <string name="b_join">Join</string>
+    <string name="b_create">Create Room</string>
+    <string name="b_refresh">Refresh</string>
+	<string name="b_leaderboard">Leaderboard</string>
+
+	
+	<!-- Class select dialog strings -->
+	<string name="l_classdesc">Press twice on the icon to select your class!</string>
+	<string name="b_class1">Class 1</string>
+	<string name="b_class2">Class 2</string>
+	
+	<!-- Create room dialog strings -->
+	<string name="l_roomname">Room Name</string>
+	<string name="l_roomdiff">Room Difficulty</string>
+	<string name="l_roommaxplr">Maximum Players</string>
+	<string name="b_makeroom">LETS GO!</string>
+	<string name="easy">Easy</string>
+	<string name="standard">Standard</string>
+	<string name="hard">Hard</string>
+	<string name="p1">1</string>
+	<string name="p2">2</string>
+	<string name="p3">3</string>
+	<string name="p4">4</string>
+	
+	<!-- Leaderboard dialog strings -->
+	<string name="l_lb">YEYEYE IM A LEADERBOARD!</string>
+	
+	<!-- Waiting room strings -->
+	<string name="l_wroomname">Waiting Room Name</string>
+</resources>
