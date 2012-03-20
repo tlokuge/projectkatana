@@ -10,6 +10,7 @@ public abstract class Constants
     public final static String CONFIG_SQL_USERNAME = "SQL_USERNAME";
     public final static String CONFIG_SQL_PASSWORD = "SQL_PASSWORD";
     public final static String CONFIG_PING_INTERVAL= "PING_INTERVAL";
+    public final static String CONFIG_SERVER_PORT  = "SERVER_PORT";
     
     /** KatanaPacket **/
     public final static String PACKET_DATA_SEPERATOR = System.getProperty("line.separator");
@@ -19,7 +20,6 @@ public abstract class Constants
                                                 + "%s";
     
     public static final int MAX_PACKET_BUF = 1024;
-    public static final int SERVER_LISTEN_PORT = 59140;
     public static final int PING_INTERVAL_MS = 10000;
     
     /** Error Codes **/
@@ -30,4 +30,8 @@ public abstract class Constants
     
     // Config
     public static final int ERR_CONFIG_LOAD_FAIL = 4;
+    
+    // Server
+    public static final int ERR_SERVER_LISTEN_FAIL = 5;
+    public static final int ERR_SERVER_SINGLETON_LOST = 6;
 }

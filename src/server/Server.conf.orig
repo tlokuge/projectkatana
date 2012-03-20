@@ -15,3 +15,9 @@ SQL_PASSWORD: password
 *                (default 10000 ms, cannot go lower)           *
 ****************************************************************/
 PING_INTERVAL: 10000
+
+/***************************************************************/
+* SERVER_PORT: Port that the server uses to listen for clients *
+*                (default 7777)                                *
+****************************************************************/
+SERVER_PORT: 7777
