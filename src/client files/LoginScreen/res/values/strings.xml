@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">LoginScreen</string>
+    <string name="user">Username</string>
+    <string name="pass">Password</string>
+    <string name="cpas">Confirm Password</string>
+    <string name="submit">Submit</string>
+
+</resources>
