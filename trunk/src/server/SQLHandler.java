@@ -162,7 +162,7 @@ public class SQLHandler implements Runnable
         
         try
         {
-            //System.out.println("MySQL: " + query);
+            System.out.println("MySQL: " + query);
             Statement statement = connection.createStatement();
             ResultSet results = statement.executeQuery(query);
             ArrayList<HashMap<String, Object>> results_list = convertResultSetToArrayList(results);

@@ -64,7 +64,6 @@ public class KatanaPacket
         }
         catch(NumberFormatException ex)
         {
-            ex.printStackTrace(System.out);
             return null;
         }
     }
