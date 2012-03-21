@@ -13,7 +13,7 @@ public abstract class Constants
     public final static String CONFIG_SERVER_PORT  = "SERVER_PORT";
     
     /** KatanaPacket **/
-    public final static String PACKET_DATA_SEPERATOR = System.getProperty("line.separator");
+    public final static String PACKET_DATA_SEPERATOR = "\n";
     public final static String PACKET_FORMATTER = "%d" + PACKET_DATA_SEPERATOR 
                                                 + "%d" + PACKET_DATA_SEPERATOR 
                                                 + "%d" + PACKET_DATA_SEPERATOR 

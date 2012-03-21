@@ -15,6 +15,7 @@ public class KatanaClientWorker implements Runnable
     
     public KatanaClientWorker(Socket client)
     {
+        System.out.println(client);
         this.client = client;
         thread = new Thread(this);
         thread.start();
@@ -28,11 +29,14 @@ public class KatanaClientWorker implements Runnable
             InputStream in = client.getInputStream();
             in.read(buffer);
             KatanaPacket packet = KatanaPacket.createPacketFromBuffer(new String(buffer));
+            System.err.println(new String(buffer));
             if(packet != null)
             {
                 System.out.println("[" + client.getInetAddress().getHostAddress() + ":" + client.getPort() + "] - " + packet.getPacketId() + " - " + packet.getOpcode().name());
                 PacketHandler.handlePacket(packet);
             }
+            else
+                System.out.println("packet null");
         }
         catch(Exception ex)
         {
