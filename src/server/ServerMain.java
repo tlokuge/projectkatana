@@ -1,7 +1,6 @@
 package server;
 
 import java.net.InetAddress;
-
 import shared.Constants;
 import shared.KatanaPacket;
 import shared.KatanaSocket;
