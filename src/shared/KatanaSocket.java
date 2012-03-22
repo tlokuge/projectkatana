@@ -1,37 +1,41 @@
 package shared;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 public class KatanaSocket
 {
-    private int listen_port;
+    private Socket socket;
     
-    public KatanaSocket(int listen_port)
+    public KatanaSocket(String host, int port)
     {
-        this.listen_port = listen_port;
+        try
+        {
+            socket = new Socket(host, port);
+        }
+        catch(Exception ex)
+        {
+            socket = null;
+            ex.printStackTrace();
+        }
     }
     
     public byte[] listen()
     {
+        if(socket == null)
+            return null;
+        
         try
         {
-            ServerSocket listener = new ServerSocket(listen_port);
-            Socket socket = listener.accept();
             byte[] buffer = new byte[Constants.MAX_PACKET_BUF];
             InputStream in = socket.getInputStream();
             in.read(buffer);
             in.close();
-            socket.close();
-            listener.close();
             
             return buffer;
         }
-        catch(IOException ex)
+        catch(Exception ex)
         {
             ex.printStackTrace();
         }
@@ -39,16 +43,17 @@ public class KatanaSocket
         return null;
     }
     
-    public static void sendPacket(String host, int port, KatanaPacket packet)
+    public void sendPacket(KatanaPacket packet)
     {
+        if(socket == null)
+            return;
+        
         try
         {
-            Socket socket = new Socket(host, port);
             OutputStream out = socket.getOutputStream();
             out.write(packet.convertToBytes());
             out.flush();
             out.close();
-            socket.close();
         }
         catch(Exception ex)
         {
