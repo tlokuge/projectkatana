@@ -20,6 +20,11 @@ public class KatanaClientWorker implements Runnable
         thread.start();
     }
     
+    public void sendPacket(KatanaPacket packet)
+    {
+        
+    }
+    
     public void run()
     {
         try

@@ -39,11 +39,8 @@ public class ServerMain
             packet.addData("password"); // password
             packet.addData("321.19, 291.32"); // location
             
-            KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), KatanaServer.instance().getPort(), packet);
-            Thread.sleep(1000);
-            packet = new KatanaPacket(1, Opcode.C_CLASS_CHANGE);
-            KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), KatanaServer.instance().getPort(), packet);
-
+            KatanaSocket client = new KatanaSocket(InetAddress.getLocalHost().getHostAddress(), KatanaServer.instance().getPort());
+            client.sendPacket(packet);
         }
         catch(Exception ex)
         {
