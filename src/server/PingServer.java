@@ -17,8 +17,8 @@ public class PingServer implements Runnable
     {
         this.interval = interval;
         if(interval < 10000)
-            interval = 10000;
-        
+            this.interval = 10000;
+        //this.interval = 500;
         thread = new Thread(this, "PingServer-Thread");
         thread.start();
     }
@@ -29,29 +29,30 @@ public class PingServer implements Runnable
         {
             // TODO
             Thread.sleep(interval);
-            SQLHandler.instance().executeQuery("SELECT 1 FROM `users` LIMIT 1");
+            //SQLHandler.instance().executeQuery("SELECT 1 FROM `users` LIMIT 1");
             
-            KatanaPacket packet = new KatanaPacket(-1, Opcode.S_PING);
             HashMap<Long, KatanaClient> map = KatanaServer.instance().getClients();
             Set<Long> keys = map.keySet();
             for(Long key : keys)
             {
                 KatanaClient client = map.get(key);
+                
+                KatanaPacket packet = new KatanaPacket(-1, Opcode.S_PING);
                 client.sendPacket(packet);
+                System.out.println(key + ": " + packet.getPacketId() + " - " + packet.getOpcode().name());
             }
         }
         catch(Exception ex)
         {
             ex.printStackTrace();
         }
-
-        // Loop forever~~
-        pingLoop();
     }
     
     public void run()
     {
-        pingLoop();
+        //Loop foreverrrrr~~~
+        while(true)
+            pingLoop();
     }
     
     public void finalize()
