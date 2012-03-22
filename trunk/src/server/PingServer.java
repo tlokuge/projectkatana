@@ -3,6 +3,7 @@ package server;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import shared.KatanaPacket;
 import shared.Opcode;
 
@@ -32,11 +33,10 @@ public class PingServer implements Runnable
             
             KatanaPacket packet = new KatanaPacket(-1, Opcode.S_PING);
             HashMap<Long, KatanaClient> map = KatanaServer.instance().getClients();
-            Iterator itr = map.entrySet().iterator();
-            while(itr.hasNext())
+            Set<Long> keys = map.keySet();
+            for(Long key : keys)
             {
-                Map.Entry<Long, KatanaClient> pair = (Map.Entry)itr.next();
-                KatanaClient client = pair.getValue();
+                KatanaClient client = map.get(key);
                 client.sendPacket(packet);
             }
         }
