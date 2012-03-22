@@ -2,7 +2,9 @@ package shared;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class KatanaSocket
 {
@@ -20,7 +22,7 @@ public class KatanaSocket
         
         public void listen()
         {
-            if(listener == null)
+            if(listener == null || listener.isClosed())
                 return;
 
             try
@@ -31,18 +33,53 @@ public class KatanaSocket
 
                 KatanaPacket packet = KatanaPacket.createPacketFromBuffer(new String(buffer));
                 System.out.println("KatanaSocket received: " + packet.getOpcode().name());
+                //
 
+            }
+            catch(ConnectException ex)
+            {
+                System.err.println("KatanaSocketListener: Received ConnectException: " + ex.getLocalizedMessage());
+                closeListener();
+                thread.interrupt();
+            }
+            catch(SocketException ex)
+            {
+                System.err.println("KatanaSocketListener: Received SocketException: " + ex.getLocalizedMessage());
+                closeListener();
+                thread.interrupt();
             }
             catch(Exception ex)
             {
                 ex.printStackTrace();
             }
-            
-            listen();
+        }
+        
+        private void closeListener()
+        {
+            try
+            {
+                if(listener != null && !listener.isClosed())
+                    listener.close();
+            }
+            catch(Exception ex)
+            {
+                ex.printStackTrace();
+            }
         }
         
         @Override
-        public void run() { listen(); }
+        public void run() 
+        {
+            // RAWR GO FOREVERRRR
+            while(true)
+                listen(); 
+        }
+        @Override
+        public void finalize() throws Throwable
+        {
+            super.finalize();
+            closeListener();
+        }
     }
     
     
