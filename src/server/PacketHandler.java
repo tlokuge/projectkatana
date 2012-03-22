@@ -5,23 +5,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import shared.Constants;
 import shared.KatanaPacket;
+import shared.Opcode;
 
 public abstract class PacketHandler
 {
-    public static void handlePacket(KatanaPacket packet)
+    public static void handlePacket(KatanaClient client, KatanaPacket packet)
     {
         if(packet == null)
             return;
         
         switch(packet.getOpcode())
         {
-            case C_REGISTER:        handleRegisterPacket(packet);   break;
-            case C_LOGIN:           handleLoginPacket(packet);      break;
-            case C_LOGOUT:          handleLogoutPacket(packet);     break;
-            case C_PONG:            handlePongPacket(packet);       break;
-            case C_ROOM_CREATE:     handleRoomCreatePacket(packet); break;
-            case C_ROOM_DESTROY:    handleRoomDestroyPacket(packet);break;
-            case C_ROOM_JOIN:       handleRoomJoinPacket(packet);   break;
+            case C_REGISTER:    handleRegisterPacket(client, packet);   break;
+            case C_LOGIN:       handleLoginPacket(client, packet);      break;
+            case C_LOGOUT:      handleLogoutPacket(client, packet);     break;
+            case C_PONG:        handlePongPacket(client, packet);       break;
+            case C_ROOM_CREATE: handleRoomCreatePacket(client, packet); break;
+            case C_ROOM_DESTROY:handleRoomDestroyPacket(client, packet);break;
+            case C_ROOM_JOIN:   handleRoomJoinPacket(client, packet);   break;
             case C_ROOM_LIST:
                 break;
                 
@@ -42,8 +43,21 @@ public abstract class PacketHandler
         }
     }
     
+    private static long loginClient(String username, String password)
+    {
+        if(username == null || username.isEmpty() || password == null || password.isEmpty())
+            return -1;
+        
+        SQLHandler sql = SQLHandler.instance();
+        ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `id` FROM `users` WHERE `username` LIKE '" + username + "' AND `password` LIKE SHA1('" + password + "');");
+        if(results == null || results.size() != 1) // Bad login
+            return -1;
+        
+        return (Long)results.get(0).get("id");
+    }
+    
     // Packet data format expected to be username / password / location
-    private static void handleRegisterPacket(KatanaPacket packet)
+    private static void handleRegisterPacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handleRegisterPacket: INCOMPLETE");
         String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
@@ -63,16 +77,30 @@ public abstract class PacketHandler
         if(results != null && !results.isEmpty())
         {
             System.err.println("handleRegisterPacket: Username [" + username + "] already exists in database. Prevent registration");
-            // Send response to client
+            
+            KatanaPacket response = new KatanaPacket(-1, Opcode.S_REG_NO);
+            client.sendPacket(response);
             return;
         }
         
         sql.executeQuery("INSERT INTO `users` (`username`,`password`) VALUES ('" + username + "', SHA1('" + password + "'));");
+        long id = loginClient(username, password);
+        if(id == -1)
+        {
+            KatanaPacket response = new KatanaPacket(-1, Opcode.S_REG_NO); // Somehow something went wrong....
+            client.sendPacket(response);
+            return;
+        }
+        // Yay! Success!
+        KatanaPacket response = new KatanaPacket(-1, Opcode.S_REG_OK);
+        response.addData(id + "");
+        client.sendPacket(response);
         
+        KatanaServer.instance().addClient(id, client);
     }
     
     // Data format: username, password, location
-    private static void handleLoginPacket(KatanaPacket packet)
+    private static void handleLoginPacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handleLoginPacket: INCOMPLETE");
         String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
@@ -87,33 +115,36 @@ public abstract class PacketHandler
         String password = data[1];
         String location = data[2];
         
-        SQLHandler sql = SQLHandler.instance();
-        ArrayList results = sql.execute("SELECT * FROM `users` WHERE `username` LIKE '" + username + "' AND `password` LIKE SHA1('" + password + "');");
-        if(results == null || results.size() != 1) // Bad login
+        System.out.println("handleLoginPacket: User [" + username + "] logged in");
+        long id = loginClient(username, password);
+        if(id == -1)
         {
-            System.out.println("handleLoginPacket: Bad login - " + username + " / " + password);
-            // TODO: Client response
-            return;
+            KatanaPacket response = new KatanaPacket(-1, Opcode.S_AUTH_NO);
+            client.sendPacket(response);
         }
         
-        // TODO: Login success!
-        System.out.println("handleLoginPacket: User [" + username + "] logged in");
+        // Login success!
+        KatanaPacket response = new KatanaPacket(-1, Opcode.S_AUTH_OK);
+        response.addData(id + "");
+        client.sendPacket(response);
+        
+        KatanaServer.instance().addClient(id, client);
     }
     
     // No data
-    private static void handleLogoutPacket(KatanaPacket packet)
+    private static void handleLogoutPacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handleLogoutPacket: INCOMPLETE");
     }
     
     // No data
-    private static void handlePongPacket(KatanaPacket packet)
+    private static void handlePongPacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handlePongPacket: INCOMPLETE");
     }
     
     // Data format: Location ID, difficulty, max_players
-    private static void handleRoomCreatePacket(KatanaPacket packet)
+    private static void handleRoomCreatePacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handleRoomCreatePacket: INCOMPLETE");
         String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
@@ -161,13 +192,13 @@ public abstract class PacketHandler
     }
     
     // Room ID? Is it necessary? Room ID should be stored inside player.
-    public static void handleRoomDestroyPacket(KatanaPacket packet)
+    public static void handleRoomDestroyPacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handleRoomDestroyPacket: INCOMPLETE");
     }
     
     // Room ID
-    public static void handleRoomJoinPacket(KatanaPacket packet)
+    public static void handleRoomJoinPacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handleRoomJoinPacket: INCOMPLETE");
         

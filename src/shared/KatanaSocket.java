@@ -6,41 +6,62 @@ import java.net.Socket;
 
 public class KatanaSocket
 {
+    class KatanaSocketListener implements Runnable
+    {
+        private Socket listener;
+        private Thread thread;
+        
+        public KatanaSocketListener(Socket socket)
+        {
+            listener = socket;
+            thread = new Thread(this);
+            thread.start();
+        }
+        
+        public void listen()
+        {
+            if(listener == null)
+                return;
+
+            try
+            {
+                byte[] buffer = new byte[Constants.MAX_PACKET_BUF];
+                InputStream in = listener.getInputStream();
+                in.read(buffer);
+
+                KatanaPacket packet = KatanaPacket.createPacketFromBuffer(new String(buffer));
+                System.out.println("KatanaSocket received: " + packet.getOpcode().name());
+
+            }
+            catch(Exception ex)
+            {
+                ex.printStackTrace();
+            }
+            
+            listen();
+        }
+        
+        @Override
+        public void run() { listen(); }
+    }
+    
+    
     private Socket socket;
+    private KatanaSocketListener socketListener;
     
     public KatanaSocket(String host, int port)
     {
         try
         {
             socket = new Socket(host, port);
+            socketListener = new KatanaSocketListener(socket);
         }
         catch(Exception ex)
         {
             socket = null;
+            socketListener = null;
             ex.printStackTrace();
         }
-    }
-    
-    public byte[] listen()
-    {
-        if(socket == null)
-            return null;
-        
-        try
-        {
-            byte[] buffer = new byte[Constants.MAX_PACKET_BUF];
-            InputStream in = socket.getInputStream();
-            in.read(buffer);
-            in.close();
-            
-            return buffer;
-        }
-        catch(Exception ex)
-        {
-            ex.printStackTrace();
-        }
-        
-        return null;
     }
     
     public void sendPacket(KatanaPacket packet)
@@ -53,7 +74,6 @@ public class KatanaSocket
             OutputStream out = socket.getOutputStream();
             out.write(packet.convertToBytes());
             out.flush();
-            out.close();
         }
         catch(Exception ex)
         {

@@ -1,5 +1,8 @@
 package server;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import shared.KatanaPacket;
 import shared.Opcode;
 
@@ -26,9 +29,14 @@ public class PingServer implements Runnable
             // TODO
             Thread.sleep(interval);
             SQLHandler.instance().executeQuery("SELECT 1 FROM `users` LIMIT 1");
-            for(KatanaClientWorker client : KatanaServer.instance().getClients())
+            
+            KatanaPacket packet = new KatanaPacket(-1, Opcode.S_PING);
+            HashMap<Long, KatanaClient> map = KatanaServer.instance().getClients();
+            Iterator itr = map.entrySet().iterator();
+            while(itr.hasNext())
             {
-                KatanaPacket packet = new KatanaPacket(-1, Opcode.S_PING);
+                Map.Entry<Long, KatanaClient> pair = (Map.Entry)itr.next();
+                KatanaClient client = pair.getValue();
                 client.sendPacket(packet);
             }
         }
