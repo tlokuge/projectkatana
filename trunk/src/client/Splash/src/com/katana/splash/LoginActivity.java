@@ -1,32 +1,59 @@
 package com.katana.splash;
 
+import shared.KatanaPacket;
+import shared.Opcode;
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
-import java.lang.String;
 
-import shared.KatanaPacket;
-import shared.KatanaSocket;
-import shared.Opcode;
+import com.katana.splash.KatanaService.LocalBinder;
 
 public class LoginActivity extends Activity {
-	SharedPreferences pref;
 	public static final String PREFS_NAME = "UserPreferences";
 	private static final String PREF_USERNAME = "username";
 	private static final String PREF_PASSWORD = "password";
 	
-	// Server information
-	private static final String SERVER = "projectkatana.no-ip.org";
-	private static final int PORT = 7777;
-    /** Called when the activity is first created. */
+	private SharedPreferences pref;
+	private String user;
+	private String pass;
+	
+	//Service Vars
+	KatanaService katanaService;
+	boolean mBound = false;
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
+        
+        Intent intent = new Intent(this,KatanaService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        System.out.println(mBound);
     }
+    
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+        	System.out.println("Service is bound!");
+            LocalBinder binder = (LocalBinder) service;
+            katanaService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
     
     public void submit(View view){
     	EditText u = (EditText)findViewById(R.id.username);
@@ -41,20 +68,14 @@ public class LoginActivity extends Activity {
     		user.length() <= PASSMAX && pass.length() <= PASSMAX && cpas.length() <= PASSMAX) {
 	    	if(pass.equals(cpas)){
 
-	    		// Save username and password! 
-	    		getSharedPreferences(PREFS_NAME,MODE_PRIVATE).edit().putString(PREF_USERNAME, user).commit();
-	    		getSharedPreferences(PREFS_NAME,MODE_PRIVATE).edit().putString(PREF_PASSWORD, pass).commit();
+	    		
 	    		
 	    		// Send username and password to communication daemon
-	    		KatanaPacket packet = new KatanaPacket(0, Opcode.C_REGISTER);
+	    		KatanaPacket packet = new KatanaPacket(0,Opcode.C_REGISTER);
 	    		packet.addData(user);
 	    		packet.addData(pass);
 	    		packet.addData("555,555");
-	    		
-	    		
-	    		KatanaSocket.sendPacket(SERVER, PORT, packet);
-	    		System.out.println(packet);
-	    		
+	    		katanaService.sendPacket(packet);
 	    		/** NEED TO ADD LOCATION **/
 	    		
 	    		// Recieve confirmation from communication daemon
@@ -80,4 +101,21 @@ public class LoginActivity extends Activity {
     public static final int PASSMIN = 1;
     public static final int PASSMAX = 16;
     		
+    public void register(boolean flag){
+    	// Recieve confirmation from communication daemon
+		
+		
+		// If success
+    	if(flag) {
+    		// Save username and password! 
+    		getSharedPreferences(PREFS_NAME,MODE_PRIVATE).edit().putString(PREF_USERNAME, user).commit();
+    		getSharedPreferences(PREFS_NAME,MODE_PRIVATE).edit().putString(PREF_PASSWORD, pass).commit();
+    		
+    		System.out.println("Success!");
+    	} else {
+    		System.out.println("Fail!");
+    	}
+		// Else username already exists and/or password is wrong
+		
+    }
 }

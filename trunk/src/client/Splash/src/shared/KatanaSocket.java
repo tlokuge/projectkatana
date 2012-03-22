@@ -1,55 +1,79 @@
 package shared;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 public class KatanaSocket
 {
-    private int listen_port;
-    
-    public KatanaSocket(int listen_port)
+    class KatanaSocketListener implements Runnable
     {
-        this.listen_port = listen_port;
-    }
-    
-    public byte[] listen()
-    {
-        try
+        private Socket listener;
+        private Thread thread;
+        
+        public KatanaSocketListener(Socket socket)
         {
-            ServerSocket listener = new ServerSocket(listen_port);
-            Socket socket = listener.accept();
-            byte[] buffer = new byte[Constants.MAX_PACKET_BUF];
-            InputStream in = socket.getInputStream();
-            in.read(buffer);
-            in.close();
-            socket.close();
-            listener.close();
-            
-            return buffer;
-        }
-        catch(IOException ex)
-        {
-            ex.printStackTrace();
+            listener = socket;
+            thread = new Thread(this);
+            thread.start();
         }
         
-        return null;
+        public void listen()
+        {
+            if(listener == null)
+                return;
+
+            try
+            {
+                byte[] buffer = new byte[Constants.MAX_PACKET_BUF];
+                InputStream in = listener.getInputStream();
+                in.read(buffer);
+
+                KatanaPacket packet = KatanaPacket.createPacketFromBuffer(new String(buffer));
+                packetHandler.parsePacket(packet);
+                
+            }
+            catch(Exception ex)
+            {
+                ex.printStackTrace();
+            }
+            
+            listen();
+        }
+        
+        @Override
+        public void run() { listen(); }
     }
     
-    public static void sendPacket(String host, int port, KatanaPacket packet)
+    private PacketHandler packetHandler = new PacketHandler();
+    private Socket socket;
+    private KatanaSocketListener socketListener;
+    
+    public KatanaSocket(String host, int port)
     {
         try
         {
-            Socket socket = new Socket(InetAddress.getByName(host), port);
+            socket = new Socket(host, port);
+            socketListener = new KatanaSocketListener(socket);
+        }
+        catch(Exception ex)
+        {
+            socket = null;
+            socketListener = null;
+            ex.printStackTrace();
+        }
+    }
+    
+    public void sendPacket(KatanaPacket packet)
+    {
+        if(socket == null)
+            return;
+        
+        try
+        {
             OutputStream out = socket.getOutputStream();
             out.write(packet.convertToBytes());
             out.flush();
-            out.close();
-            socket.close();
         }
         catch(Exception ex)
         {

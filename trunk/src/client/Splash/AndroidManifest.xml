@@ -35,6 +35,8 @@
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
             
         </activity>
+        
+        <service android:enabled="true" android:name=".KatanaService" />
     </application>
     
 	
