@@ -53,8 +53,8 @@ public class KatanaPacket
         String split[] = buf.split(Constants.PACKET_DATA_SEPERATOR);
         try
         {
-            int pack_id = Integer.parseInt(split[0]);
-            int play_id = Integer.parseInt(split[1]);
+            int pack_id = Integer.parseInt(split[0].trim());
+            int play_id = Integer.parseInt(split[1].trim());
             Opcode op = Opcode.getOpcode(Integer.parseInt(split[2]));
             String pack_data = split[3];
             for(int i = 4; i < split.length; ++i)

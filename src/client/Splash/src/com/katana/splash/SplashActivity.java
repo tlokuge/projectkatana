@@ -48,5 +48,7 @@ public class SplashActivity extends Activity {
         };
         
         splashTimer.start();
+        
+        startService(new Intent(this, KatanaService.class));
     }
 }
