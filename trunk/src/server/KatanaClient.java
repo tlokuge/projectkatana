@@ -4,6 +4,7 @@ package server;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 
 import shared.Constants;
 import shared.KatanaPacket;
@@ -11,15 +12,19 @@ import shared.KatanaPacket;
 
 public class KatanaClient implements Runnable
 {
+    private long id;
     private Socket client;
     Thread thread;
     
     public KatanaClient(Socket client)
     {
+        id = -1;
         this.client = client;
         thread = new Thread(this);
         thread.start();
     }
+    
+    public void setId(long id) { this.id = id; }
     
     public void sendPacket(KatanaPacket packet)
     {
@@ -28,6 +33,11 @@ public class KatanaClient implements Runnable
             OutputStream out = client.getOutputStream();
             out.write(packet.convertToBytes());
             out.flush();
+        }
+        catch(SocketException ex)
+        {
+            System.out.println("KatanaClient: Received SocketException - " + ex.getLocalizedMessage() + " - Removing client: " + id);
+            KatanaServer.instance().removeClient(id);
         }
         catch(Exception ex)
         {

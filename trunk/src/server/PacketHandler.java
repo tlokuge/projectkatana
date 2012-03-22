@@ -96,6 +96,7 @@ public abstract class PacketHandler
         response.addData(id + "");
         client.sendPacket(response);
         
+        client.setId(id);
         KatanaServer.instance().addClient(id, client);
     }
     
@@ -128,6 +129,7 @@ public abstract class PacketHandler
         response.addData(id + "");
         client.sendPacket(response);
         
+        client.setId(id);
         KatanaServer.instance().addClient(id, client);
     }
     
