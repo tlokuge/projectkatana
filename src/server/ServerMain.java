@@ -40,6 +40,10 @@ public class ServerMain
             packet.addData("321.19, 291.32"); // location
             
             KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), KatanaServer.instance().getPort(), packet);
+            Thread.sleep(1000);
+            packet = new KatanaPacket(1, Opcode.C_CLASS_CHANGE);
+            KatanaSocket.sendPacket(InetAddress.getLocalHost().getHostAddress(), KatanaServer.instance().getPort(), packet);
+
         }
         catch(Exception ex)
         {

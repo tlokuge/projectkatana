@@ -1,15 +1,15 @@
 package server;
 
 import java.net.ServerSocket;
-
+import java.util.ArrayList;
 import shared.Constants;
-import shared.KatanaPacket;
 
 public class KatanaServer implements Runnable
 {
     private ServerSocket listener;
     private int port;
     private Thread thread;
+    private ArrayList<KatanaClientWorker> clients;
     
     private static KatanaServer instance;
     
@@ -17,6 +17,7 @@ public class KatanaServer implements Runnable
     {
         listener = null;
         this.port = port;
+        clients = new ArrayList<KatanaClientWorker>();
         thread = new Thread(this, "KatanaServer-Thread");
         thread.start();
     }
@@ -70,7 +71,10 @@ public class KatanaServer implements Runnable
         {
             listener = new ServerSocket(port);
             while(true)
-                new Thread(new KatanaClientWorker(listener.accept())).start();
+            {
+                KatanaClientWorker client = new KatanaClientWorker(listener.accept());
+                clients.add(client);
+            }
             // Garbage collection thread needed? Probably not
         }
         catch(Exception ex)
@@ -82,4 +86,5 @@ public class KatanaServer implements Runnable
     }
     
     public int getPort() { return port; }
+    public ArrayList<KatanaClientWorker> getClients() { return clients; }
 }

@@ -1,5 +1,8 @@
 package server;
 
+import shared.KatanaPacket;
+import shared.Opcode;
+
 
 public class PingServer implements Runnable
 {
@@ -23,6 +26,11 @@ public class PingServer implements Runnable
             // TODO
             Thread.sleep(interval);
             SQLHandler.instance().executeQuery("SELECT 1 FROM `users` LIMIT 1");
+            for(KatanaClientWorker client : KatanaServer.instance().getClients())
+            {
+                KatanaPacket packet = new KatanaPacket(-1, Opcode.S_PING);
+                client.sendPacket(packet);
+            }
         }
         catch(Exception ex)
         {
