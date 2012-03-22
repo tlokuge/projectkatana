@@ -2,18 +2,19 @@ package server;
 
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 import shared.Constants;
 import shared.KatanaPacket;
 
 
-public class KatanaClientWorker implements Runnable
+public class KatanaClient implements Runnable
 {
     private Socket client;
     Thread thread;
     
-    public KatanaClientWorker(Socket client)
+    public KatanaClient(Socket client)
     {
         this.client = client;
         thread = new Thread(this);
@@ -22,7 +23,16 @@ public class KatanaClientWorker implements Runnable
     
     public void sendPacket(KatanaPacket packet)
     {
-        
+        try
+        {
+            OutputStream out = client.getOutputStream();
+            out.write(packet.convertToBytes());
+            out.flush();
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
     }
     
     public void run()
@@ -36,7 +46,7 @@ public class KatanaClientWorker implements Runnable
             if(packet != null)
             {
                 System.out.println("[" + client.getInetAddress().getHostAddress() + ":" + client.getPort() + "] - " + packet.getPacketId() + " - " + packet.getOpcode().name());
-                PacketHandler.handlePacket(packet);
+                PacketHandler.handlePacket(this, packet);
             }
         }
         catch(Exception ex)
