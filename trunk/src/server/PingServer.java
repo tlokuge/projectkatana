@@ -39,7 +39,6 @@ public class PingServer implements Runnable
                 
                 KatanaPacket packet = new KatanaPacket(-1, Opcode.S_PING);
                 client.sendPacket(packet);
-                System.out.println(key + ": " + packet.getPacketId() + " - " + packet.getOpcode().name());
             }
         }
         catch(Exception ex)
