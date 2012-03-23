@@ -33,6 +33,8 @@ public class KatanaClient implements Runnable
             OutputStream out = client.getOutputStream();
             out.write(packet.convertToBytes());
             out.flush();
+            
+            System.out.println("[" + packet.getPacketId() + " - " + packet.getOpcode().name() + "] ==> [CLIENT " + id + "]");
         }
         catch(SocketException ex)
         {
@@ -45,7 +47,7 @@ public class KatanaClient implements Runnable
         }
     }
     
-    public void run()
+    public void listen()
     {
         try
         {
@@ -63,6 +65,13 @@ public class KatanaClient implements Runnable
         {
             ex.printStackTrace();
         }
+    }
+    
+    @Override
+    public void run()
+    {
+        while(true)
+            listen();
     }
     
     protected void finalize() throws Throwable

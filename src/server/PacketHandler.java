@@ -76,11 +76,25 @@ public abstract class PacketHandler
         ArrayList results = sql.execute("SELECT `username` FROM `users` WHERE `username` LIKE '" + username + "';");
         if(results != null && !results.isEmpty())
         {
-            System.err.println("handleRegisterPacket: Username [" + username + "] already exists in database. Prevent registration");
-            
-            KatanaPacket response = new KatanaPacket(-1, Opcode.S_REG_NO);
-            client.sendPacket(response);
-            return;
+            // Handle case where the user reinstalled the app (if password matches database,log her in)
+            long id = loginClient(username, password);
+            if(id == -1)
+            {
+                System.err.println("handleRegisterPacket: Username [" + username + "] already exists in database. Prevent registration");
+
+                KatanaPacket response = new KatanaPacket(-1, Opcode.S_REG_NO);
+                client.sendPacket(response);
+                return;
+            }
+            else
+            {
+                client.setId(id);
+                KatanaPacket response = new KatanaPacket(-1, Opcode.S_AUTH_OK);
+                client.sendPacket(response);
+                
+                KatanaServer.instance().addClient(id, client);
+                return;
+            }
         }
         
         sql.executeQuery("INSERT INTO `users` (`username`,`password`) VALUES ('" + username + "', SHA1('" + password + "'));");
@@ -91,12 +105,13 @@ public abstract class PacketHandler
             client.sendPacket(response);
             return;
         }
+        
+        client.setId(id);
         // Yay! Success!
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_REG_OK);
         response.addData(id + "");
         client.sendPacket(response);
         
-        client.setId(id);
         KatanaServer.instance().addClient(id, client);
     }
     
@@ -122,14 +137,15 @@ public abstract class PacketHandler
         {
             KatanaPacket response = new KatanaPacket(-1, Opcode.S_AUTH_NO);
             client.sendPacket(response);
+            return;
         }
         
+        client.setId(id);
         // Login success!
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_AUTH_OK);
         response.addData(id + "");
         client.sendPacket(response);
         
-        client.setId(id);
         KatanaServer.instance().addClient(id, client);
     }
     
