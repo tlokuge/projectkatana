@@ -1,6 +1,7 @@
 package server;
 
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -27,10 +28,29 @@ public class KatanaClient implements Runnable
     public void setId(long id) { this.id = id; }
     public long getId() { return id; }
     
+    public void remove()
+    {
+        System.out.println("Removing client " + id);
+        try
+        {
+            client.close();
+            KatanaServer.instance().removeClient(id);
+            thread.interrupt();
+        }
+        catch(IOException ex)
+        {
+            ex.printStackTrace();
+        }
+        
+    }
+    
     public void sendPacket(KatanaPacket packet)
     {
         try
         {
+            if(client.isClosed() || client.isOutputShutdown())
+                return;
+            
             OutputStream out = client.getOutputStream();
             out.write(packet.convertToBytes());
             out.flush();
@@ -40,7 +60,7 @@ public class KatanaClient implements Runnable
         catch(SocketException ex)
         {
             System.out.println("KatanaClient: Received SocketException - " + ex.getLocalizedMessage() + " - Removing client: " + id);
-            KatanaServer.instance().removeClient(id);
+            remove();
         }
         catch(Exception ex)
         {
@@ -52,6 +72,9 @@ public class KatanaClient implements Runnable
     {
         try
         {
+            if(client.isClosed() || client.isInputShutdown())
+                return;
+            
             byte[] buffer = new byte[Constants.MAX_PACKET_BUF];
             InputStream in = client.getInputStream();
             in.read(buffer);
@@ -82,7 +105,7 @@ public class KatanaClient implements Runnable
         {
             super.finalize();
             System.out.println("ClientWorker: Closing socket: " + client);
-            client.close();
+            remove();
         }
         catch(Exception ex)
         {

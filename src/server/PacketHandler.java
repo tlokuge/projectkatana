@@ -151,7 +151,7 @@ public abstract class PacketHandler
     {
         System.out.println("handleLogoutPacket: INCOMPLETE");
         // Database stuff?
-        KatanaServer.instance().removeClient(client.getId());
+        client.remove();
     }
     
     // No data
