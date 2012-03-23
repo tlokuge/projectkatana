@@ -23,6 +23,7 @@ public enum Opcode
     S_AUTH_OK,
     S_AUTH_NO,
     S_PING,
+    S_BAD_LOCATION,
     S_ROOM_CREATE_OK,
     S_ROOM_LIST,
     S_ROOM_PLAYER_JOIN,

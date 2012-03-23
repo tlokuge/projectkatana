@@ -60,7 +60,7 @@ public abstract class PacketHandler
     {
         System.out.println("handleRegisterPacket: INCOMPLETE");
         String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
-        if(data.length < 3)
+        if(data.length < 2)
         {
             System.err.println("handleRegisterPacket: Invalid data in packet (" + packet.getData() + ")");
             // TODO: Send response to client
@@ -69,7 +69,6 @@ public abstract class PacketHandler
         
         String username = data[0].trim();
         String password = data[1];
-        String location = data[2]; // TODO
         
         SQLHandler sql = SQLHandler.instance();
         ArrayList results = sql.execute("SELECT `username` FROM `users` WHERE `username` LIKE '" + username + "';");
@@ -119,7 +118,7 @@ public abstract class PacketHandler
     {
         System.out.println("handleLoginPacket: INCOMPLETE");
         String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
-        if(data.length < 3)
+        if(data.length < 2)
         {
             System.err.println("handleLoginPacket: Invalid data in packet (" + packet.getData() + ")");
             // TODO: Send response to client
@@ -128,7 +127,6 @@ public abstract class PacketHandler
         
         String username = data[0];
         String password = data[1];
-        String location = data[2];
         
         System.out.println("handleLoginPacket: User [" + username + "] logged in");
         long id = loginClient(username, password);
@@ -263,20 +261,69 @@ public abstract class PacketHandler
     {
         System.out.println("handleRoomListPacket: INCOMPLETE");
         
-        int location = 1; // Where do we get the location from? The packet or the client?
-        
-        SQLHandler sql = SQLHandler.instance();
-        ArrayList<HashMap<String,Object>> results = sql.execute("SELECT `id`,`name`,`difficulty`,`max_players` FROM `rooms` WHERE `location_id` = " + location + ";");
-        
-        KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_LIST);
-        if(results != null && !results.isEmpty())
+        String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
+        if(data.length < 2) // lat, long
         {
+            System.err.println("handleRoomListPacket: Received invalid data [" + packet.getData() + "]");
+            // Send response
+            return;
+        }
+        
+        try
+        {
+            double lat = Double.parseDouble(data[0].trim());
+            double lng = Double.parseDouble(data[1].trim());
+            int location = -1;
+            String name = "";
+
+            SQLHandler sql = SQLHandler.instance();
+            ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `id`,`name`,`latitude`,`longitude`,`radius` FROM `locations`;");
+            if(results == null || results.isEmpty())
+            {
+                System.err.println("handleRoomListPacket: Database has no locations!");
+                //Response?
+                return;
+            }
+            
             for(HashMap map : results)
             {
-                String room = map.get("id") + ";" + map.get("name") + ";" + map.get("difficulty") + ";" + map.get("max_players");
-                response.addData(room);
+                double latitude = (Double)map.get("latitude");
+                double longitude = (Double)map.get("longitude");
+                double radius = (Double)map.get("radius");
+                
+                if((Math.abs(lat - latitude) < radius) && (Math.abs(lng - longitude) < radius))
+                {
+                    location = (Integer)map.get("id");
+                    name = (String)map.get("name");
+                    break;
+                }
             }
+            
+            if(location == -1 || name.isEmpty())
+            {
+                KatanaPacket response = new KatanaPacket(-1, Opcode.S_BAD_LOCATION);
+                client.sendPacket(response);
+                return;
+            }
+            
+            KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_LIST);
+            response.addData(name);
+            
+            results = sql.execute("SELECT `id`,`name`,`difficulty`,`max_players` FROM `rooms` WHERE `location_id` = " + location + ";");
+            if(results != null && !results.isEmpty())
+            {
+                for(HashMap map : results)
+                {
+                    String room = map.get("id") + ";" + map.get("name") + ";" + map.get("difficulty") + ";" + map.get("max_players");
+                    response.addData(room);
+                }
+            }
+            client.sendPacket(response);
         }
-        client.sendPacket(response);
+        catch(NumberFormatException ex)
+        {
+            System.err.println("handleRoomListPacket: Received bad data");
+            ex.printStackTrace();
+        }
     }
 }
