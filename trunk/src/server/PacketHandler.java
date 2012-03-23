@@ -273,7 +273,7 @@ public abstract class PacketHandler
         {
             for(HashMap map : results)
             {
-                String room = map.get("id") + ";" + map.get("name") + ";" + map.get("difficulty") + map.get("max_players");
+                String room = map.get("id") + ";" + map.get("name") + ";" + map.get("difficulty") + ";" + map.get("max_players");
                 response.addData(room);
             }
         }
