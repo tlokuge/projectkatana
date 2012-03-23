@@ -2,11 +2,23 @@ package com.katana.splash;
 
 import java.util.ArrayList;
 
+import shared.KatanaPacket;
+import shared.Opcode;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,6 +31,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
+
+import com.katana.splash.KatanaService.LocalBinder;
 
 public class LobbyActivity extends Activity {
     private ViewFlipper vf;
@@ -37,7 +51,16 @@ public class LobbyActivity extends Activity {
 	private boolean newRoom = false;
 	private boolean inRoom = false;
 		
-	@Override public void onBackPressed() {
+	//Service Vars
+	KatanaService katanaService;
+	boolean mBound = false;
+	
+	// Location Manager
+	private String lat;
+	private String lng;
+	
+	@Override 
+	public void onBackPressed() {
 		Log.d("CDA", "onBackPressed Called"); 
 		if (inRoom == true) {
 			inRoom = false;
@@ -48,7 +71,8 @@ public class LobbyActivity extends Activity {
 			this.finish();
 		}
 	}
-    @Override
+    
+	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.viewflipper);
@@ -93,6 +117,58 @@ public class LobbyActivity extends Activity {
         		showLeaderboardDialog();
         	}
         });
+        
+        Intent intent = new Intent(this,KatanaService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        registerReceiver(broadcastReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
+        
+        // Location Manager -- FIND A WAY TO LOOK UP LOCATION ONCLICK!!@#!@#!#@!@#
+        LocationManager locManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        LocationListener locListener = new LocationListener(){
+
+			@Override
+			public void onLocationChanged(Location location) {
+				lat = String.valueOf(location.getLatitude());
+				lng = String.valueOf(location.getLongitude());
+				Toast.makeText(getApplicationContext(), lat+" "+lng, Toast.LENGTH_SHORT).show();
+			}
+
+			@Override
+			public void onProviderDisabled(String arg0) {
+			}
+
+			@Override
+			public void onProviderEnabled(String arg0) {
+			}
+
+			@Override
+			public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
+			}
+        };
+        
+        locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 30000, 20, locListener);
+    }
+    
+	protected void onStop(){
+		super.onStop();
+		KatanaPacket packet = new KatanaPacket(0, Opcode.C_LOGOUT);
+		katanaService.sendPacket(packet);
+	}
+	
+    void doUnbindService() {
+        if (mBound) {
+            // Detach our existing connection.
+            unbindService(mConnection);
+            unregisterReceiver(broadcastReceiver);
+            stopService(new Intent(LobbyActivity.this,KatanaService.class));
+            mBound = false;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        doUnbindService();
     }
     
     public void joinRoom(){
@@ -301,9 +377,50 @@ public class LobbyActivity extends Activity {
     }
 
     public void refreshList(View view){
-    	String message = "Refresh rooms list!";
-		Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
-		toast.show();
+    	// Send server refresh room list packet
+    	KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_LIST);
+    	packet.addData(lat);
+    	packet.addData(lng);
+    	katanaService.sendPacket(packet);
+    	Toast.makeText(getApplicationContext(), lat+" "+lng, Toast.LENGTH_SHORT).show();
     }
+    
+    private void showRoomList(Intent intent){
+    	String locName = intent.getStringExtra("locName");
+    	ArrayList<String> roomsList = intent.getStringArrayListExtra("rooms");
+    	
+    	TextView textView = (TextView)findViewById(R.id.l_realmname);
+    	textView.setText(locName);
+    	
+    	ListView listView = (ListView)findViewById(R.id.list_roomslist);
+        listView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, roomsList));
+    }
+    
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+        	System.out.println("Service is bound!");
+            LocalBinder binder = (LocalBinder) service;
+            katanaService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
+    
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    	@Override
+    	public void onReceive(Context context, Intent intent) {
+    		if(intent.getStringExtra("opCode").equals(Opcode.S_ROOM_LIST.name())){
+    			System.out.println("Got room list :D");
+    			showRoomList(intent);
+    		}
+    	}
+    };
 }
 
