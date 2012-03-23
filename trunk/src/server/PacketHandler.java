@@ -23,8 +23,7 @@ public abstract class PacketHandler
             case C_ROOM_CREATE: handleRoomCreatePacket(client, packet); break;
             case C_ROOM_DESTROY:handleRoomDestroyPacket(client, packet);break;
             case C_ROOM_JOIN:   handleRoomJoinPacket(client, packet);   break;
-            case C_ROOM_LIST:
-                break;
+            case C_ROOM_LIST:   handleRoomListPacket(client, packet);   break;
                 
             case C_CLASS_CHANGE:
                 break;
@@ -258,5 +257,26 @@ public abstract class PacketHandler
         sql.executeQuery("INSERT INTO `user_rooms` VALUES (" + packet.getPlayerId() + ", " + room_id + "," + class_id + ")");
         // Response
         
+    }
+    
+    public static void handleRoomListPacket(KatanaClient client, KatanaPacket packet)
+    {
+        System.out.println("handleRoomListPacket: INCOMPLETE");
+        
+        int location = 1; // Where do we get the location from? The packet or the client?
+        
+        SQLHandler sql = SQLHandler.instance();
+        ArrayList<HashMap<String,Object>> results = sql.execute("SELECT `id`,`name`,`difficulty`,`max_players` FROM `rooms` WHERE `location_id` = " + location + ";");
+        
+        KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_LIST);
+        if(results != null && !results.isEmpty())
+        {
+            for(HashMap map : results)
+            {
+                String room = map.get("id") + ";" + map.get("name") + ";" + map.get("difficulty") + map.get("max_players");
+                response.addData(room);
+            }
+        }
+        client.sendPacket(response);
     }
 }
