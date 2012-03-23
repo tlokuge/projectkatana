@@ -25,6 +25,7 @@ public class KatanaClient implements Runnable
     }
     
     public void setId(long id) { this.id = id; }
+    public long getId() { return id; }
     
     public void sendPacket(KatanaPacket packet)
     {
@@ -74,6 +75,7 @@ public class KatanaClient implements Runnable
             listen();
     }
     
+    @Override
     protected void finalize() throws Throwable
     {
         try

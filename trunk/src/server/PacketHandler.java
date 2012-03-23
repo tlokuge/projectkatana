@@ -153,6 +153,8 @@ public abstract class PacketHandler
     private static void handleLogoutPacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handleLogoutPacket: INCOMPLETE");
+        // Database stuff?
+        KatanaServer.instance().removeClient(client.getId());
     }
     
     // No data
