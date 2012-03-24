@@ -273,7 +273,7 @@ public abstract class PacketHandler
         {
             double lat = Double.parseDouble(data[0].trim());
             double lng = Double.parseDouble(data[1].trim());
-            int location = -1;
+            long location = -1;
             String name = "";
 
             SQLHandler sql = SQLHandler.instance();
@@ -291,9 +291,12 @@ public abstract class PacketHandler
                 double longitude = (Double)map.get("longitude");
                 double radius = (Double)map.get("radius");
                 
+                System.out.println(lat + " - " + latitude + " = " + Math.abs(lat - latitude));
+                System.out.println(lng + " - " + longitude + " = " + Math.abs(lng - longitude));
+                
                 if((Math.abs(lat - latitude) < radius) && (Math.abs(lng - longitude) < radius))
                 {
-                    location = (Integer)map.get("id");
+                    location = (Long)map.get("id");
                     name = (String)map.get("name");
                     break;
                 }
@@ -314,7 +317,7 @@ public abstract class PacketHandler
             {
                 for(HashMap map : results)
                 {
-                    String room = map.get("id") + ";" + map.get("name") + ";" + map.get("difficulty") + ";" + map.get("max_players");
+                    String room = map.get("id") + ";" + map.get("name") + ";" + map.get("difficulty") + ";" + map.get("max_players")+ ";";
                     response.addData(room);
                 }
             }

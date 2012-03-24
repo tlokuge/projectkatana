@@ -17,11 +17,13 @@ public class KatanaClient implements Runnable
     private Socket client;
     Thread thread;
     
+    private static int client_count = 0;
+    
     public KatanaClient(Socket client)
     {
         id = -1;
         this.client = client;
-        thread = new Thread(this);
+        thread = new Thread(this, "Client " + client_count++ + ": " + client.getInetAddress().getHostAddress() + ":" + client.getPort());
         thread.start();
     }
     
@@ -48,7 +50,7 @@ public class KatanaClient implements Runnable
     {
         try
         {
-            if(client.isClosed() || client.isOutputShutdown())
+            if(client.isClosed() || client.isOutputShutdown() || thread.isInterrupted())
                 return;
             
             OutputStream out = client.getOutputStream();
@@ -78,6 +80,7 @@ public class KatanaClient implements Runnable
             byte[] buffer = new byte[Constants.MAX_PACKET_BUF];
             InputStream in = client.getInputStream();
             in.read(buffer);
+            //System.out.println("Input: " +new String(buffer));
             KatanaPacket packet = KatanaPacket.createPacketFromBuffer(new String(buffer));
             if(packet != null)
             {
@@ -87,6 +90,7 @@ public class KatanaClient implements Runnable
         }
         catch(Exception ex)
         {
+            remove();
             ex.printStackTrace();
         }
     }
@@ -94,7 +98,7 @@ public class KatanaClient implements Runnable
     @Override
     public void run()
     {
-        while(true)
+        while(!thread.isInterrupted())
             listen();
     }
     
