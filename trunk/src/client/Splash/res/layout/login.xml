@@ -13,9 +13,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="6dp"
-        
-        android:text="Pat"
-        android:hint="@string/user" />
+        android:hint="@string/user" /> 
     
     <EditText 
         android:id="@+id/password"
@@ -25,8 +23,6 @@
         android:inputType="textPassword"
         android:layout_below="@id/username"
         android:layout_marginBottom="6dp"
-        
-        android:text="asdf"
         android:hint="@string/pass" />
     
     <EditText 
@@ -37,8 +33,6 @@
        	android:inputType="textPassword"
         android:layout_below="@id/password"
         android:layout_marginBottom="6dp"
-        
-        android:text="asdf"
         android:hint="@string/cpas" />
                 
     <Button 

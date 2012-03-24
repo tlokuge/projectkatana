@@ -34,11 +34,11 @@
         
         <activity android:name=".LobbyActivity"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-            
+            android:theme="@android:style/Theme.Black.NoTitleBar" >            
         </activity>
         
         <service android:enabled="true" android:name=".KatanaService" />
+        <receiver android:enabled="true" android:name=".Receiver"></receiver>
     </application>
     
 	
