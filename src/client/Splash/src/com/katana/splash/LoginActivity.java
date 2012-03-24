@@ -1,5 +1,6 @@
 package com.katana.splash;
 
+import shared.KatanaConstants;
 import shared.KatanaPacket;
 import shared.Opcode;
 import android.app.Activity;
@@ -18,122 +19,155 @@ import android.widget.Toast;
 import com.katana.splash.KatanaService.LocalBinder;
 
 public class LoginActivity extends Activity {
-	public static final String PREFS_NAME = "UserPreferences";
-	private static final String PREF_USERNAME = "username";
-	private static final String PREF_PASSWORD = "password";
-	
-    public static final int PASSMIN = 1;
-    public static final int PASSMAX = 16;
-    
-	private String user;
-	private String pass;
-	
-	//Service Vars
+	// Service Vars
 	KatanaService katanaService;
 	boolean mBound = false;
 	
+	// LoginActivity Views
+	private EditText userField;
+	private EditText passField;
+	private EditText cpasField;
+	
+	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
         
-        Intent intent = new Intent(this,KatanaService.class);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        // Bind to KatanaService
+        doBindService();
         
-        registerReceiver(broadcastReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
+        // Bind Views
+        userField = (EditText)findViewById(R.id.username);
+    	passField = (EditText)findViewById(R.id.password);
+    	cpasField = (EditText)findViewById(R.id.cpassword);
+    }
+       
+    /** Final cleanup when activity is finished */
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+     // Unbind KatanaService and Receiver
+        doUnbindService();
     }
     
-    void doUnbindService() {
+    /** Disconnect from KatanaService */
+    private void doUnbindService() {
         if (mBound) {
-            // Detach our existing connection.
+            // Detach our existing connection and broadcast receiver
             unbindService(mConnection);
             unregisterReceiver(broadcastReceiver);
-            stopService(new Intent(LoginActivity.this,KatanaService.class));
+            stopService( new Intent(LoginActivity.this, KatanaService.class) );
             mBound = false;
         }
     }
     
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        doUnbindService();
+    /** Button onPress Functions */
+    public void submit(View view){   	
+    	String user = userField.getText().toString().trim();
+    	String pass = passField.getText().toString().trim();
+    	String cpas = cpasField.getText().toString().trim();
+    	
+    	if( user.length() < KatanaConstants.USERMIN || pass.length() < KatanaConstants.PASSMIN || cpas.length() < KatanaConstants.PASSMIN) {
+    		// Input is too short
+    		inputShort(user,pass,cpas);
+    	} else if ( user.length() > KatanaConstants.USERMAX || pass.length() > KatanaConstants.PASSMAX || cpas.length() > KatanaConstants.PASSMAX){
+    		// Input is too long
+    		inputLong(user,pass,cpas);
+    	} else {
+    		// Input falls within the acceptable length parameters
+    		if( !pass.equals(cpas) ){
+    			// Password and confirmation do not match
+    			Toast.makeText(getApplicationContext(), "Password and confirmation do not match!", Toast.LENGTH_SHORT).show();
+    		} else {
+    			// Input is valid
+    			inputValid(user, pass);
+    		}
+    	}
+    }
+    
+    private void inputShort(String user, String pass, String cpas){
+    	// Area to expand on invalid input cases for more customized User Interface
+    	Toast.makeText(getApplicationContext(), "Check input fields!", Toast.LENGTH_SHORT).show();
+    }
+    
+    private void inputLong(String user, String pass, String cpas){
+    	// Area to expand on invalid input cases for more customized User Interface
+    	Toast.makeText(getApplicationContext(), "Check input fields!", Toast.LENGTH_SHORT).show();
+    }
+    
+    private void inputValid(String user, String pass){	
+		// Send username and password to server
+    	KatanaPacket packet = new KatanaPacket(0, Opcode.C_REGISTER);
+		packet.addData(user);
+		packet.addData(pass);
+		katanaService.sendPacket(packet);	 
+    }
+    
+    /** Connect to KatanaService **/
+    private void doBindService() {
+        Intent intent = new Intent(this,KatanaService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        registerReceiver(broadcastReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
     }
     
     private ServiceConnection mConnection = new ServiceConnection() {
-
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
-        	System.out.println("Service is bound!");
             LocalBinder binder = (LocalBinder) service;
             katanaService = binder.getService();
             mBound = true;
         }
-
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mBound = false;
         }
     };
     
-    public void submit(View view){
-    	EditText u = (EditText)findViewById(R.id.username);
-    	EditText p = (EditText)findViewById(R.id.password);
-    	EditText c = (EditText)findViewById(R.id.cpassword);
-    	
-    	user = u.getText().toString().trim();
-    	pass = p.getText().toString().trim();
-    	String cpas = c.getText().toString().trim();
-    	  	
-    	if(	user.length() >= PASSMIN && pass.length() >= PASSMIN && cpas.length() >= PASSMIN &&
-    		user.length() <= PASSMAX && pass.length() <= PASSMAX && cpas.length() <= PASSMAX) {
-	    	if(pass.equals(cpas)){
-	    		
-	    		// Save username and password! 
-	    		getSharedPreferences(PREFS_NAME,MODE_PRIVATE).edit().putString(PREF_USERNAME, user).commit();
-	    		getSharedPreferences(PREFS_NAME,MODE_PRIVATE).edit().putString(PREF_PASSWORD, pass).commit();
-	    		
-	    		// Send username and password to communication daemon
-	    		KatanaPacket packet = new KatanaPacket(0,Opcode.C_REGISTER);
-	    		packet.addData(user);
-	    		packet.addData(pass);
-	    		katanaService.sendPacket(packet);
-	    		/** NEED TO ADD LOCATION **/
-	    		
-	    		// Recieve confirmation from communication daemon
-	    		
-	    	} else{
-	    		String message = "Password and confirmation do not match!";
-	    		Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
-	    		toast.show();
-	    	}
-    	} else {
-    		String message = "Please fill out all fields!";
-    		Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
-    		toast.show();
-    	}
-    }
-    
+    /** on Receive broadcast from KatanaService **/
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
     	@Override
     	public void onReceive(Context context, Intent intent) {
-    		if(intent.getStringExtra("opCode").equals(Opcode.S_REG_OK.name())){
-    			Toast.makeText(LoginActivity.this, "Success!", Toast.LENGTH_SHORT).show();
-    			Intent i = new Intent();
-    			i.setClass(LoginActivity.this, LobbyActivity.class);
-    			startActivity(i);
-    			finish();
-    		} else if(intent.getStringExtra("opCode").equals(Opcode.S_AUTH_OK.name())){
-    			Toast.makeText(LoginActivity.this, "Success! Welcome back! :)", Toast.LENGTH_SHORT).show();
-    			Intent i = new Intent();
-    			i.setClass(LoginActivity.this, LobbyActivity.class);
-    			startActivity(i);
-    			finish();
-    		} else if(intent.getStringExtra("opCode").equals(Opcode.S_REG_NO.name())){
+    		if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_REG_OK.name())){
+    			// Registered new user on server    			
+    			userLoggedIn(true);
+    		} else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_AUTH_OK.name())){
+    			userLoggedIn(false);
+    		} else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_REG_NO.name())){
     			Toast.makeText(LoginActivity.this, "Username already exists or wrong password!", Toast.LENGTH_SHORT).show();
     		} 
     		
     	}
     };
     
+    /** User is validated by server and is logged in */
+    private void userLoggedIn(boolean isNewUser){
+    	String user = userField.getText().toString().trim();
+    	String pass = passField.getText().toString().trim();
+    	
+    	// Save user login
+	    getSharedPreferences(KatanaConstants.PREFS_LOGIN,MODE_PRIVATE).edit().putString(KatanaConstants.LOGIN_USER, user).commit();
+	    getSharedPreferences(KatanaConstants.PREFS_LOGIN,MODE_PRIVATE).edit().putString(KatanaConstants.LOGIN_PASS, pass).commit();
+    	
+    	if ( isNewUser ){
+    		String message = "Welcome to  " + KatanaConstants.GAMENAME + ", " + user + "!";
+    		Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
+    		
+			startLobbyActivity();
+    	} else {
+    		String message = "Welcome back " + user + "!";
+    		Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
+    		
+    		startLobbyActivity();
+    	}
+    }
+    
+    /** Switch user to appropriate activities */
+    private void startLobbyActivity(){
+    	Intent i = new Intent();
+		i.setClass(LoginActivity.this, LobbyActivity.class);
+		startActivity(i);
+		finish();
+    }
 }

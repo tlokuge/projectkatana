@@ -5,9 +5,10 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 
-import shared.Constants;
+import shared.KatanaConstants;
 import shared.KatanaPacket;
 import shared.Opcode;
 import android.app.Service;
@@ -16,13 +17,17 @@ import android.os.Binder;
 import android.os.IBinder;
 
 public class KatanaService extends Service {
-	protected static final String BROADCAST_ACTION = "com.katana.splash";
+	protected static final String BROADCAST_ACTION = "com.katana.splash.katanaservice";
+	protected static final String EXTRAS_OPCODE = "opCode";
+	protected static final String EXTRAS_LOCNAME = "locName";
+	protected static final String EXTRAS_ROOMSLIST = "roomList";
 	
 	private final IBinder mBinder = new LocalBinder();
 	private static final String SERVER = "projectkatana.no-ip.org";
 	private static final int PORT = 7777;
 	
 	private Socket socket;
+	@SuppressWarnings("unused")
 	private KatanaSocketListener socketListener;
 
 	public class LocalBinder extends Binder {
@@ -52,14 +57,14 @@ public class KatanaService extends Service {
 			// Print error, quit?
 		}
 	}
-
+	
 	/* methods for clients */
 	public void sendPacket(KatanaPacket packet) {
 		if(socket == null)
 			return;
-		
 		try
 		{
+			System.out.println("Sending Packet: " + packet.getOpcode().name());
 			OutputStream out = socket.getOutputStream();
 			out.write(packet.convertToBytes());
 			out.flush();
@@ -74,28 +79,31 @@ public class KatanaService extends Service {
 	{
 		private Socket listener;
 		private Thread thread;
+		private boolean bInterrupt;
 
 		public KatanaSocketListener(Socket socket) 
 		{
 			listener = socket;
-			thread = new Thread(this);
-
+			bInterrupt = false;
+			
+			thread = new Thread(this, "SocketListener");
 			thread.start();
 		}
 
 		public void listen() 
 		{
-			if (listener == null || listener.isClosed())
+			if (listener == null || listener.isClosed() || bInterrupt)
 				return;
 
 			try 
 			{
-				byte[] buffer = new byte[Constants.MAX_PACKET_BUF];
+				byte[] buffer = new byte[KatanaConstants.MAX_PACKET_BUF];
 				InputStream in = listener.getInputStream();
 				in.read(buffer);
-
 				KatanaPacket packet = KatanaPacket.createPacketFromBuffer(new String(buffer));
 				
+				if(packet == null)
+					return;
 				parsePacket(packet);
 			}
 			catch (ConnectException ex) 
@@ -103,27 +111,34 @@ public class KatanaService extends Service {
 				System.err.println("KatanaSocketListener: Received ConnectException: "
 								+ ex.getLocalizedMessage());
 				closeListener();
-				thread.interrupt();
 			}
 			catch (SocketException ex) 
 			{
 				System.err.println("KatanaSocketListener: Received SocketException: "
 								+ ex.getLocalizedMessage());
 				closeListener();
-				thread.interrupt();
+			}
+			catch(ClosedByInterruptException ex)
+			{
+				System.err.println("CBI: " + ex.getLocalizedMessage());
+				closeListener();
+				ex.printStackTrace();
 			}
 			catch (Exception ex) 
 			{
+				System.err.println("Exception: " + ex.getLocalizedMessage());
+				closeListener();
 				ex.printStackTrace();
 			}
 		}
 
 		private void closeListener() 
 		{
+			System.out.println("CloseListener");
 			try 
 			{
-				if (listener != null && !listener.isClosed())
-					listener.close();
+				System.out.println("Removing listener thread");
+				thread.interrupt();
 			}
 			catch (Exception ex) 
 			{
@@ -134,7 +149,7 @@ public class KatanaService extends Service {
 		@Override
 		public void run() 
 		{
-			while (true)
+			while (!thread.isInterrupted() || bInterrupt)
 				listen();
 		}
 
@@ -151,7 +166,8 @@ public class KatanaService extends Service {
     	
     	switch(packet.getOpcode()){
     		case S_PING:
-    			sendPacket(new KatanaPacket(0, Opcode.C_PONG)); break;
+    			sendPacket(new KatanaPacket(0, Opcode.C_PONG)); 
+    			break;
     		case S_REG_OK:
     		case S_REG_NO: 
     		case S_AUTH_OK:
@@ -170,16 +186,16 @@ public class KatanaService extends Service {
 	
 	private void handleRoomListReply(KatanaPacket packet, Intent intent){
 		ArrayList<String> roomsList = new ArrayList<String>();
-		String[] lines = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
+		String[] lines = packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR);
 		String locName = lines[0];
 		
 		for(int i = 1; i < lines.length; i++){
 			roomsList.add(lines[i]);
 		}
 		
-		intent.putExtra("opCode", packet.getOpcode().name());
-		intent.putExtra("locName" , locName);
-		intent.putStringArrayListExtra("rooms", roomsList);
+		intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
+		intent.putExtra(EXTRAS_LOCNAME , locName);
+		intent.putStringArrayListExtra(EXTRAS_ROOMSLIST, roomsList);
 		sendBroadcast(intent);
 	}
 }

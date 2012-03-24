@@ -26,13 +26,13 @@ public class KatanaPacket
 
     public byte[] convertToBytes()
     {
-        String packet = String.format(Constants.PACKET_FORMATTER, packet_id, player_id, opcode.ordinal(), data);
+        String packet = String.format(KatanaConstants.PACKET_FORMATTER, packet_id, player_id, opcode.ordinal(), data);
         return packet.getBytes();
     }
     
     public void addData(String data)
     {
-        this.data += data + Constants.PACKET_DATA_SEPERATOR;
+        this.data += data + KatanaConstants.PACKET_DATA_SEPERATOR;
     }
 
     public void setPlayerId(int player_id){ this.player_id = player_id; }
@@ -45,12 +45,17 @@ public class KatanaPacket
     
     public String toString()
     {
-        return String.format(Constants.PACKET_FORMATTER, packet_id, player_id, opcode.ordinal(), data);
+        return String.format(KatanaConstants.PACKET_FORMATTER, packet_id, player_id, opcode.ordinal(), data);
     }
     
     public static KatanaPacket createPacketFromBuffer(String buf)
     {
-        String split[] = buf.split(Constants.PACKET_DATA_SEPERATOR);
+    	if(buf == null || buf.length() == 0)
+    			return null;
+    	
+        String split[] = buf.split(KatanaConstants.PACKET_DATA_SEPERATOR);
+        for(int i = 0; i < split.length; ++i)
+        	System.out.println("split[" + i + "]:" + split[i]);
         try
         {
             int pack_id = Integer.parseInt(split[0].trim());
@@ -58,7 +63,7 @@ public class KatanaPacket
             Opcode op = Opcode.getOpcode(Integer.parseInt(split[2]));
             String pack_data = split[3];
             for(int i = 4; i < split.length; ++i)
-                pack_data += Constants.PACKET_DATA_SEPERATOR + split[i];
+                pack_data += KatanaConstants.PACKET_DATA_SEPERATOR + split[i];
 
             return new KatanaPacket(pack_id, play_id, op, pack_data);
         }
