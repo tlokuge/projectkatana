@@ -9,7 +9,7 @@ public class KatanaServer implements Runnable
     private ServerSocket listener;
     private int port;
     private Thread thread;
-    private HashMap<Long, KatanaClient> clients;
+    private HashMap<Integer, KatanaClient> clients;
     
     private static KatanaServer instance;
     
@@ -17,7 +17,7 @@ public class KatanaServer implements Runnable
     {
         listener = null;
         this.port = port;
-        clients = new HashMap<Long, KatanaClient>();
+        clients = new HashMap<Integer, KatanaClient>();
         thread = new Thread(this, "KatanaServer-Thread");
         thread.start();
     }
@@ -65,12 +65,12 @@ public class KatanaServer implements Runnable
         return instance;
     }
     
-    public void addClient(long id, KatanaClient client)
+    public void addClient(int id, KatanaClient client)
     {
         clients.put(id, client);
     }
     
-    public void removeClient(long id)
+    public void removeClient(int id)
     {
         clients.remove(id);
     }
@@ -94,5 +94,5 @@ public class KatanaServer implements Runnable
     }
     
     public int getPort() { return port; }
-    public HashMap<Long, KatanaClient> getClients() { return clients; }
+    public HashMap<Integer, KatanaClient> getClients() { return clients; }
 }
