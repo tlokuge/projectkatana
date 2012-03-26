@@ -13,7 +13,7 @@ import shared.KatanaPacket;
 
 public class KatanaClient implements Runnable
 {
-    private long id;
+    private int id;
     private Socket client;
     Thread thread;
     
@@ -27,7 +27,7 @@ public class KatanaClient implements Runnable
         thread.start();
     }
     
-    public void setId(long id) { this.id = id; }
+    public void setId(int id) { this.id = id; }
     public long getId() { return id; }
     
     public void remove()

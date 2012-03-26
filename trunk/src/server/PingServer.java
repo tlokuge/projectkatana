@@ -31,9 +31,9 @@ public class PingServer implements Runnable
             Thread.sleep(interval);
             //SQLHandler.instance().executeQuery("SELECT 1 FROM `users` LIMIT 1");
             
-            HashMap<Long, KatanaClient> map = KatanaServer.instance().getClients();
-            Set<Long> keys = map.keySet();
-            for(Long key : keys)
+            HashMap<Integer, KatanaClient> map = KatanaServer.instance().getClients();
+            Set<Integer> keys = map.keySet();
+            for(Integer key : keys)
             {
                 KatanaClient client = map.get(key);
                 
