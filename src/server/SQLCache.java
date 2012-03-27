@@ -93,6 +93,17 @@ public class SQLCache
         cacheCreatures();
     }
     
+    public int getTotalLocations()  { return location_map.size(); }
+    public int getTotalClasses()    { return class_map.size(); }
+    public int getTotalSpells()     { return spell_map.size(); }
+    
+    public Integer[] getLocationIds() { return (Integer[])location_map.keySet().toArray(); }
+    
+    public Location getLocation(int id) { return location_map.get(id); }
+    public Class getClass(int id)       { return class_map.get(id); }
+    public Spell getSpell(int id)       { return spell_map.get(id); }
+    
+    
     private void cacheLocations()
     {
         location_map.clear();

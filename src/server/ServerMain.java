@@ -20,6 +20,7 @@ public class ServerMain
         KatanaServer.initSingleton(
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_SERVER_PORT)));
         KatanaServer.instance().loadCache();
+        
         PingServer ping = new PingServer(
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_PING_INTERVAL)));
     }
