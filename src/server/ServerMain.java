@@ -19,6 +19,7 @@ public class ServerMain
         
         KatanaServer.initSingleton(
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_SERVER_PORT)));
+        KatanaServer.instance().loadCache();
         PingServer ping = new PingServer(
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_PING_INTERVAL)));
     }
@@ -38,7 +39,6 @@ public class ServerMain
             packet.addData("katana"); // username
             packet.addData("password"); // password
             packet.addData("321.19, 291.32"); // location
-            
             KatanaSocket client = new KatanaSocket(InetAddress.getLocalHost().getHostAddress(), KatanaServer.instance().getPort());
             client.sendPacket(packet);
         }

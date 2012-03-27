@@ -12,7 +12,7 @@ import java.util.HashMap;
 import shared.Constants;
 
 
-public class SQLHandler implements Runnable
+public class SQLHandler
 {
     private String hostname;
     private String database;
@@ -54,11 +54,6 @@ public class SQLHandler implements Runnable
         }
     }
     
-    public void run()
-    {
-        initConnection();
-    }
-    
     public void finalize()
     {
         System.out.println("MySQL: Closing Connection...");
@@ -83,7 +78,7 @@ public class SQLHandler implements Runnable
         if(instance == null)
         {
             instance = new SQLHandler(hostname, database, username, password);
-            new Thread(instance, "SQLHandler-Thread").start();
+            instance.initConnection();
         }
     }
     
