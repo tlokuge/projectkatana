@@ -9,6 +9,7 @@ import java.net.SocketException;
 
 import shared.Constants;
 import shared.KatanaPacket;
+import shared.Opcode;
 
 
 public class KatanaClient implements Runnable
@@ -35,6 +36,7 @@ public class KatanaClient implements Runnable
         System.out.println("Removing client " + id);
         try
         {
+            sendPacket(new KatanaPacket(-1, Opcode.S_LOGOUT));
             client.close();
             KatanaServer.instance().removeClient(id);
             thread.interrupt();
@@ -80,12 +82,13 @@ public class KatanaClient implements Runnable
             byte[] buffer = new byte[Constants.MAX_PACKET_BUF];
             InputStream in = client.getInputStream();
             in.read(buffer);
-            //System.out.println("Input: " +new String(buffer));
+            System.out.println("Input: " +new String(buffer));
             KatanaPacket packet = KatanaPacket.createPacketFromBuffer(new String(buffer));
             if(packet != null)
             {
                 System.out.println("[" + client.getInetAddress().getHostAddress() + ":" + client.getPort() + "] - " + packet.getPacketId() + " - " + packet.getOpcode().name());
-                PacketHandler.handlePacket(this, packet);
+                if(PacketHandler.handlePacket(this, packet))
+                    remove();
             }
         }
         catch(Exception ex)
