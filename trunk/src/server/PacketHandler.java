@@ -176,12 +176,12 @@ public abstract class PacketHandler
         }
         
         String name;
-        int location, difficulty, max_players;
+        int loc_id, difficulty, max_players;
         
         try
         {
             name = data[0].trim();
-            location = Integer.parseInt(data[1].trim());
+            loc_id = Integer.parseInt(data[1].trim());
             difficulty = Integer.parseInt(data[2].trim());
             max_players = Integer.parseInt(data[3].trim());
         }
@@ -205,8 +205,8 @@ public abstract class PacketHandler
         }
         
         SQLHandler sql = SQLHandler.instance();
-        ArrayList results = sql.execute("SELECT * FROM `locations` WHERE `location_id` = " + location + ";");
-        if(results == null || results.size() != 1) // Do we even need to check?
+        SQLCache.Location location = KatanaServer.instance().getCache().getLocation(loc_id);
+        if(location == null) // Do we even need to check?
         {
             System.err.println("handleRoomCreatePacket: location id (" + location + ") is invalid");
             // Response
@@ -295,36 +295,31 @@ public abstract class PacketHandler
         {
             double lat = Double.parseDouble(data[0].trim());
             double lng = Double.parseDouble(data[1].trim());
-            int location = -1;
+            int loc_id = -1;
             String name = "";
 
-            SQLHandler sql = SQLHandler.instance();
-            ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `location_id`,`name`,`latitude`,`longitude`,`radius` FROM `locations`;");
-            if(results == null || results.isEmpty())
-            {
-                System.err.println("handleRoomListPacket: Database has no locations!");
-                //Response?
-                return;
-            }
+            SQLCache cache = KatanaServer.instance().getCache();
+            Integer[] locs = cache.getLocationIds();
             
-            for(HashMap map : results)
+            for(int i : locs)
             {
-                double latitude = (Double)map.get("latitude");
-                double longitude = (Double)map.get("longitude");
-                double radius = (Double)map.get("radius");
+                SQLCache.Location location = cache.getLocation(i);
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
+                double radius = location.getRadius();
                 
                 System.out.println(lat + " - " + latitude + " = " + Math.abs(lat - latitude));
                 System.out.println(lng + " - " + longitude + " = " + Math.abs(lng - longitude));
                 
                 if((Math.abs(lat - latitude) < radius) && (Math.abs(lng - longitude) < radius))
                 {
-                    location = (Integer)map.get("location_id");
-                    name = (String)map.get("name");
+                    loc_id = location.getId();
+                    name = location.getName();
                     break;
                 }
             }
             
-            if(location == -1 || name.isEmpty())
+            if(loc_id == -1 || name.isEmpty())
             {
                 KatanaPacket response = new KatanaPacket(-1, Opcode.S_BAD_LOCATION);
                 client.sendPacket(response);
@@ -334,7 +329,7 @@ public abstract class PacketHandler
             KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_LIST);
             response.addData(name);
             
-            results = sql.execute("SELECT `location_id`,`name`,`difficulty`,`max_players` FROM `rooms` WHERE `location_id` = " + location + ";");
+            ArrayList<HashMap<String, Object>> results = SQLHandler.instance().execute("SELECT `location_id`,`name`,`difficulty`,`max_players` FROM `rooms` WHERE `location_id` = " + loc_id + ";");
             if(results != null && !results.isEmpty())
             {
                 for(HashMap map : results)
@@ -379,16 +374,14 @@ public abstract class PacketHandler
             return; 
         }
         
-        SQLHandler sql = SQLHandler.instance();
-        ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `class_id` FROM `classes` WHERE `class_id` = " + class_id + ";");
-        if(results.size() < 1)
+        if(KatanaServer.instance().getCache().getClass(class_id) == null)
         {
             System.err.println("handleClassChangePacket: Class not found");
             // Response?
             return;
         }
         
-        sql.executeQuery("UPDATE `user_rooms` SET `class_id` = " + class_id + "WHERE `user_id` = " + client.getId() + " AND `room_id` = " + room_id + ";");
+        SQLHandler.instance().executeQuery("UPDATE `user_rooms` SET `class_id` = " + class_id + "WHERE `user_id` = " + client.getId() + " AND `room_id` = " + room_id + ";");
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_CLASS_CHANGE_OK);
         client.sendPacket(response);
     }

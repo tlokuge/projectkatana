@@ -24,11 +24,8 @@ public class KatanaServer implements Runnable
         thread.start();
     }
     
-    public void loadCache()
-    {
-        cache.createCache();
-    }
-    
+    public void loadCache()    { cache.createCache(); }
+    public SQLCache getCache() { return cache; }
     
     public void run() 
     { 
