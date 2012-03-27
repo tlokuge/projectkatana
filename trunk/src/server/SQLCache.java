@@ -53,6 +53,7 @@ public class SQLCache
         public int getSpell2() { return spell[1]; }
         public int getSpell3() { return spell[2]; }
         public int getSpell4() { return spell[3]; }
+        public int getModelId(){ return model_id; }
         
     }
     
@@ -61,17 +62,20 @@ public class SQLCache
         private int spell_id;
         private String spell_name;
         private int damage;
+        private int cooldown;
         
-        public Spell(int spell_id, String spell_name, int damage)
+        public Spell(int spell_id, String spell_name, int damage, int cooldown)
         {
             this.spell_id = spell_id;
             this.spell_name = spell_name;
             this.damage = damage;
+            this.cooldown = cooldown;
         }
         
         public int getId()      { return spell_id; }
         public String getName() { return spell_name; }
         public int getDamage()  { return damage; }
+        public int getCooldown(){ return cooldown; }
     }
     
     private HashMap<Integer, Location> location_map;
@@ -88,8 +92,8 @@ public class SQLCache
     public void createCache()
     {
         cacheLocations();
-        cacheClasses();
         cacheSpells();
+        cacheClasses();
         cacheCreatures();
     }
     
@@ -134,6 +138,35 @@ public class SQLCache
         System.out.println("Loaded " + location_map.size() + " locations");
     }
     
+    private void cacheSpells()
+    {
+        spell_map.clear();
+        
+        ProgressBar bar = new ProgressBar();
+        
+        ArrayList<HashMap<String, Object>> results = SQLHandler.instance().execute("SELECT * FROM `spells`");
+        if(results == null || results.isEmpty())
+        {
+            System.err.println("ERROR: NO SPELLS LOADED");
+            return;
+            //System.exit(Constants.NO_SPELLS);
+        }
+        
+        for(int i = 0; i < results.size(); ++i)
+        {
+            HashMap<String, Object> map = results.get(i);
+            int id = (Integer)map.get("spell_id");
+            String name = (String)map.get("spell_name");
+            int damage = (Integer)map.get("damage");
+            int cooldown = (Integer)map.get("cooldown");
+            
+            spell_map.put(id, new Spell(id, name, damage, cooldown));
+            bar.update(i, results.size());
+        }
+        
+        System.out.println("Loaded " + spell_map.size() + " spells");
+    }
+    
     private void cacheClasses()
     {
         class_map.clear();
@@ -166,33 +199,7 @@ public class SQLCache
         System.out.println("Loaded " + class_map.size() + " classes");
     }
     
-    private void cacheSpells()
-    {
-        spell_map.clear();
-        
-        ProgressBar bar = new ProgressBar();
-        
-        ArrayList<HashMap<String, Object>> results = SQLHandler.instance().execute("SELECT * FROM `spells`");
-        if(results == null || results.isEmpty())
-        {
-            System.err.println("ERROR: NO SPELLS LOADED");
-            return;
-            //System.exit(Constants.NO_SPELLS);
-        }
-        
-        for(int i = 0; i < results.size(); ++i)
-        {
-            HashMap<String, Object> map = results.get(i);
-            int id = (Integer)map.get("spell_id");
-            String name = (String)map.get("spell_name");
-            int damage = (Integer)map.get("damage");
-            
-            spell_map.put(id, new Spell(id, name, damage));
-            bar.update(i, results.size());
-        }
-        
-        System.out.println("Loaded " + spell_map.size() + " spells");
-    }
+    
     
     private void cacheCreatures()
     {

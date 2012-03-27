@@ -9,16 +9,16 @@ import shared.Opcode;
 
 public abstract class PacketHandler
 {
-    public static void handlePacket(KatanaClient client, KatanaPacket packet)
+    public static boolean handlePacket(KatanaClient client, KatanaPacket packet)
     {
         if(packet == null)
-            return;
+            return false;
         
         switch(packet.getOpcode())
         {
+            case C_LOGOUT:      handleLogoutPacket(client, packet);     return true;
             case C_REGISTER:    handleRegisterPacket(client, packet);   break;
             case C_LOGIN:       handleLoginPacket(client, packet);      break;
-            case C_LOGOUT:      handleLogoutPacket(client, packet);     break;
             case C_PONG:        handlePongPacket(client, packet);       break;
             case C_ROOM_CREATE: handleRoomCreatePacket(client, packet); break;
             case C_ROOM_DESTROY:handleRoomDestroyPacket(client, packet);break;
@@ -36,6 +36,8 @@ public abstract class PacketHandler
             case C_SPELL:
                 break;
         }
+        
+        return false;
     }
     
     private static int loginClient(String username, String password)
@@ -49,6 +51,14 @@ public abstract class PacketHandler
             return -1;
         
         return (Integer)results.get(0).get("user_id");
+    }
+    
+    // No data
+    private static void handleLogoutPacket(KatanaClient client, KatanaPacket packet)
+    {
+        System.out.println("handleLogoutPacket: INCOMPLETE");
+        // Database stuff?
+        client.remove();
     }
     
     // Packet data format expected to be username / password / location
@@ -145,14 +155,6 @@ public abstract class PacketHandler
         client.sendPacket(response);
         
         KatanaServer.instance().addClient(id, client);
-    }
-    
-    // No data
-    private static void handleLogoutPacket(KatanaClient client, KatanaPacket packet)
-    {
-        System.out.println("handleLogoutPacket: INCOMPLETE");
-        // Database stuff?
-        client.remove();
     }
     
     // No data - unnecessary

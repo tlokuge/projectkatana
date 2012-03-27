@@ -22,6 +22,7 @@ public enum Opcode
     S_REG_NO,
     S_AUTH_OK,
     S_AUTH_NO,
+    S_LOGOUT,
     S_PING,
     S_BAD_LOCATION,
     S_ROOM_CREATE_OK,
