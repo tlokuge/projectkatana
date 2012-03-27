@@ -10,6 +10,7 @@ public class KatanaServer implements Runnable
     private int port;
     private Thread thread;
     private HashMap<Integer, KatanaClient> clients;
+    private SQLCache cache;
     
     private static KatanaServer instance;
     
@@ -18,8 +19,14 @@ public class KatanaServer implements Runnable
         listener = null;
         this.port = port;
         clients = new HashMap<Integer, KatanaClient>();
+        cache = new SQLCache();
         thread = new Thread(this, "KatanaServer-Thread");
         thread.start();
+    }
+    
+    public void loadCache()
+    {
+        cache.createCache();
     }
     
     
