@@ -10,6 +10,7 @@ public enum Opcode
     C_ROOM_CREATE,
     C_ROOM_DESTROY,
     C_ROOM_JOIN,
+    C_ROOM_LEAVE,
     C_ROOM_LIST,
     C_CLASS_CHANGE,
     C_LEADERBOARD,

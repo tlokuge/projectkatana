@@ -24,6 +24,7 @@ public abstract class PacketHandler
             case C_ROOM_CREATE: handleRoomCreatePacket(client, packet); break;
             case C_ROOM_DESTROY:handleRoomDestroyPacket(client, packet);break;
             case C_ROOM_JOIN:   handleRoomJoinPacket(client, packet);   break;
+            case C_ROOM_LEAVE:  handleRoomLeavePacket(client, packet);  break;
             case C_ROOM_LIST:   handleRoomListPacket(client, packet);   break;
             case C_CLASS_CHANGE:handleClassChangePacket(client, packet);break;
             case C_LEADERBOARD: handleLeaderboardPacket(client, packet);break;
@@ -226,6 +227,21 @@ public abstract class PacketHandler
         }
         
         sql.executeQuery("INSERT INTO `rooms` (`name`, `location_id`, `difficulty`, `max_players`) VALUES (" + name + "," + location + "," + difficulty + "," + max_players + ");");
+        
+        ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `room_id` FROM `rooms` WHERE `name` = '" + name + "' AND `location_id` = '" + location + "' AND `difficulty` = " + difficulty + ";");
+        if(results == null || results.isEmpty())
+        {
+            // Error occurred
+            KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_NO);
+            client.sendPacket(response);
+            return;
+        }
+        
+        int room_id = (Integer)results.get(0).get("room_id");
+        Player pl = KatanaServer.instance().getPlayer(client.getId());
+        pl.addToRoom(room_id);
+        pl.setRoomLeader(true);
+        
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_OK);
         client.sendPacket(response);
     }
@@ -288,6 +304,7 @@ public abstract class PacketHandler
         {
             KatanaPacket notify = new KatanaPacket(-1, Opcode.S_ROOM_PLAYER_JOIN);
             Player pl = KatanaServer.instance().getPlayer(client.getId());
+            pl.addToRoom(room_id);
             pl.setClass(class_id);
             notify.addData(pl.getId() + ";" + pl.getName() + ";" + class_id);
             for(HashMap map : results)
@@ -298,6 +315,13 @@ public abstract class PacketHandler
         }
         
         client.sendPacket(response);
+    }
+    
+    public static void handleRoomLeavePacket(KatanaClient client, KatanaPacket packet)
+    {
+        System.out.println("handleRoomLeavePacket: INCOMPLETE");
+        
+        KatanaServer.instance().getPlayer(client.getId()).removeFromRoom();
     }
     
     public static void handleRoomListPacket(KatanaClient client, KatanaPacket packet)
