@@ -89,6 +89,11 @@ public class KatanaServer implements Runnable
         players.put(id, player);
     }
     
+    public Player getPlayer(int id)
+    {
+        return players.get(id);
+    }
+    
     public void removePlayer(int id)
     {
         players.remove(id);
