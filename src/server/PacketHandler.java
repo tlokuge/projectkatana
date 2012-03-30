@@ -296,7 +296,7 @@ public abstract class PacketHandler
             return;
         }
         
-        sql.executeQuery("INSERT INTO `user_rooms` VALUES (" + packet.getPlayerId() + ", " + room_id + "," + class_id + ")");
+        sql.executeQuery("INSERT INTO `user_rooms` VALUES (" + client.getId() + ", " + room_id + "," + class_id + ")");
         // Response
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_JOIN_OK);
         results = sql.execute("SELECT `u`.`user_id`, `u`.`username`,`ur`.`class_id` FROM `user_rooms` ur INNER JOIN `users` u ON `ur`.`user_id` = `u`.`user_id` WHERE `ur`.`room_id` = " + room_id + ";");
@@ -311,6 +311,9 @@ public abstract class PacketHandler
             for(HashMap map : results)
             {
                 int id = (Integer)map.get("user_id");
+                if(id == pl.getId())
+                    continue;
+                
                 response.addData(id + ";" + map.get("username") + ";" + map.get("class_id") + ";");
                 KatanaServer.instance().getPlayer(id).sendPacket(notify);
             }
