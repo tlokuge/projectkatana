@@ -5,6 +5,7 @@ import shared.KatanaPacket;
 public class Player extends Unit
 {
     private KatanaClient client;
+    private int class_id;
     
     public Player(int id, String name, int max_health, int atk_speed, int atk_damage, float move_speed, int model_id, KatanaClient client)
     {
@@ -17,4 +18,7 @@ public class Player extends Unit
     {
         client.sendPacket(packet);
     }
+    
+    public void setClass(int class_id) { this.class_id = class_id; }
+    public int getClassId()            { return class_id; }
 }

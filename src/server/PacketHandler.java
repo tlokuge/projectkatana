@@ -236,16 +236,18 @@ public abstract class PacketHandler
         System.out.println("handleRoomDestroyPacket: INCOMPLETE");
     }
     
-    // Room ID
+    // Room ID, Class ID
     public static void handleRoomJoinPacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handleRoomJoinPacket: INCOMPLETE");
         
         String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
         int room_id;
+        int class_id;
         try
         {
             room_id = Integer.parseInt(data[0].trim());
+            class_id= Integer.parseInt(data[1].trim());
         }
         catch(NumberFormatException ex)
         {
@@ -278,7 +280,6 @@ public abstract class PacketHandler
             return;
         }
         
-        int class_id = 0; // Player.getClassId();
         sql.executeQuery("INSERT INTO `user_rooms` VALUES (" + packet.getPlayerId() + ", " + room_id + "," + class_id + ")");
         // Response
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_JOIN_OK);
@@ -287,7 +288,8 @@ public abstract class PacketHandler
         {
             KatanaPacket notify = new KatanaPacket(-1, Opcode.S_ROOM_PLAYER_JOIN);
             Player pl = KatanaServer.instance().getPlayer(client.getId());
-            notify.addData(pl.getId() + ";" + pl.getName() + ";"); // + pl.getClassid()?
+            pl.setClass(class_id);
+            notify.addData(pl.getId() + ";" + pl.getName() + ";" + class_id);
             for(HashMap map : results)
             {
                 int id = (Integer)map.get("user_id");
