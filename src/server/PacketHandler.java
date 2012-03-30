@@ -321,7 +321,9 @@ public abstract class PacketHandler
     {
         System.out.println("handleRoomLeavePacket: INCOMPLETE");
         
-        KatanaServer.instance().getPlayer(client.getId()).removeFromRoom();
+        KatanaServer.instance().getPlayer(client.getId()).removeFromRoom(); // Do I need to send you a response packet when I remove you from the room? I don't think so. Shake your head if you disagree.
+        
+        SQLHandler.instance().executeQuery("DELETE FROM `user_rooms` WHERE `user_id` = " + client.getId() + ";");
     }
     
     public static void handleRoomListPacket(KatanaClient client, KatanaPacket packet)
