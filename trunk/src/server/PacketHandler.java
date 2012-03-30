@@ -302,15 +302,17 @@ public abstract class PacketHandler
         results = sql.execute("SELECT `u`.`user_id`, `u`.`username`,`ur`.`class_id` FROM `user_rooms` ur INNER JOIN `users` u ON `ur`.`user_id` = `u`.`user_id` WHERE `ur`.`room_id` = " + room_id + ";");
         if(results != null && !results.isEmpty())
         {
-            KatanaPacket notify = new KatanaPacket(-1, Opcode.S_ROOM_PLAYER_JOIN);
             Player pl = KatanaServer.instance().getPlayer(client.getId());
             pl.addToRoom(room_id);
             pl.setClass(class_id);
+            
+            KatanaPacket notify = new KatanaPacket(-1, Opcode.S_ROOM_PLAYER_JOIN);
             notify.addData(pl.getId() + ";" + pl.getName() + ";" + class_id);
             for(HashMap map : results)
             {
                 int id = (Integer)map.get("user_id");
                 response.addData(id + ";" + map.get("username") + ";" + map.get("class_id") + ";");
+                KatanaServer.instance().getPlayer(id).sendPacket(notify);
             }
         }
         
@@ -321,9 +323,20 @@ public abstract class PacketHandler
     {
         System.out.println("handleRoomLeavePacket: INCOMPLETE");
         
-        KatanaServer.instance().getPlayer(client.getId()).removeFromRoom(); // Do I need to send you a response packet when I remove you from the room? I don't think so. Shake your head if you disagree.
+        Player pl = KatanaServer.instance().getPlayer(client.getId());
+        int room_id = pl.getRoom();
+        pl.removeFromRoom();
         
-        SQLHandler.instance().executeQuery("DELETE FROM `user_rooms` WHERE `user_id` = " + client.getId() + ";");
+        SQLHandler sql = SQLHandler.instance();
+        sql.executeQuery("DELETE FROM `user_rooms` WHERE `user_id` = " + client.getId() + ";");
+        ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `user_id` FROM `user_rooms` WHERE `room_id` = " + room_id + ";");
+        if(results == null || results.isEmpty())
+            return;
+        
+        KatanaPacket notify = new KatanaPacket(-1, Opcode.S_ROOM_PLAYER_LEAVE);
+        notify.addData(pl.getId() + "");
+        for(HashMap map : results)
+            KatanaServer.instance().getPlayer((Integer)map.get("user_id")).sendPacket(notify);
     }
     
     public static void handleRoomListPacket(KatanaClient client, KatanaPacket packet)
