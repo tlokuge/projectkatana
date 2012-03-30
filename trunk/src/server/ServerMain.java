@@ -35,15 +35,16 @@ public class ServerMain
             // (since the singleton may not be set up yet), and given the way it's been coded - it crashes.
             // This is intentional because if we somehow are unable to set up the Server's Singleton thread...
             //and attempt to access it, we should kill everything instead of letting things like SQL or Ping run..
-            Thread.currentThread().sleep(5000);
+            Thread.currentThread().sleep(1000);
+            KatanaSocket client = new KatanaSocket(InetAddress.getLocalHost().getHostAddress(), KatanaServer.instance().getPort());
+            Thread.currentThread().sleep(10000);
             KatanaPacket packet = new KatanaPacket(0, Opcode.C_LOGIN);
             packet.addData("katana"); // username
             packet.addData("password"); // password
             packet.addData("321.19, 291.32"); // location
-            KatanaSocket client = new KatanaSocket(InetAddress.getLocalHost().getHostAddress(), KatanaServer.instance().getPort());
             client.sendPacket(packet);
             
-            Thread.currentThread().sleep(5000);
+            Thread.currentThread().sleep(10000);
             packet = new KatanaPacket(0, Opcode.C_LOGOUT);
             client.sendPacket(packet);
         }

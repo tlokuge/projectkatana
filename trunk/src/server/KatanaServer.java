@@ -1,6 +1,7 @@
 package server;
 
 import java.net.ServerSocket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import shared.Constants;
 
@@ -9,17 +10,21 @@ public class KatanaServer implements Runnable
     private ServerSocket listener;
     private int port;
     private Thread thread;
-    private HashMap<Integer, KatanaClient> clients;
     private SQLCache cache;
     
+    private ArrayList<KatanaClient> waitingClients;
+    private HashMap<Integer, Player> players;
     private static KatanaServer instance;
     
     private KatanaServer(int port)
     {
         listener = null;
         this.port = port;
-        clients = new HashMap<Integer, KatanaClient>();
         cache = new SQLCache();
+        
+        waitingClients = new ArrayList<KatanaClient>();
+        players = new HashMap<Integer, Player>();
+        
         thread = new Thread(this, "KatanaServer-Thread");
         thread.start();
     }
@@ -69,14 +74,24 @@ public class KatanaServer implements Runnable
         return instance;
     }
     
-    public void addClient(int id, KatanaClient client)
+    public void addWaitingClient(KatanaClient client)
     {
-        clients.put(id, client);
+        waitingClients.add(client);
     }
     
-    public void removeClient(int id)
+    public void removeWaitingClient(KatanaClient client)
     {
-        clients.remove(id);
+        waitingClients.remove(client);
+    }
+    
+    public void addPlayer(int id, Player player)
+    {
+        players.put(id, player);
+    }
+    
+    public void removePlayer(int id)
+    {
+        players.remove(id);
     }
     
     public void listenLoop()
@@ -98,5 +113,7 @@ public class KatanaServer implements Runnable
     }
     
     public int getPort() { return port; }
-    public HashMap<Integer, KatanaClient> getClients() { return clients; }
+    
+    public ArrayList<KatanaClient> getWaitingClients() { return waitingClients; }
+    public HashMap<Integer, Player> getPlayers()       { return players; }
 }
