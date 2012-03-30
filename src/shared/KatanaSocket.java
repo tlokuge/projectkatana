@@ -33,7 +33,8 @@ public class KatanaSocket
 
                 KatanaPacket packet = KatanaPacket.createPacketFromBuffer(new String(buffer));
                 System.out.println("KatanaSocket received: " + packet.getOpcode().name());
-                //
+                if(packet.getOpcode().ordinal() == Opcode.S_LOGOUT.ordinal())
+                    closeListener();
 
             }
             catch(ConnectException ex)
@@ -51,6 +52,8 @@ public class KatanaSocket
             catch(Exception ex)
             {
                 ex.printStackTrace();
+                //closeListener();
+                //thread.interrupt();
             }
         }
         

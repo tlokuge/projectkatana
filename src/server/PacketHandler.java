@@ -40,17 +40,31 @@ public abstract class PacketHandler
         return false;
     }
     
-    private static int loginClient(String username, String password)
+    private static Player loginClient(String username, String password, KatanaClient client)
     {
-        if(username == null || username.isEmpty() || password == null || password.isEmpty())
-            return -1;
+        if(username == null || username.isEmpty() || password == null || password.isEmpty() || client == null)
+            return null;
         
         SQLHandler sql = SQLHandler.instance();
         ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `user_id` FROM `users` WHERE `username` LIKE '" + username + "' AND `password` LIKE SHA1('" + password + "');");
         if(results == null || results.size() != 1) // Bad login
-            return -1;
+            return null;
         
-        return (Integer)results.get(0).get("user_id");
+        int id = (Integer)results.get(0).get("user_id");
+        Player player = new Player(id, 
+                                   username,
+                                   Constants.DEFAULT_PLAYER_HEALTH,
+                                   Constants.DEFAULT_PLAYER_ATKSPD, 
+                                   Constants.DEFAULT_PLAYER_ATKDMG, 
+                                   Constants.DEFAULT_PLAYER_MOVE, 
+                                   0,
+                                   client);
+        
+        client.setId(id);
+        KatanaServer.instance().removeWaitingClient(client);
+        KatanaServer.instance().addPlayer(id, player);
+        
+        return player;
     }
     
     // No data
@@ -83,8 +97,8 @@ public abstract class PacketHandler
         if(results != null && !results.isEmpty())
         {
             // Handle case where the user reinstalled the app (if password matches database,log her in)
-            int id = loginClient(username, password);
-            if(id == -1)
+            Player player = loginClient(username, password, client);
+            if(player == null)
             {
                 System.err.println("handleRegisterPacket: Username [" + username + "] already exists in database. Prevent registration");
 
@@ -94,32 +108,28 @@ public abstract class PacketHandler
             }
             else
             {
-                client.setId(id);
                 KatanaPacket response = new KatanaPacket(-1, Opcode.S_AUTH_OK);
-                client.sendPacket(response);
+                response.addData(player.getId() + "");;
+                player.sendPacket(response);
                 
-                KatanaServer.instance().addClient(id, client);
                 return;
             }
         }
         
         // New user, create her account then log her in
         sql.executeQuery("INSERT INTO `users` (`username`,`password`) VALUES ('" + username + "', SHA1('" + password + "'));");
-        int id = loginClient(username, password);
-        if(id == -1)
+        Player player = loginClient(username, password, client);
+        if(player == null)
         {
             KatanaPacket response = new KatanaPacket(-1, Opcode.S_REG_NO); // Somehow something went wrong....
             client.sendPacket(response);
             return;
         }
         
-        client.setId(id);
         // Yay! Success!
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_REG_OK);
-        response.addData(id + "");
-        client.sendPacket(response);
-        
-        KatanaServer.instance().addClient(id, client);
+        response.addData(player.getId() + "");
+        player.sendPacket(response);
     }
     
     // Data format: username, password, location
@@ -140,21 +150,18 @@ public abstract class PacketHandler
         String password = data[1];
         
         System.out.println("handleLoginPacket: User [" + username + "] logged in");
-        int id = loginClient(username, password);
-        if(id == -1)
+        Player player = loginClient(username, password, client);
+        if(player == null)
         {
             KatanaPacket response = new KatanaPacket(-1, Opcode.S_AUTH_NO);
             client.sendPacket(response);
             return;
         }
         
-        client.setId(id);
         // Login success!
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_AUTH_OK);
-        response.addData(id + "");
-        client.sendPacket(response);
-        
-        KatanaServer.instance().addClient(id, client);
+        response.addData(player.getId() + "");
+        player.sendPacket(response);
     }
     
     // No data - unnecessary

@@ -27,18 +27,23 @@ public class PingServer implements Runnable
     {
         try
         {
-            // TODO
             Thread.sleep(interval);
             //SQLHandler.instance().executeQuery("SELECT 1 FROM `users` LIMIT 1");
             
-            HashMap<Integer, KatanaClient> map = KatanaServer.instance().getClients();
+            for(KatanaClient client : KatanaServer.instance().getWaitingClients())
+            {
+                KatanaPacket packet = new KatanaPacket(-1, Opcode.S_PING);
+                client.sendPacket(packet);
+            }
+            
+            HashMap<Integer, Player> map = KatanaServer.instance().getPlayers();
             Set<Integer> keys = map.keySet();
             for(Integer key : keys)
             {
-                KatanaClient client = map.get(key);
+                Player player = map.get(key);
                 
                 KatanaPacket packet = new KatanaPacket(-1, Opcode.S_PING);
-                client.sendPacket(packet);
+                player.sendPacket(packet);
             }
         }
         catch(Exception ex)

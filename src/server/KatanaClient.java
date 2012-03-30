@@ -24,6 +24,9 @@ public class KatanaClient implements Runnable
     {
         id = -1;
         this.client = client;
+        
+        KatanaServer.instance().addWaitingClient(this);
+        
         thread = new Thread(this, "Client " + client_count++ + ": " + client.getInetAddress().getHostAddress() + ":" + client.getPort());
         thread.start();
     }
@@ -38,7 +41,7 @@ public class KatanaClient implements Runnable
         {
             sendPacket(new KatanaPacket(-1, Opcode.S_LOGOUT));
             client.close();
-            KatanaServer.instance().removeClient(id);
+            KatanaServer.instance().removePlayer(id);
             thread.interrupt();
         }
         catch(IOException ex)
@@ -55,11 +58,11 @@ public class KatanaClient implements Runnable
             if(client.isClosed() || client.isOutputShutdown() || thread.isInterrupted())
                 return;
             
+            System.out.println("[" + packet.getPacketId() + " - " + packet.getOpcode().name() + "] ==> [CLIENT " + id + "]");
             OutputStream out = client.getOutputStream();
             out.write(packet.convertToBytes());
             out.flush();
             
-            System.out.println("[" + packet.getPacketId() + " - " + packet.getOpcode().name() + "] ==> [CLIENT " + id + "]");
         }
         catch(SocketException ex)
         {
@@ -82,11 +85,10 @@ public class KatanaClient implements Runnable
             byte[] buffer = new byte[Constants.MAX_PACKET_BUF];
             InputStream in = client.getInputStream();
             in.read(buffer);
-            System.out.println("Input: " +new String(buffer));
             KatanaPacket packet = KatanaPacket.createPacketFromBuffer(new String(buffer));
             if(packet != null)
             {
-                System.out.println("[" + client.getInetAddress().getHostAddress() + ":" + client.getPort() + "] - " + packet.getPacketId() + " - " + packet.getOpcode().name());
+                System.out.println("[" + packet.getPacketId() + " - " + packet.getOpcode().name() + "] <== [CLIENT " + id + "]");
                 if(PacketHandler.handlePacket(this, packet))
                     remove();
             }

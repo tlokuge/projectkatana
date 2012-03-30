@@ -199,8 +199,6 @@ public class SQLCache
         System.out.println("Loaded " + class_map.size() + " classes");
     }
     
-    
-    
     private void cacheCreatures()
     {
         System.out.println("Loaded 0 creatures");

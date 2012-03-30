@@ -22,6 +22,12 @@ public abstract class Constants
     public static final int MAX_PACKET_BUF = 1024;
     public static final int PING_INTERVAL_MS = 10000;
     
+    // Default player stats
+    public static final int DEFAULT_PLAYER_HEALTH  = 5000;
+    public static final int DEFAULT_PLAYER_ATKSPD  = 1000;
+    public static final int DEFAULT_PLAYER_ATKDMG  = 10;
+    public static final float DEFAULT_PLAYER_MOVE  = 1.0f;
+    
     /** Error Codes **/
     // SQL
     public static final int ERR_SQL_CONN_LOST = 1;
