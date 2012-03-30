@@ -32,7 +32,7 @@ public class KatanaClient implements Runnable
     }
     
     public void setId(int id) { this.id = id; }
-    public long getId() { return id; }
+    public int getId() { return id; }
     
     public void remove()
     {

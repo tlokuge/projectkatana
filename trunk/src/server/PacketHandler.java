@@ -284,8 +284,17 @@ public abstract class PacketHandler
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_JOIN_OK);
         results = sql.execute("SELECT `u`.`user_id`, `u`.`username`,`ur`.`class_id` FROM `user_rooms` ur INNER JOIN `users` u ON `ur`.`user_id` = `u`.`user_id` WHERE `ur`.`room_id` = " + room_id + ";");
         if(results != null && !results.isEmpty())
+        {
+            KatanaPacket notify = new KatanaPacket(-1, Opcode.S_ROOM_PLAYER_JOIN);
+            Player pl = KatanaServer.instance().getPlayer(client.getId());
+            notify.addData(pl.getId() + ";" + pl.getName() + ";"); // + pl.getClassid()?
             for(HashMap map : results)
-                response.addData(map.get("user_id") + ";" + map.get("username") + ";" + map.get("class_id") + ";");
+            {
+                int id = (Integer)map.get("user_id");
+                response.addData(id + ";" + map.get("username") + ";" + map.get("class_id") + ";");
+            }
+        }
+        
         client.sendPacket(response);
     }
     
