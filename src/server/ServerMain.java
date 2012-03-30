@@ -65,7 +65,7 @@ public class ServerMain
         
         setupServer();
         
-        testStuff();
+        //testStuff();
         
     }
 }

@@ -102,18 +102,18 @@ public class SQLHandler
         {
             ArrayList<HashMap<String, Object>> results_list = new ArrayList<HashMap<String, Object>>();
             ResultSetMetaData meta = (ResultSetMetaData) results.getMetaData();
-            for(int i = 1; i < meta.getColumnCount()+1; ++i)
-                System.out.print(meta.getColumnName(i) + "\t");
+            //for(int i = 1; i < meta.getColumnCount()+1; ++i)
+            //    System.out.print(meta.getColumnName(i) + "\t");
             System.out.println();
             while(results.next())
             {
                 HashMap<String, Object> row = new HashMap<String, Object>();
                 for(int i = 1; i < meta.getColumnCount()+1; ++i)
                 {
-                    System.out.print(results.getObject(i) + "\t");
+                  //  System.out.print(results.getObject(i) + "\t");
                     row.put(meta.getColumnName(i), results.getObject(i));
                 }
-                System.out.println();
+                //System.out.println();
                 results_list.add(row);
             }
             

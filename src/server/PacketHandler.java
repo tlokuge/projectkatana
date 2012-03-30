@@ -3,6 +3,7 @@ package server;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 import shared.Constants;
 import shared.KatanaPacket;
 import shared.Opcode;
@@ -308,7 +309,7 @@ public abstract class PacketHandler
             String name = "";
 
             SQLCache cache = KatanaServer.instance().getCache();
-            Integer[] locs = cache.getLocationIds();
+            Set<Integer> locs = cache.getLocationIds();
             
             for(int i : locs)
             {
@@ -338,12 +339,12 @@ public abstract class PacketHandler
             KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_LIST);
             response.addData(name);
             
-            ArrayList<HashMap<String, Object>> results = SQLHandler.instance().execute("SELECT `location_id`,`name`,`difficulty`,`max_players` FROM `rooms` WHERE `location_id` = " + loc_id + ";");
+            ArrayList<HashMap<String, Object>> results = SQLHandler.instance().execute("SELECT `location_id`,`room_name`,`difficulty`,`max_players` FROM `rooms` WHERE `location_id` = " + loc_id + ";");
             if(results != null && !results.isEmpty())
             {
                 for(HashMap map : results)
                 {
-                    String room = map.get("location_id") + ";" + map.get("name") + ";" + map.get("difficulty") + ";" + map.get("max_players")+ ";";
+                    String room = map.get("location_id") + ";" + map.get("room_name") + ";" + map.get("difficulty") + ";" + map.get("max_players")+ ";";
                     response.addData(room);
                 }
             }
