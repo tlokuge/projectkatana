@@ -28,6 +28,8 @@ public abstract class Constants
     public static final int DEFAULT_PLAYER_ATKDMG  = 10;
     public static final float DEFAULT_PLAYER_MOVE  = 1.0f;
     
+    // Waiting Room
+    public static final int ROOM_MAX_PLAYERS    = 4;
     /** Error Codes **/
     // SQL
     public static final int ERR_SQL_CONN_LOST = 1;

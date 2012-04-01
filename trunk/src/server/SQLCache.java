@@ -6,30 +6,6 @@ import java.util.Set;
 
 public class SQLCache
 {
-    class Location
-    {
-        private int loc_id;
-        private String name;
-        private double latitude;
-        private double longitude;
-        private double radius;
-        
-        public Location(int loc_id, String name, double latitude, double longitude, double radius)
-        {
-            this.loc_id = loc_id;
-            this.name = name;
-            this.latitude = latitude;
-            this.longitude = longitude;
-            this.radius = radius;
-        }
-        
-        public int getId() { return loc_id; }
-        public String getName() { return name; }
-        public double getLatitude() { return latitude; }
-        public double getLongitude() { return longitude; }
-        public double getRadius() { return radius; }
-    }
-    
     class Class
     {
         private int class_id;
@@ -79,13 +55,11 @@ public class SQLCache
         public int getCooldown(){ return cooldown; }
     }
     
-    private HashMap<Integer, Location> location_map;
     private HashMap<Integer, Class> class_map;
     private HashMap<Integer, Spell> spell_map;
     
     public SQLCache()
     {
-        location_map = new HashMap<Integer, Location>();
         class_map    = new HashMap<Integer, Class>();
         spell_map    = new HashMap<Integer, Spell>();
     }
@@ -98,21 +72,14 @@ public class SQLCache
         cacheCreatures();
     }
     
-    public int getTotalLocations()  { return location_map.size(); }
     public int getTotalClasses()    { return class_map.size(); }
     public int getTotalSpells()     { return spell_map.size(); }
-    
-    public Set<Integer> getLocationIds() { return location_map.keySet(); }
-    
-    public Location getLocation(int id) { return location_map.get(id); }
     public Class getClass(int id)       { return class_map.get(id); }
     public Spell getSpell(int id)       { return spell_map.get(id); }
     
     
     private void cacheLocations()
     {
-        location_map.clear();
-        
         ProgressBar bar = new ProgressBar();
         
         ArrayList<HashMap<String, Object>> results = SQLHandler.instance().execute("SELECT `location_id`, `location_name`, `latitude`, `longitude`, `radius` FROM `locations`;");
@@ -132,11 +99,11 @@ public class SQLCache
             double longitude = (Double)map.get("longitude");
             double radius = (Double)map.get("radius");
             
-            location_map.put(id, new Location(id, name,latitude, longitude, radius));
+            KatanaServer.instance().addLobby(id, new Lobby(id, name,latitude, longitude, radius));
             bar.update(i, results.size());
         }
         
-        System.out.println("Loaded " + location_map.size() + " locations");
+        System.out.println("Loaded " + results.size() + " locations");
     }
     
     private void cacheSpells()

@@ -16,14 +16,25 @@ public class KatanaClient implements Runnable
 {
     private int id;
     private Socket client;
+    private Player player;
+    
     Thread thread;
     
     private static int client_count = 0;
     
     public KatanaClient(Socket client)
     {
+        try
+        {
+            client.setSoLinger(true,0);
+        }
+        catch(SocketException ex)
+        {
+            ex.printStackTrace();
+        }
         id = -1;
         this.client = client;
+        player = null;
         
         KatanaServer.instance().addWaitingClient(this);
         
@@ -31,8 +42,13 @@ public class KatanaClient implements Runnable
         thread.start();
     }
     
-    public void setId(int id) { this.id = id; }
-    public int getId() { return id; }
+    public void setPlayer(Player pl) 
+    {
+        this.player = pl;
+        this.id     = pl.getId();
+    }
+    public Player getPlayer() { return player; }
+    public int getId()        { return id; }
     
     public void remove()
     {
@@ -72,6 +88,7 @@ public class KatanaClient implements Runnable
         catch(Exception ex)
         {
             ex.printStackTrace();
+            remove();
         }
     }
     

@@ -28,7 +28,7 @@ public class PingServer implements Runnable
         try
         {
             Thread.sleep(interval);
-            //SQLHandler.instance().executeQuery("SELECT 1 FROM `users` LIMIT 1");
+            SQLHandler.instance().executeQuery("SELECT 1 FROM `users` LIMIT 1");
             
             for(KatanaClient client : KatanaServer.instance().getWaitingClients())
             {

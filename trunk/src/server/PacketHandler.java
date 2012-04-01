@@ -62,7 +62,7 @@ public abstract class PacketHandler
                                    0,
                                    client);
         
-        client.setId(id);
+        client.setPlayer(player);
         KatanaServer.instance().removeWaitingClient(client);
         KatanaServer.instance().addPlayer(id, player);
         
@@ -216,19 +216,19 @@ public abstract class PacketHandler
         }
         
         SQLHandler sql = SQLHandler.instance();
-        SQLCache.Location location = KatanaServer.instance().getCache().getLocation(loc_id);
-        if(location == null) // Do we even need to check?
+        Lobby lobby = KatanaServer.instance().getLobby(loc_id);
+        if(lobby == null) // Do we even need to check?
         {
-            System.err.println("handleRoomCreatePacket: location id (" + location + ") is invalid");
+            System.err.println("handleRoomCreatePacket: location id (" + loc_id + ") is invalid");
             // Response
             KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_NO);
             client.sendPacket(response);
             return;
         }
         
-        sql.executeQuery("INSERT INTO `rooms` (`name`, `location_id`, `difficulty`, `max_players`) VALUES (" + name + "," + location + "," + difficulty + "," + max_players + ");");
+        sql.executeQuery("INSERT INTO `rooms` (`name`, `location_id`, `difficulty`, `max_players`, `leader`) VALUES (" + name + "," + loc_id + "," + difficulty + "," + max_players + "," + client.getId() + ");");
         
-        ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `room_id` FROM `rooms` WHERE `name` = '" + name + "' AND `location_id` = '" + location + "' AND `difficulty` = " + difficulty + ";");
+        ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `room_id` FROM `rooms` WHERE `leader` = " + client.getId() + ";");
         if(results == null || results.isEmpty())
         {
             // Error occurred
@@ -238,9 +238,11 @@ public abstract class PacketHandler
         }
         
         int room_id = (Integer)results.get(0).get("room_id");
-        Player pl = KatanaServer.instance().getPlayer(client.getId());
+        Player pl = client.getPlayer();
         pl.addToRoom(room_id);
         pl.setRoomLeader(true);
+        
+        KatanaServer.instance().getLobby(loc_id).addRoom(new GameRoom(room_id, name, difficulty, max_players, pl));
         
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_OK);
         client.sendPacket(response);
@@ -250,6 +252,37 @@ public abstract class PacketHandler
     public static void handleRoomDestroyPacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handleRoomDestroyPacket: INCOMPLETE");
+        
+        Player pl = client.getPlayer();
+        if(pl == null || !pl.isRoomLeader())
+        {
+            System.err.println("Invalid player or player is not room leader - cannot delete room");
+            return;
+        }
+        
+        Lobby lobby = KatanaServer.instance().getLobby(pl.getLocation());
+        GameRoom room = lobby.getRoom(pl.getRoom());
+        if(room == null)
+        {
+            System.err.println("Unable to delete room - room not found");
+            return;
+        }
+        
+        KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_DESTROY);
+        for(Player p : room.getPlayers())
+        {
+            p.removeFromRoom();
+            p.setLocation(lobby.getLocationId());
+            lobby.addPlayer(p);
+            p.sendPacket(response);
+        }
+        
+        SQLHandler sql = SQLHandler.instance();
+        sql.executeQuery("DELETE FROM `user_rooms` WHERE `room_id` = " + room.getId() + ";");
+        sql.executeQuery("DELETE FROM `rooms` WHERE `room_id` = " + room.getId() + ";");
+        
+        lobby.removeRoom(room.getId());
+        pl.setRoomLeader(false);
     }
     
     // Room ID, Class ID
@@ -273,21 +306,19 @@ public abstract class PacketHandler
             return;
         }
         
-        SQLHandler sql = SQLHandler.instance();
-        ArrayList<HashMap<String,Object>> results = sql.execute("SELECT r.`max_players`, COUNT(ur.`room_id`) AS `current` FROM `rooms` r INNER JOIN `user_rooms` ur ON r.`room_id` = ur.`room_id` WHERE r.`room_id` = " + room_id + ";");
-        if(results == null || results.size() != 1) // No room found or too many rooms found (should not be possible)
+        Player pl = client.getPlayer();
+        Lobby lobby = KatanaServer.instance().getLobby(pl.getLocation());
+        GameRoom room = lobby.getRoom(room_id);
+        if(room == null)
         {
             System.err.println("handleRoomJoinPacket: room id (" + room_id + ") is invalid");
             // Response
             KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_JOIN_NO);
-            client.sendPacket(response);
+            pl.sendPacket(response);
             return;
         }
         
-        // Check if the room has space for the player - this might be unnecessary if the server has Room objects containing the necessary data
-        long cur = (Long)results.get(0).get("current");
-        int max = (Integer)results.get(0).get("max_players");
-        if((max - cur) == 0)
+        if((room.getMaxPlayers() - room.getNumPlayers()) == 0)
         {
             System.err.println("handleRoomJoinPacket: room id (" + room_id + ") is full");
             // Response
@@ -296,13 +327,14 @@ public abstract class PacketHandler
             return;
         }
         
+        room.addPlayer(pl);
+        SQLHandler sql = SQLHandler.instance();
         sql.executeQuery("INSERT INTO `user_rooms` VALUES (" + client.getId() + ", " + room_id + "," + class_id + ")");
         // Response
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_JOIN_OK);
-        results = sql.execute("SELECT `u`.`user_id`, `u`.`username`,`ur`.`class_id` FROM `user_rooms` ur INNER JOIN `users` u ON `ur`.`user_id` = `u`.`user_id` WHERE `ur`.`room_id` = " + room_id + ";");
+        ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `u`.`user_id`, `u`.`username`,`ur`.`class_id` FROM `user_rooms` ur INNER JOIN `users` u ON `ur`.`user_id` = `u`.`user_id` WHERE `ur`.`room_id` = " + room_id + ";");
         if(results != null && !results.isEmpty())
         {
-            Player pl = KatanaServer.instance().getPlayer(client.getId());
             pl.addToRoom(room_id);
             pl.setClass(class_id);
             
@@ -332,14 +364,16 @@ public abstract class PacketHandler
         
         SQLHandler sql = SQLHandler.instance();
         sql.executeQuery("DELETE FROM `user_rooms` WHERE `user_id` = " + client.getId() + ";");
-        ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `user_id` FROM `user_rooms` WHERE `room_id` = " + room_id + ";");
-        if(results == null || results.isEmpty())
-            return;
         
+        GameRoom room = KatanaServer.instance().getLobby(pl.getLocation()).getRoom(room_id);
+        if(room == null)
+            return;
+        room.removePlayer(pl);
+
         KatanaPacket notify = new KatanaPacket(-1, Opcode.S_ROOM_PLAYER_LEAVE);
         notify.addData(pl.getId() + "");
-        for(HashMap map : results)
-            KatanaServer.instance().getPlayer((Integer)map.get("user_id")).sendPacket(notify);
+        for(Player p : room.getPlayers())
+            p.sendPacket(notify);
     }
     
     public static void handleRoomListPacket(KatanaClient client, KatanaPacket packet)
@@ -361,23 +395,23 @@ public abstract class PacketHandler
             int loc_id = -1;
             String name = "";
 
-            SQLCache cache = KatanaServer.instance().getCache();
-            Set<Integer> locs = cache.getLocationIds();
+            Set<Integer> locs = KatanaServer.instance().getLocationIDs();
             
+            Lobby lobby = null;
             for(int i : locs)
             {
-                SQLCache.Location location = cache.getLocation(i);
-                double latitude = location.getLatitude();
-                double longitude = location.getLongitude();
-                double radius = location.getRadius();
+                lobby = KatanaServer.instance().getLobby(i);
+                double latitude = lobby.getLatitude();
+                double longitude = lobby.getLongitude();
+                double radius = lobby.getRadius();
                 
                 System.out.println(lat + " - " + latitude + " = " + Math.abs(lat - latitude));
                 System.out.println(lng + " - " + longitude + " = " + Math.abs(lng - longitude));
                 
                 if((Math.abs(lat - latitude) < radius) && (Math.abs(lng - longitude) < radius))
                 {
-                    loc_id = location.getId();
-                    name = location.getName();
+                    loc_id = lobby.getLocationId();
+                    name = lobby.getName();
                     break;
                 }
             }
@@ -389,17 +423,22 @@ public abstract class PacketHandler
                 return;
             }
             
+            Player pl = KatanaServer.instance().getPlayer(client.getId());
+            Lobby old = KatanaServer.instance().getLobby(pl.getLocation());
+            if(old != null)
+                old.removePlayer(pl);
+            pl.setLocation(loc_id);
+            lobby.addPlayer(pl);
+            
             KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_LIST);
             response.addData(name);
             
-            ArrayList<HashMap<String, Object>> results = SQLHandler.instance().execute("SELECT `room_id`,`room_name`,`difficulty`,`max_players` FROM `rooms` WHERE `location_id` = " + loc_id + ";");
-            if(results != null && !results.isEmpty())
+            Set<Integer> room_ids = lobby.getRoomIds();
+            for(int id : room_ids)
             {
-                for(HashMap map : results)
-                {
-                    String room = map.get("room_id") + ";" + map.get("room_name") + ";" + map.get("difficulty") + ";" + map.get("max_players")+ ";";
-                    response.addData(room);
-                }
+                GameRoom room = lobby.getRoom(id);
+                String r = room.getId() + ";" + room.getName() + ";" + room.getDifficulty() + ";" + room.getMaxPlayers() + ";";
+                response.addData(r);
             }
             client.sendPacket(response);
         }

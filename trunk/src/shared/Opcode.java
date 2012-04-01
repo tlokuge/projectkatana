@@ -28,6 +28,7 @@ public enum Opcode
     S_BAD_LOCATION,
     S_ROOM_CREATE_OK,
     S_ROOM_CREATE_NO,
+    S_ROOM_DESTROY,
     S_ROOM_LIST,
     S_ROOM_PLAYER_JOIN,
     S_ROOM_JOIN_OK,
