@@ -2,76 +2,79 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:orientation="horizontal" 
     android:padding="20dp"
-    android:orientation="horizontal"
-    android:background="#FFFFFF" 
-    android:weightSum="1.0">
+    android:background="#FFFFFF" >
 	
+    <Button android:id="@+id/b_create"
+		android:layout_width="100dp"
+	    android:layout_height="wrap_content" 
+	    android:layout_alignParentLeft="true"
+	    
+	    android:text="@string/b_create" />
+    
     <TextView android:id="@+id/l_realmname"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_marginBottom="10dp"
-                
-        android:gravity="center"
-        android:text="@string/realm_name"
-        android:textSize="30dp" />
+	    android:layout_width="300dp"
+	    android:layout_height="wrap_content"
+    	android:layout_toRightOf="@id/b_create"
+		android:gravity="center"
+		
+	    android:textSize="35dp"
+	    android:text="@string/l_realmname" />
     
-    <!-- Left side -->
-    <LinearLayout android:id="@+id/lobby_left"
-        android:layout_width="325dp"
-        android:layout_height="fill_parent"
-        android:layout_alignParentLeft="true"
-        android:layout_marginRight="10dp"
-        android:layout_below="@id/l_realmname">
+	<Button android:id="@+id/b_refresh"
+	    android:layout_width="100dp"
+	    android:layout_height="wrap_content" 
+	    android:layout_alignParentRight="true"
+	    
+	    android:text="@string/b_refresh" 
+	    android:onClick="refreshList" />  
+	    
+	<GridView android:id="@+id/gv_roomslist"
+	    android:layout_width="330dp"
+	    android:layout_height="fill_parent"
+	    android:layout_alignParentLeft="true"
+	    android:layout_below="@id/b_create"	
+	    android:layout_marginTop="10dp"
         
-        <ListView android:id="@+id/list_roomslist"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            
-            android:choiceMode="singleChoice">         
-        </ListView>
-    </LinearLayout>
-    
-    <!-- Right side -->
-    <RelativeLayout android:id="@+id/lobby_right"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_toRightOf="@id/lobby_left"
-        android:layout_alignTop="@id/lobby_left"
-        android:layout_alignParentRight="true" >
-        
-        <Button android:id="@+id/b_join"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            
-            android:text="@string/b_join" />
-        
-        <Button android:id="@+id/b_create"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:layout_below="@id/b_join"
-            
-            android:text="@string/b_create" />
-        
-        <Button android:id="@+id/b_refresh"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:layout_below="@id/b_create"
-            
-            android:text="@string/b_refresh" 
-            
-            android:onClick="refreshList"/>
-        
-        <Button android:id="@+id/b_leaderboard"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/b_refresh"
-            
-            android:text="@string/b_leaderboard" />
-    </RelativeLayout>
-
+        android:listSelector="@null"
+	    android:padding="0dp"
+	    android:clipChildren="true"
+	    android:numColumns="3"
+	    android:verticalSpacing="10dp"
+	   	android:horizontalSpacing="10dp"
+	    android:columnWidth="100dp"
+	    android:stretchMode="none" />
+	
+	<RelativeLayout
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"
+	    android:layout_alignParentRight="true"
+	    android:layout_toRightOf="@id/gv_roomslist"
+	    android:layout_below="@id/b_create"
+	    android:layout_marginLeft="15dp"
+	    android:layout_marginTop="10dp"
+	    android:orientation="vertical" >
+	        
+	    <TextView android:id="@+id/l_roomname"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content" 
+		    android:layout_alignParentTop="true" />
+	       	
+	    <TextView android:id="@+id/l_difficulty"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content" 
+		    android:layout_below="@id/l_roomname"/>
+	       	
+	    <TextView android:id="@+id/l_maxplayer"
+			android:layout_width="fill_parent"
+		    android:layout_height="wrap_content" 
+		    android:layout_below="@id/l_difficulty"/>
+	        
+	    <Button android:id="@+id/b_join"
+	        android:layout_width="fill_parent"
+	        android:layout_height="80dp"
+	        android:layout_alignParentBottom="true"
+	        android:text="@string/b_join" />	     
+	</RelativeLayout>
 </RelativeLayout>
