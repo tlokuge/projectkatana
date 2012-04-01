@@ -26,6 +26,9 @@ public abstract class Unit
         this.atk_damage = atk_damage;
         this.move_speed = move_speed;
         this.model_id   = model_id;
+        
+        System.out.println("USER [" + id + ", " + name + "]");
+        
     }
     
     public void setId(int id)        { this.id = id; }

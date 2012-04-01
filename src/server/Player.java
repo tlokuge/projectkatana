@@ -8,6 +8,8 @@ public class Player extends Unit
     
     private int class_id;
     
+    private int location;
+    
     private int room_id;
     private boolean is_room_leader;
     
@@ -16,7 +18,7 @@ public class Player extends Unit
         super(id, name, max_health, atk_speed, atk_damage, move_speed, model_id);
         
         this.client = client;
-        
+    
         room_id = -1;
         is_room_leader = false;
     }
@@ -28,6 +30,9 @@ public class Player extends Unit
     
     public void setClass(int class_id) { this.class_id = class_id; }
     public int getClassId()            { return class_id; }
+    
+    public void setLocation(int id)     { this.location = id; }
+    public int getLocation()            { return location; }
     
     public void addToRoom(int room)    { this.room_id = room; }
     public void removeFromRoom()       { this.room_id = -1; }

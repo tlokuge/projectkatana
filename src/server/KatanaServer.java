@@ -3,6 +3,7 @@ package server;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 import shared.Constants;
 
 public class KatanaServer implements Runnable
@@ -14,16 +15,19 @@ public class KatanaServer implements Runnable
     
     private ArrayList<KatanaClient> waitingClients;
     private HashMap<Integer, Player> players;
+    private HashMap<Integer, Lobby> lobbies;
+    
     private static KatanaServer instance;
     
     private KatanaServer(int port)
     {
-        listener = null;
+        listener  = null;
         this.port = port;
-        cache = new SQLCache();
+        cache     = new SQLCache();
         
         waitingClients = new ArrayList<KatanaClient>();
-        players = new HashMap<Integer, Player>();
+        players        = new HashMap<Integer, Player>();
+        lobbies        = new HashMap<Integer, Lobby>();
         
         thread = new Thread(this, "KatanaServer-Thread");
         thread.start();
@@ -74,30 +78,19 @@ public class KatanaServer implements Runnable
         return instance;
     }
     
-    public void addWaitingClient(KatanaClient client)
-    {
-        waitingClients.add(client);
-    }
+    public void addWaitingClient(KatanaClient client)       { waitingClients.add(client); }
+    public void removeWaitingClient(KatanaClient client)    { waitingClients.remove(client); }
+    public ArrayList<KatanaClient> getWaitingClients() { return waitingClients; }
     
-    public void removeWaitingClient(KatanaClient client)
-    {
-        waitingClients.remove(client);
-    }
+    public void addPlayer(int id, Player player){ players.put(id, player); }
+    public Player getPlayer(int id)             { return players.get(id); }
+    public void removePlayer(int id)            { players.remove(id); }
+    public HashMap<Integer, Player> getPlayers(){ return players; }
     
-    public void addPlayer(int id, Player player)
-    {
-        players.put(id, player);
-    }
-    
-    public Player getPlayer(int id)
-    {
-        return players.get(id);
-    }
-    
-    public void removePlayer(int id)
-    {
-        players.remove(id);
-    }
+    public void addLobby(int id, Lobby lobby)   { lobbies.put(id, lobby); }
+    public Lobby getLobby(int id)               { return lobbies.get(id); }
+    public HashMap<Integer, Lobby> getLobbies() { return lobbies; }
+    public Set<Integer> getLocationIDs()        { return lobbies.keySet(); }
     
     public void listenLoop()
     {
@@ -118,7 +111,4 @@ public class KatanaServer implements Runnable
     }
     
     public int getPort() { return port; }
-    
-    public ArrayList<KatanaClient> getWaitingClients() { return waitingClients; }
-    public HashMap<Integer, Player> getPlayers()       { return players; }
 }
