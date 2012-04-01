@@ -1,8 +1,10 @@
 package com.katana.splash;
 
-import shared.KatanaConstants;
-import shared.KatanaPacket;
-import shared.Opcode;
+import katana.services.KatanaService;
+import katana.services.KatanaService.LocalBinder;
+import katana.shared.KatanaConstants;
+import katana.shared.KatanaPacket;
+import katana.shared.Opcode;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -12,11 +14,10 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import com.katana.splash.KatanaService.LocalBinder;
 
 public class LoginActivity extends Activity {
 	// Service Vars
@@ -43,21 +44,34 @@ public class LoginActivity extends Activity {
     	cpasField = (EditText)findViewById(R.id.cpassword);
     }
        
-    /** Final cleanup when activity is finished */
+    /** Called when the activity is paused. */
+    protected void onPause() {
+    	super.onPause();
+        // Unbind KatanaService and Receiver
+    	doUnbindService();
+    }
+    
+    /** Called when the activity is destroyed. */
     @Override
     protected void onDestroy() {
         super.onDestroy();
-     // Unbind KatanaService and Receiver
-        doUnbindService();
+    }
+    
+    /** Called when android back button is pressed. */
+    @Override
+	public void onBackPressed() {
+    	super.onBackPressed();
+    	Log.d("CDA", "onBackPressed Called");
+    	KatanaPacket packet = new KatanaPacket(0, Opcode.C_LOGOUT);
+    	katanaService.sendPacket(packet);
     }
     
     /** Disconnect from KatanaService */
     private void doUnbindService() {
-        if (mBound) {
+        if (mBound) {       	
             // Detach our existing connection and broadcast receiver
-            unbindService(mConnection);
-            unregisterReceiver(broadcastReceiver);
-            stopService( new Intent(LoginActivity.this, KatanaService.class) );
+            unbindService(katanaConnection);
+            unregisterReceiver(katanaReceiver);
             mBound = false;
         }
     }
@@ -86,6 +100,7 @@ public class LoginActivity extends Activity {
     	}
     }
     
+    /** Input validation functions */
     private void inputShort(String user, String pass, String cpas){
     	// Area to expand on invalid input cases for more customized User Interface
     	Toast.makeText(getApplicationContext(), "Check input fields!", Toast.LENGTH_SHORT).show();
@@ -106,17 +121,19 @@ public class LoginActivity extends Activity {
     
     /** Connect to KatanaService **/
     private void doBindService() {
+    	mBound = true;
         Intent intent = new Intent(this,KatanaService.class);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-        registerReceiver(broadcastReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
+        bindService(intent, katanaConnection, Context.BIND_AUTO_CREATE);
+        registerReceiver(katanaReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
     }
     
-    private ServiceConnection mConnection = new ServiceConnection() {
+    private ServiceConnection katanaConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             LocalBinder binder = (LocalBinder) service;
             katanaService = binder.getService();
+            System.out.println(katanaService);
             mBound = true;
         }
         @Override
@@ -126,7 +143,7 @@ public class LoginActivity extends Activity {
     };
     
     /** on Receive broadcast from KatanaService **/
-    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver katanaReceiver = new BroadcastReceiver() {
     	@Override
     	public void onReceive(Context context, Intent intent) {
     		if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_REG_OK.name())){

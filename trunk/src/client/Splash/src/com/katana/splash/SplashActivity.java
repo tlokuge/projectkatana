@@ -1,8 +1,10 @@
 package com.katana.splash;
 
-import shared.KatanaConstants;
-import shared.KatanaPacket;
-import shared.Opcode;
+import katana.services.KatanaService;
+import katana.services.KatanaService.LocalBinder;
+import katana.shared.KatanaConstants;
+import katana.shared.KatanaPacket;
+import katana.shared.Opcode;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -14,8 +16,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
-
-import com.katana.splash.KatanaService.LocalBinder;
+import android.util.Log;
 
 public class SplashActivity extends Activity {
 
@@ -24,6 +25,18 @@ public class SplashActivity extends Activity {
 	// KatanaService
 	KatanaService katanaService;
 	boolean mBound = false;
+	
+	
+	/** Android hardware buttons */
+	// Called on android back button pressed
+	@Override 
+	public void onBackPressed() {
+		super.onBackPressed();
+		Log.d("CDA", "onBackPressed Called"); 
+		KatanaPacket packet = new KatanaPacket(0, Opcode.C_LOGOUT);
+		katanaService.sendPacket(packet);
+	}
+	
 	
     /** Called when the activity is first created. */
     @Override
@@ -36,7 +49,8 @@ public class SplashActivity extends Activity {
 			public void run() {     
         		Looper.myLooper().prepare();
         		try {
-        			sleep(3000);
+    				doBindService();
+        			sleep(5000);
         			
         			// Check preferences file for stored user/pass
         			pref = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE);
@@ -57,27 +71,34 @@ public class SplashActivity extends Activity {
         };
         
         splashTimer.start();
-        
-        // Bind to KatanaService
-        doBindService();
-        
+    }
+    
+    /** Called when the activity is paused. */
+    @Override
+    protected void onPause() {
+    	super.onPause();
+        // Unbind KatanaService and Receiver
+        doUnbindService();
+    }
+    
+    /** Called when the activity is stopped. */
+    @Override
+    protected void onStop() {
+    	super.onStop();
     }
     
     /** Final cleanup when activity is finished */
     @Override
     protected void onDestroy() {
         super.onDestroy();
-     // Unbind KatanaService and Receiver
-        doUnbindService();
     }
     
     /** Disconnect from KatanaService */
     private void doUnbindService() {
         if (mBound) {
             // Detach our existing connection and broadcast receiver
-            unbindService(mConnection);
-            unregisterReceiver(broadcastReceiver);
-            stopService(new Intent(SplashActivity.this,KatanaService.class));
+            unbindService(katanaConnection);
+            unregisterReceiver(katanaReceiver);
             mBound = false;
         }
     }
@@ -92,13 +113,14 @@ public class SplashActivity extends Activity {
     
     /** Connect to KatanaService */
     private void doBindService() {
+    	mBound = true;
         Intent intent = new Intent(this,KatanaService.class);
         startService(intent);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-        registerReceiver(broadcastReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
+        bindService(intent, katanaConnection, Context.BIND_AUTO_CREATE);
+        registerReceiver(katanaReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
     }
 
-    private ServiceConnection mConnection = new ServiceConnection() {
+    private ServiceConnection katanaConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
@@ -114,7 +136,7 @@ public class SplashActivity extends Activity {
     };
     
     /** on Receive broadcast from KatanaService */
-    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver katanaReceiver = new BroadcastReceiver() {
     	@Override
     	public void onReceive(Context context, Intent intent) {
     		if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_AUTH_OK.name())){

@@ -37,8 +37,8 @@
             android:theme="@android:style/Theme.Black.NoTitleBar" >            
         </activity>
         
-        <service android:enabled="true" android:name=".KatanaService" />
-        <receiver android:enabled="true" android:name=".Receiver"></receiver>
+        <service android:enabled="true" android:name="katana.services.KatanaService" />
+        <receiver android:enabled="true" android:name=".KatanaReceiver"></receiver>
     </application>
     
 	

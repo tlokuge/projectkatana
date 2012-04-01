@@ -17,11 +17,11 @@
     <string name="b_close">Close</string>
     
     <!-- Select room lobby strings -->
-    <string name="realm_name">Realm Name</string>
+    <string name="l_realmname">Realm Name</string>
     <string name="b_join">Join</string>
-    <string name="b_create">Create Room</string>
+    <string name="b_create">New Room</string>
     <string name="b_refresh">Refresh</string>
-	<string name="b_leaderboard">Leaderboard</string>
+	<string name="l_info">Info!</string>
 
 	
 	<!-- Class select dialog strings -->
@@ -47,4 +47,7 @@
 	
 	<!-- Waiting room strings -->
 	<string name="l_wroomname">Waiting Room Name</string>
+	<string name="l_wroomdiff">Difficulty</string>
+	<string name="b_start">Start!</string>
+	<string name="icon">Class Icon</string>
 </resources>
