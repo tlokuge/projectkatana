@@ -74,7 +74,7 @@ public abstract class PacketHandler
     {
         System.out.println("handleLogoutPacket: INCOMPLETE");
         // Database stuff?
-        client.remove();
+        client.remove(true);
     }
     
     // Packet data format expected to be username / password / location
@@ -172,10 +172,21 @@ public abstract class PacketHandler
         // what should we do in here
     }
     
-    // Data format: Location ID, difficulty, max_players
+    // Data format: name, difficulty, max_players
     private static void handleRoomCreatePacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handleRoomCreatePacket: INCOMPLETE");
+        // Make sure player is in a valid lobby
+        Player pl = client.getPlayer();
+        if(pl.getLocation() < 0)
+        {
+            System.err.println("handleRoomCreatePacket: " + pl + " not in a lobby");
+            // Response
+            KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_NO);
+            client.sendPacket(response);
+            return;
+        }
+        
         String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
         if(data.length < 3)
         {
@@ -187,14 +198,13 @@ public abstract class PacketHandler
         }
         
         String name;
-        int loc_id, difficulty, max_players;
+        int difficulty, max_players;
         
         try
         {
             name = data[0].trim();
-            loc_id = Integer.parseInt(data[1].trim());
-            difficulty = Integer.parseInt(data[2].trim());
-            max_players = Integer.parseInt(data[3].trim());
+            difficulty = Integer.parseInt(data[1].trim());
+            max_players = Integer.parseInt(data[2].trim());
         }
         catch(NumberFormatException ex)
         {
@@ -216,17 +226,17 @@ public abstract class PacketHandler
         }
         
         SQLHandler sql = SQLHandler.instance();
-        Lobby lobby = KatanaServer.instance().getLobby(loc_id);
+        Lobby lobby = KatanaServer.instance().getLobby(pl.getLocation());
         if(lobby == null) // Do we even need to check?
         {
-            System.err.println("handleRoomCreatePacket: location id (" + loc_id + ") is invalid");
+            System.err.println("handleRoomCreatePacket: location id (" + pl.getLocation() + ") is invalid");
             // Response
             KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_NO);
             client.sendPacket(response);
             return;
         }
         
-        sql.executeQuery("INSERT INTO `rooms` (`name`, `location_id`, `difficulty`, `max_players`, `leader`) VALUES (" + name + "," + loc_id + "," + difficulty + "," + max_players + "," + client.getId() + ");");
+        sql.executeQuery("INSERT INTO `rooms` (`room_name`, `location_id`, `difficulty`, `max_players`, `leader`) VALUES ('" + name + "'," + pl.getLocation() + "," + difficulty + "," + max_players + "," + client.getId() + ");");
         
         ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `room_id` FROM `rooms` WHERE `leader` = " + client.getId() + ";");
         if(results == null || results.isEmpty())
@@ -238,11 +248,10 @@ public abstract class PacketHandler
         }
         
         int room_id = (Integer)results.get(0).get("room_id");
-        Player pl = client.getPlayer();
         pl.addToRoom(room_id);
         pl.setRoomLeader(true);
         
-        KatanaServer.instance().getLobby(loc_id).addRoom(new GameRoom(room_id, name, difficulty, max_players, pl));
+        lobby.addRoom(new GameRoom(room_id, name, difficulty, max_players, pl));
         
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_OK);
         client.sendPacket(response);
@@ -407,7 +416,7 @@ public abstract class PacketHandler
                 
                 System.out.println(lat + " - " + latitude + " = " + Math.abs(lat - latitude));
                 System.out.println(lng + " - " + longitude + " = " + Math.abs(lng - longitude));
-                
+                System.out.println("radius: " + radius);
                 if((Math.abs(lat - latitude) < radius) && (Math.abs(lng - longitude) < radius))
                 {
                     loc_id = lobby.getLocationId();
@@ -434,9 +443,18 @@ public abstract class PacketHandler
             response.addData(name);
             
             Set<Integer> room_ids = lobby.getRoomIds();
+            if(room_ids == null)
+                return;
+            
             for(int id : room_ids)
             {
                 GameRoom room = lobby.getRoom(id);
+                if(room == null)
+                {
+                    System.err.println("Room ID: " + id + " is null");
+                    continue;
+                }
+                System.out.println(room);
                 String r = room.getId() + ";" + room.getName() + ";" + room.getDifficulty() + ";" + room.getMaxPlayers() + ";";
                 response.addData(r);
             }
@@ -476,7 +494,7 @@ public abstract class PacketHandler
             return; 
         }
         
-        if(KatanaServer.instance().getCache().getClass(class_id) == null)
+        if(SQLCache.getClass(class_id) == null)
         {
             System.err.println("handleClassChangePacket: Class not found");
             // Response?

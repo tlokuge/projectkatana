@@ -10,6 +10,7 @@ public abstract class Constants
     public final static String CONFIG_SQL_USERNAME = "SQL_USERNAME";
     public final static String CONFIG_SQL_PASSWORD = "SQL_PASSWORD";
     public final static String CONFIG_PING_INTERVAL= "PING_INTERVAL";
+    public final static String CONFIG_UPDATE_DIFF  = "UPDATE_DIFF";
     public final static String CONFIG_SERVER_PORT  = "SERVER_PORT";
     
     /** KatanaPacket **/

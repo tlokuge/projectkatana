@@ -1,6 +1,5 @@
 package server;
 
-
 import com.mysql.jdbc.ResultSetMetaData;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import shared.Constants;
-
 
 public class SQLHandler
 {
@@ -82,7 +80,7 @@ public class SQLHandler
         }
     }
     
-    public static SQLHandler instance() 
+    public synchronized static SQLHandler instance() 
     {
         if(instance == null)
         {

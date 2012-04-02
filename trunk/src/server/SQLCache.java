@@ -2,69 +2,14 @@ package server;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
 
-public class SQLCache
+public abstract class SQLCache
 {
-    class Class
-    {
-        private int class_id;
-        private String class_name;
-        private int spell[] = new int[4];
-        private int model_id = 0;
-        
-        public Class(int class_id, String class_name, int spell1, int spell2, int spell3, int spell4, int model_id)
-        {
-            this.class_id = class_id;
-            this.class_name = class_name;
-            this.spell[0] = spell1;
-            this.spell[1] = spell2;
-            this.spell[2] = spell3;
-            this.spell[3] = spell4;
-            this.model_id = model_id;
-        }
-        
-        public int getId() { return class_id; }
-        public String getName() { return class_name; }
-        public int getSpell1() { return spell[0]; }
-        public int getSpell2() { return spell[1]; }
-        public int getSpell3() { return spell[2]; }
-        public int getSpell4() { return spell[3]; }
-        public int getModelId(){ return model_id; }
-        
-    }
+    private static HashMap<Integer, PlayerClassTemplate> class_map = new HashMap<>();
+    private static HashMap<Integer, SpellTemplate> spell_map = new HashMap<>();
     
-    class Spell
-    {
-        private int spell_id;
-        private String spell_name;
-        private int damage;
-        private int cooldown;
-        
-        public Spell(int spell_id, String spell_name, int damage, int cooldown)
-        {
-            this.spell_id = spell_id;
-            this.spell_name = spell_name;
-            this.damage = damage;
-            this.cooldown = cooldown;
-        }
-        
-        public int getId()      { return spell_id; }
-        public String getName() { return spell_name; }
-        public int getDamage()  { return damage; }
-        public int getCooldown(){ return cooldown; }
-    }
-    
-    private HashMap<Integer, Class> class_map;
-    private HashMap<Integer, Spell> spell_map;
-    
-    public SQLCache()
-    {
-        class_map    = new HashMap<Integer, Class>();
-        spell_map    = new HashMap<Integer, Spell>();
-    }
-    
-    public void createCache()
+    public SQLCache() {}
+    public static void createCache()
     {
         cacheLocations();
         cacheSpells();
@@ -72,13 +17,13 @@ public class SQLCache
         cacheCreatures();
     }
     
-    public int getTotalClasses()    { return class_map.size(); }
-    public int getTotalSpells()     { return spell_map.size(); }
-    public Class getClass(int id)       { return class_map.get(id); }
-    public Spell getSpell(int id)       { return spell_map.get(id); }
+    public static int getTotalClasses()    { return class_map.size(); }
+    public static int getTotalSpells()     { return spell_map.size(); }
+    public static PlayerClassTemplate getClass(int id) { return class_map.get(id); }
+    public static SpellTemplate getSpell(int id)       { return spell_map.get(id); }
     
     
-    private void cacheLocations()
+    private static void cacheLocations()
     {
         ProgressBar bar = new ProgressBar();
         
@@ -106,7 +51,7 @@ public class SQLCache
         System.out.println("Loaded " + results.size() + " locations");
     }
     
-    private void cacheSpells()
+    private static void cacheSpells()
     {
         spell_map.clear();
         
@@ -128,14 +73,14 @@ public class SQLCache
             int damage = (Integer)map.get("damage");
             int cooldown = (Integer)map.get("cooldown");
             
-            spell_map.put(id, new Spell(id, name, damage, cooldown));
+            spell_map.put(id, new SpellTemplate(id, name, damage, cooldown));
             bar.update(i, results.size());
         }
         
         System.out.println("Loaded " + spell_map.size() + " spells");
     }
     
-    private void cacheClasses()
+    private static void cacheClasses()
     {
         class_map.clear();
         
@@ -160,14 +105,14 @@ public class SQLCache
             int spell_4 = (Integer)map.get("spell_4");
             int model   = (Integer)map.get("model_id");
             
-            class_map.put(id, new Class(id, name, spell_1, spell_2, spell_3, spell_4, model));
+            class_map.put(id, new PlayerClassTemplate(id, name, spell_1, spell_2, spell_3, spell_4, model));
             bar.update(i, results.size());
         }
         
         System.out.println("Loaded " + class_map.size() + " classes");
     }
     
-    private void cacheCreatures()
+    private static void cacheCreatures()
     {
         System.out.println("Loaded 0 creatures");
     }
