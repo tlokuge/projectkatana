@@ -50,12 +50,13 @@ public class KatanaClient implements Runnable
     public Player getPlayer() { return player; }
     public int getId()        { return id; }
     
-    public void remove()
+    public void remove(boolean logout)
     {
         System.out.println("Removing client " + id);
         try
         {
-            sendPacket(new KatanaPacket(-1, Opcode.S_LOGOUT));
+            if(logout)
+                sendPacket(new KatanaPacket(-1, Opcode.S_LOGOUT));
             client.close();
             KatanaServer.instance().removePlayer(id);
             thread.interrupt();
@@ -83,12 +84,12 @@ public class KatanaClient implements Runnable
         catch(SocketException ex)
         {
             System.out.println("KatanaClient: Received SocketException - " + ex.getLocalizedMessage() + " - Removing client: " + id);
-            remove();
+            remove(false);
         }
         catch(Exception ex)
         {
             ex.printStackTrace();
-            remove();
+            remove(false);
         }
     }
     
@@ -107,12 +108,12 @@ public class KatanaClient implements Runnable
             {
                 System.out.println("[" + packet.getPacketId() + " - " + packet.getOpcode().name() + "] <== [CLIENT " + id + "]");
                 if(PacketHandler.handlePacket(this, packet))
-                    remove();
+                    remove(true);
             }
         }
         catch(Exception ex)
         {
-            remove();
+            remove(true);
             ex.printStackTrace();
         }
     }
@@ -131,7 +132,7 @@ public class KatanaClient implements Runnable
         {
             super.finalize();
             System.out.println("ClientWorker: Closing socket: " + client);
-            remove();
+            remove(true);
         }
         catch(Exception ex)
         {

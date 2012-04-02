@@ -23,6 +23,8 @@ public class ServerMain
         
         PingServer ping = new PingServer(
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_PING_INTERVAL)));
+        UpdateThread update = new UpdateThread(
+                Integer.parseInt(Config.getConfig(Constants.CONFIG_UPDATE_DIFF)));
     }
     
     // Remove this method, just for testing

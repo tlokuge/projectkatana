@@ -11,7 +11,6 @@ public class KatanaServer implements Runnable
     private ServerSocket listener;
     private int port;
     private Thread thread;
-    private SQLCache cache;
     
     private ArrayList<KatanaClient> waitingClients;
     private HashMap<Integer, Player> players;
@@ -23,7 +22,6 @@ public class KatanaServer implements Runnable
     {
         listener  = null;
         this.port = port;
-        cache     = new SQLCache();
         
         waitingClients = new ArrayList<KatanaClient>();
         players        = new HashMap<Integer, Player>();
@@ -33,8 +31,7 @@ public class KatanaServer implements Runnable
         thread.start();
     }
     
-    public void loadCache()    { cache.createCache(); }
-    public SQLCache getCache() { return cache; }
+    public void loadCache()    { SQLCache.createCache(); }
     
     public void run() 
     { 
@@ -67,7 +64,7 @@ public class KatanaServer implements Runnable
             instance = new KatanaServer(port);
     }
     
-    public static KatanaServer instance()
+    public synchronized static KatanaServer instance()
     {
         if(instance == null)
         {
