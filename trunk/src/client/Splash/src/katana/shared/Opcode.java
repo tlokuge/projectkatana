@@ -28,6 +28,7 @@ public enum Opcode
     S_BAD_LOCATION,
     S_ROOM_CREATE_OK,
     S_ROOM_CREATE_NO,
+    S_ROOM_DESTROY,
     S_ROOM_LIST,
     S_ROOM_PLAYER_JOIN,
     S_ROOM_JOIN_OK,
@@ -40,7 +41,8 @@ public enum Opcode
     S_UPDATE_SYNC,
     S_UPDATE_SPELL,
     S_UPDATE_MOVE,
-    S_UPDATE_DAMAGE,
+    S_UPDATE_DAMAGE_TAKEN,
+    S_UPDATE_DAMAGE_DONE,
     S_GAME_END;
     
     public static Opcode getOpcode(int code)
