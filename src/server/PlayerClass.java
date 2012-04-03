@@ -37,18 +37,21 @@ public class PlayerClass
         return null;
     }
     
-    public void cooldown_spell(Spell spell)
+    public void cooldown_spell(Spell spell, int diff)
     {
         if(spell != null && spell.getCooldown() > 0)
-            if(spell.getCooldown() < spell.getCooldownTimer())
+        {
+            spell.setCooldown(spell.getCooldown() - diff);
+            if(spell.getCooldown() <= diff)
                 spell1.setCooldown(0);
+        }
     }
     
     public void update(int diff)
     {
-        cooldown_spell(spell1);
-        cooldown_spell(spell2);
-        cooldown_spell(spell3);
-        cooldown_spell(spell4);
+        cooldown_spell(spell1, diff);
+        cooldown_spell(spell2, diff);
+        cooldown_spell(spell3, diff);
+        cooldown_spell(spell4, diff);
     }
 }

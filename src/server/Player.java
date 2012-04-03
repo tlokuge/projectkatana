@@ -1,6 +1,7 @@
 package server;
 
 import shared.KatanaPacket;
+import shared.Opcode;
 
 public class Player extends Unit
 {
@@ -57,5 +58,56 @@ public class Player extends Unit
             return;
         
         m_class.update(diff);
+    }
+
+    @Override
+    public void onHealReceived(int heal, Unit healer) 
+    {
+        KatanaPacket packet = new KatanaPacket(-1, Opcode.S_UPDATE_DAMAGE_TAKEN);
+        packet.addData(getId() + "");
+        packet.addData(heal + "");
+        // broadcastToMap(packet);
+    }
+
+    @Override
+    public void onDamageTaken(int damage, Unit attacker) 
+    {
+        KatanaPacket packet = new KatanaPacket(-1, Opcode.S_UPDATE_DAMAGE_TAKEN);
+        packet.addData(getId() + "");
+        packet.addData(damage + "");
+        // broadcastToMap(packet);
+    }
+
+    @Override
+    public void onSpellHit(Spell spell, Unit caster) 
+    {
+        // Anything necessary?
+    }
+    
+    @Override
+    public void onSpellCast(Spell spell, Unit target)
+    {
+        KatanaPacket packet = new KatanaPacket(-1, Opcode.S_UPDATE_SPELL);
+        packet.addData(getId() + "");
+        packet.addData(spell.getId() + "");
+        // broadcastToMap(packet);
+    }
+    
+    @Override
+    public void onDeath(Unit killer)
+    {
+        // TODO
+    }
+
+    @Override
+    public void onDamageDeal(int damage, Unit target, Spell spell, boolean is_auto_attack) 
+    {
+        if(spell == null)
+        {
+            KatanaPacket packet = new KatanaPacket(-1, Opcode.S_UPDATE_DAMAGE_DONE);
+            packet.addData(target.getId() + "");
+            packet.addData(damage + "");
+            // broadcastToMap(packet);
+        }
     }
 }
