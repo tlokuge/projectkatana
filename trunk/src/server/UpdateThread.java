@@ -17,7 +17,6 @@ public class UpdateThread implements Runnable
     
     public void updateLoop()
     {
-        System.out.println("updateLoop: " + System.currentTimeMillis());
         HashMap<Integer, Player> players = KatanaServer.instance().getPlayers();
         for(Integer i : players.keySet())
             players.get(i).update(diff);

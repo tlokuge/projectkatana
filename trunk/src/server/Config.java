@@ -28,6 +28,7 @@ public abstract class Config
                 System.out.println("Loaded: [" + split[0].toUpperCase().trim() + " - '" + split[1].trim() + "']");
                 config_map.put(split[0].toUpperCase().trim(), split[1].trim());
             }
+            scan.close();
             System.out.println("Config Loaded");
         }
         catch(Exception ex)

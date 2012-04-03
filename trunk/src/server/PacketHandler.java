@@ -77,7 +77,7 @@ public abstract class PacketHandler
         client.remove(true);
     }
     
-    // Packet data format expected to be username / password / location
+    // Packet data format expected to be username / password
     private static void handleRegisterPacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handleRegisterPacket: INCOMPLETE");
@@ -134,7 +134,7 @@ public abstract class PacketHandler
         player.sendPacket(response);
     }
     
-    // Data format: username, password, location
+    // Data format: username, password
     private static void handleLoginPacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handleLoginPacket: INCOMPLETE");
@@ -148,7 +148,7 @@ public abstract class PacketHandler
             return;
         }
         
-        String username = data[0];
+        String username = data[0].trim();
         String password = data[1];
         
         System.out.println("handleLoginPacket: User [" + username + "] logged in");
@@ -385,6 +385,7 @@ public abstract class PacketHandler
             p.sendPacket(notify);
     }
     
+    // latitude, longitude
     public static void handleRoomListPacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handleRoomListPacket: INCOMPLETE");
@@ -467,13 +468,13 @@ public abstract class PacketHandler
         }
     }
     
-    // Class ID, Room ID
+    // Class ID
     public static void handleClassChangePacket(KatanaClient client, KatanaPacket packet)
     {
         System.out.println("handleClassChangePacket: INCOMPLETE");
         
         String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
-        if(data.length < 2)
+        if(data.length < 1)
         {
             System.err.println("handleClassChangePacket: Invalid data [ " + packet.getData() + "]");
             // Response?
@@ -481,13 +482,11 @@ public abstract class PacketHandler
         }
         
         int class_id;
-        int room_id;
         try
         {
             class_id = Integer.parseInt(data[0].trim()); 
-            room_id  = Integer.parseInt(data[1].trim());
         }
-        catch(NumberFormatException ex) 
+        catch(NumberFormatException ex)
         {
             System.err.println("handleClassChangePacket: " + ex.getLocalizedMessage());
             // Response?
@@ -500,6 +499,18 @@ public abstract class PacketHandler
             // Response?
             return;
         }
+        
+        Player pl = client.getPlayer();
+        pl.setClass(class_id);
+        
+        int room_id = pl.getRoom();
+        GameRoom room = KatanaServer.instance().getLobby(pl.getLocation()).getRoom(pl.getRoom());
+        
+        KatanaPacket notify = new KatanaPacket(-1, Opcode.S_PLAYER_UPDATE_CLASS);
+        notify.addData(pl.getId() + "");
+        notify.addData(class_id + "");
+        for(Player p : room.getPlayers())
+            p.sendPacket(notify);
         
         SQLHandler.instance().executeQuery("UPDATE `user_rooms` SET `class_id` = " + class_id + "WHERE `user_id` = " + client.getId() + " AND `room_id` = " + room_id + ";");
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_CLASS_CHANGE_OK);
