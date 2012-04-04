@@ -13,6 +13,8 @@ public class Room {
 		maxPlayer = p;
 	}
 	
+	public void setId(int i) { this.id = i; }
+	
 	public int getId(){
 		return id;
 	}

@@ -15,6 +15,7 @@ public abstract class KatanaConstants
 	public static final String PREFS_LOGIN = "UserPreferences";
 	public static final String LOGIN_USER = "username";
 	public static final String LOGIN_PASS = "password";
+	public static final String PLAYER_ID = "PlayerId";
 	
 	// Game Preferences
 	public static final String PREFS_GAME = "GamePreferences";
