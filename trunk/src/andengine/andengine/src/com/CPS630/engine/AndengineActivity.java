@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import org.anddev.andengine.engine.Engine;
 import org.anddev.andengine.engine.camera.Camera;
 import org.anddev.andengine.engine.handler.IUpdateHandler;
+import org.anddev.andengine.engine.handler.timer.ITimerCallback;
+import org.anddev.andengine.engine.handler.timer.TimerHandler;
 import org.anddev.andengine.engine.options.EngineOptions;
 import org.anddev.andengine.engine.options.EngineOptions.ScreenOrientation;
 import org.anddev.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
@@ -71,6 +73,7 @@ public class AndengineActivity extends BaseGameActivity {
     boolean bossTouched=false;
     
 	GestureDetector mGestureDetector;
+	ChangeableText elapsedText;
     
     /*protected int getLayoutID() {
             return R.layout.main;
@@ -123,16 +126,7 @@ public class AndengineActivity extends BaseGameActivity {
         final int centerX = (cameraWidth - this.mFaceTextureRegion.getWidth()) / 2;
         final int centerY = (cameraHeight - this.mFaceTextureRegion.getHeight()) / 2;
         
-        heli = new AnimatedSprite(100,100, this.mHeliTextureRegion){
-            @Override
-            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-                   // this.setPosition(pSceneTouchEvent.getX() - this.getWidth() / 2, pSceneTouchEvent.getY() - this.getHeight() / 2);
-                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-            			return true;
-            		}
-            		return false;
-            }
-        };
+        heli = new AnimatedSprite(100,100, this.mHeliTextureRegion);
         
         heli.setScale(2);
 
@@ -148,8 +142,7 @@ public class AndengineActivity extends BaseGameActivity {
             		return false;
             }
         };
-        
-        
+          
         boss = new AnimatedSprite(centerX, centerY, this.mDevilTextureRegion){
             @Override
             public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
@@ -161,7 +154,7 @@ public class AndengineActivity extends BaseGameActivity {
             }
         };
         
-        ChangeableText elapsedText = new ChangeableText(100, 160, this.mFont, "Test", "XXXXX".length());
+        elapsedText = new ChangeableText(100, 160, this.mFont, "Test", "Seconds elapsed: XXXXXXXXXXX".length());
         
         mGestureDetector = new GestureDetector(this, new GestureListener());
         
@@ -180,12 +173,12 @@ public class AndengineActivity extends BaseGameActivity {
         scene.attachChild(boss);
        // scene.registerUpdateHandler(detect);
         
-      /*  scene.registerUpdateHandler(new TimerHandler(1 / 20.0f, true, new ITimerCallback() {
+        scene.registerUpdateHandler(new TimerHandler(1 / 20.0f, true, new ITimerCallback() {
             public void onTimePassed(final TimerHandler pTimerHandler) {
-                    elapsedText.setText("Seconds elapsed: " + ChangeableTextExample.this.mEngine.getSecondsElapsedTotal());
+                    elapsedText.setText("Seconds elapsed: " + AndengineActivity.this.mEngine.getSecondsElapsedTotal());
                   
             }
-    }));*/
+    }));
 
         
         return scene;
@@ -242,8 +235,10 @@ public class AndengineActivity extends BaseGameActivity {
         float velocity = 480.0f / 1.0f; // 480 pixels / 1 sec
         realMoveDuration = length / velocity;
 
-        MoveModifier mod = new MoveModifier(realMoveDuration, curr_spriteX, dest_spriteX, curr_spriteY, dest_spriteY);
-        sprite.registerEntityModifier(mod.deepCopy());
+        if(!(offX==0 && offY==0)){
+	        MoveModifier mod = new MoveModifier(realMoveDuration, curr_spriteX, dest_spriteX, curr_spriteY, dest_spriteY);
+	        sprite.registerEntityModifier(mod.deepCopy());
+        }
   
     }
     
@@ -392,7 +387,7 @@ public class AndengineActivity extends BaseGameActivity {
 	boolean onSwipeUp() {
 		if(bossTouched){
 			Toast.makeText(AndengineActivity.this, "onSwipeUp", Toast.LENGTH_SHORT).show();
-			
+			elapsedText.setText("Water Atk");
 			return true;
 		}
 		else
@@ -402,7 +397,7 @@ public class AndengineActivity extends BaseGameActivity {
 	boolean onSwipeRight() {
 		Toast.makeText(AndengineActivity.this, "onSwipeRight", Toast.LENGTH_SHORT).show();	
 		if(bossTouched){
-			Toast.makeText(AndengineActivity.this, "onSwipeRight2", Toast.LENGTH_SHORT).show();	
+			elapsedText.setText("Fire Atk");	
 		}
 		return true;
 	}
@@ -410,6 +405,7 @@ public class AndengineActivity extends BaseGameActivity {
 	boolean onSwipeLeft() {
 		Toast.makeText(AndengineActivity.this, "onSwipeLeft", Toast.LENGTH_SHORT).show();
 		if(bossTouched){
+			elapsedText.setText("Wind Atk");	
 			attackAnimate(heli);	
 		}
 		return true;
@@ -417,6 +413,9 @@ public class AndengineActivity extends BaseGameActivity {
 
 	boolean onSwipeDown() {
 		Toast.makeText(AndengineActivity.this, "onSwipeDown", Toast.LENGTH_SHORT).show();
+		if(bossTouched){
+			elapsedText.setText("Earth Atk");	
+		}
 		return true;
 	}
 }
