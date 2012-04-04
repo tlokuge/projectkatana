@@ -1,5 +1,7 @@
 package com.CPS630.engine;
 
+import java.util.ArrayList;
+
 import org.anddev.andengine.engine.Engine;
 import org.anddev.andengine.engine.camera.Camera;
 import org.anddev.andengine.engine.handler.IUpdateHandler;
@@ -11,23 +13,33 @@ import org.anddev.andengine.entity.scene.Scene;
 import org.anddev.andengine.entity.scene.background.ColorBackground;
 import org.anddev.andengine.entity.sprite.AnimatedSprite;
 import org.anddev.andengine.entity.sprite.Sprite;
+import org.anddev.andengine.entity.text.ChangeableText;
+import org.anddev.andengine.entity.text.Text;
 import org.anddev.andengine.entity.util.FPSLogger;
 import org.anddev.andengine.input.touch.TouchEvent;
-import org.anddev.andengine.input.touch.detector.SurfaceGestureDetector;
+
+import org.anddev.andengine.opengl.font.Font;
+import org.anddev.andengine.opengl.font.FontManager;
 import org.anddev.andengine.opengl.texture.TextureOptions;
 import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.anddev.andengine.opengl.texture.region.TiledTextureRegion;
 import org.anddev.andengine.ui.activity.BaseGameActivity;
+import org.anddev.andengine.util.HorizontalAlign;
 
-import android.util.Log;
+import android.gesture.Gesture;
+import android.gesture.GestureLibrary;
+import android.gesture.GestureOverlayView;
+import android.gesture.GestureOverlayView.OnGesturePerformedListener;
+import android.gesture.Prediction;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.GestureDetector.OnGestureListener;
 import android.widget.Toast;
 
-public class AndengineActivity extends BaseGameActivity implements OnGestureListener{
+public class AndengineActivity extends BaseGameActivity {
 
     // ===========================================================
     // Fields
@@ -40,7 +52,7 @@ public class AndengineActivity extends BaseGameActivity implements OnGestureList
     private TiledTextureRegion mDevilTextureRegion;
     private TiledTextureRegion mProjectileTextureRegion;
     private TiledTextureRegion mHeliTextureRegion;
-    private boolean bossSelected=false;
+    
     float realMoveDuration;
     
     AnimatedSprite face;
@@ -48,11 +60,17 @@ public class AndengineActivity extends BaseGameActivity implements OnGestureList
     AnimatedSprite boss;
     AnimatedSprite face2;
     Sprite projectile;
-    private SurfaceGestureDetector spells;
     Scene scene = new Scene();
+    private GestureLibrary gestureLib;
+    
+    private BitmapTextureAtlas mFontTexture;
+    private Font mFont;
    
     int cameraWidth;
     int cameraHeight;
+    boolean bossTouched=false;
+    
+	GestureDetector mGestureDetector;
     
     /*protected int getLayoutID() {
             return R.layout.main;
@@ -74,6 +92,16 @@ public class AndengineActivity extends BaseGameActivity implements OnGestureList
 	}
 
     public void onLoadResources() {
+    	
+    	/* The font. */
+        this.mFontTexture = new BitmapTextureAtlas(256, 256, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+
+        this.mFont = new Font(this.mFontTexture, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32, true, Color.WHITE);
+
+        this.mEngine.getTextureManager().loadTexture(this.mFontTexture);
+        this.getFontManager().loadFont(this.mFont);
+        
+
     	this.mBitmapTextureAtlas = new BitmapTextureAtlas(512, 1024, TextureOptions.BILINEAR_PREMULTIPLYALPHA );
     	
         BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
@@ -87,19 +115,7 @@ public class AndengineActivity extends BaseGameActivity implements OnGestureList
     }
    
     public Scene onLoadScene() {
-    	
-    	//GestureOverlayView gestureOverlayView = new GestureOverlayView(this);
-		/*View inflate = getLayoutInflater().inflate(R.layout.main, null);
-		gestureOverlayView.addView(inflate);*/
-    	/*
-		gestureOverlayView.addOnGesturePerformedListener(this);
-		gestureLib = GestureLibraries.fromRawResource(this, R.raw.gestures);
-		if (!gestureLib.load()) {
-			finish();
-		}
-        setContentView(gestureOverlayView);
-        */
-    	//spells= new SpellDetector();
+
     	this.mEngine.registerUpdateHandler(new FPSLogger());
     	
         scene.setBackground(new ColorBackground(0.09804f, 0.6274f, 0.8784f));
@@ -110,8 +126,8 @@ public class AndengineActivity extends BaseGameActivity implements OnGestureList
         heli = new AnimatedSprite(100,100, this.mHeliTextureRegion){
             @Override
             public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-                   // this.setPosition(pSceneTouchEvent.getX() - this.getWidth() / 2, pSceneTouchEvent.getY() - this.getHeight() / 2);                   
-            	if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+                   // this.setPosition(pSceneTouchEvent.getX() - this.getWidth() / 2, pSceneTouchEvent.getY() - this.getHeight() / 2);
+                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
             			return true;
             		}
             		return false;
@@ -138,29 +154,40 @@ public class AndengineActivity extends BaseGameActivity implements OnGestureList
             @Override
             public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
                     if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-            			final float touchX = pSceneTouchEvent.getX();
-            			final float touchY = pSceneTouchEvent.getY();
-            			bossSelected=true;
-            			 attackAnimate(heli);
-            			//shootProjectile(touchX, touchY);
+            			bossTouched=true;
             			return true;
             		}
             		return false;
             }
         };
         
-        face.setScale(1);
+        ChangeableText elapsedText = new ChangeableText(100, 160, this.mFont, "Test", "XXXXX".length());
         
-        //spells = new GestureDetector(this);        
+        mGestureDetector = new GestureDetector(this, new GestureListener());
+        
+        face.setScale(1);
         scene.registerTouchArea(boss);
         scene.registerTouchArea(face);
         scene.registerTouchArea(heli);
-        scene.setTouchAreaBindingEnabled(true);  
+        
+        scene.setTouchAreaBindingEnabled(true); 
+   
+        scene.attachChild(elapsedText);
+
      //   createSpriteSpawnTimeHandler();
         scene.attachChild(heli);
         scene.attachChild(face);
         scene.attachChild(boss);
        // scene.registerUpdateHandler(detect);
+        
+      /*  scene.registerUpdateHandler(new TimerHandler(1 / 20.0f, true, new ITimerCallback() {
+            public void onTimePassed(final TimerHandler pTimerHandler) {
+                    elapsedText.setText("Seconds elapsed: " + ChangeableTextExample.this.mEngine.getSecondsElapsedTotal());
+                  
+            }
+    }));*/
+
+        
         return scene;
     }
 
@@ -169,6 +196,9 @@ public class AndengineActivity extends BaseGameActivity implements OnGestureList
 
     }
     
+    public FontManager getFontManager() {
+        	return this.mEngine.getFontManager();
+    }
     
     IUpdateHandler detect = new IUpdateHandler() {
 		public void reset() {
@@ -209,38 +239,19 @@ public class AndengineActivity extends BaseGameActivity implements OnGestureList
         
         float length = (float) Math.sqrt((offX * offX)
             + (offY * offY));
-        float velocity = 100.0f / 1.0f; // 480 pixels / 1 sec
+        float velocity = 480.0f / 1.0f; // 480 pixels / 1 sec
         realMoveDuration = length / velocity;
 
         MoveModifier mod = new MoveModifier(realMoveDuration, curr_spriteX, dest_spriteX, curr_spriteY, dest_spriteY);
         sprite.registerEntityModifier(mod.deepCopy());
   
     }
+    
     public boolean onTouchEvent(MotionEvent event) {
-    	System.out.println("");
-        int myEventAction = event.getAction(); 
-        
-        float dest_X = event.getX();
-        float dest_Y = event.getY();
-        
-        System.out.println("Move to: " + dest_X + ", " + dest_Y);
-        
-        switch (myEventAction) {
-           case MotionEvent.ACTION_DOWN:
-        	   	break;
-           case MotionEvent.ACTION_MOVE: {
-        	   	onScroll(event,event, event.getX()-dest_X, event.getY()-dest_Y);
-            	break;
-           }
-           case MotionEvent.ACTION_UP:{
-        	   if (!heli.isAnimationRunning()){
-        		   move(dest_X, dest_Y, heli);
-        		   runAnimate(heli, dest_X, dest_Y);
-        	   }
-                break;
-           }
-        }
-        return true;
+    	if (mGestureDetector.onTouchEvent(event))
+			return true;
+		else
+			return false;
     }
     
     public void attackAnimate(AnimatedSprite sprite) {
@@ -304,60 +315,109 @@ public class AndengineActivity extends BaseGameActivity implements OnGestureList
 			}
 		});
 	}
-
-	public boolean onDown(MotionEvent e) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
-			float velocityY) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public void onLongPress(MotionEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
-			float distanceY) {
-		if(distanceX>distanceY){
-			if(distanceX>0){
-				System.out.println("Left");
-				Toast.makeText(this,"Left",Toast.LENGTH_SHORT).show();
+	
+	class GestureListener extends GestureDetector.SimpleOnGestureListener {
+		@Override
+		public boolean onSingleTapUp(MotionEvent ev) {
+			
+			if(bossTouched){
+				bossTouched=false;				
 			}
-			else{
-				System.out.println("Down");
-				Toast.makeText(this,"Down",Toast.LENGTH_SHORT).show();
+			else {
+				float dest_X=ev.getX();
+				float dest_Y=ev.getY();
+				move(dest_X, dest_Y, heli);
 			}
+			/*
+			Toast.makeText(AndengineActivity.this, "Single tap up",Toast.LENGTH_SHORT).show();
+		*/
+			return true;
 		}
-		else{
-			if(distanceY>0){
-				System.out.println("Up");
-				Toast.makeText(this,"Up",Toast.LENGTH_SHORT).show();
-			}
-			else{
-				System.out.println("Right");
-				Toast.makeText(this,"Left",Toast.LENGTH_SHORT).show();
-			}
-		}
-		return false;
-	}
-
-	public void onShowPress(MotionEvent e) {
-		// TODO Auto-generated method stub
 		
+		@Override
+		public boolean onDoubleTap(MotionEvent ev){
+			return false;
+		}
+		
+		@Override
+		public void onShowPress(MotionEvent ev) {
+			
+		}
+
+		@Override
+		public void onLongPress(MotionEvent ev) {
+			//Toast.makeText(AndengineActivity.this, "Long press.", Toast.LENGTH_SHORT).show();
+		}
+
+		@Override
+		public boolean onScroll(MotionEvent e1, MotionEvent e2,
+				float distanceX, float distanceY) {
+			//Toast.makeText(AndengineActivity.this, "Scroll.", Toast.LENGTH_SHORT).show();
+			return false;
+		}
+
+		@Override
+		public boolean onDown(MotionEvent ev) {
+			//Toast.makeText(AndengineActivity.this, "Down.", Toast.LENGTH_SHORT).show();
+			return false;
+		}
+
+		@Override
+		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+				float velocityY) {
+			
+			final float swipeMinDistance = 80;
+
+            final boolean isHorizontalFling = Math.abs(velocityX) > Math.abs(velocityY);
+
+            if(isHorizontalFling) {
+                    if(e1.getX() - e2.getX() > swipeMinDistance) {
+                            return AndengineActivity.this.onSwipeLeft();
+                    } else if(e2.getX() - e1.getX() > swipeMinDistance) {
+                            return AndengineActivity.this.onSwipeRight();
+                    }
+            } else {
+                    if(e1.getY() - e2.getY() > swipeMinDistance) {
+                            return AndengineActivity.this.onSwipeUp();
+                    } else if(e2.getY() - e1.getY() > swipeMinDistance) {
+                            return AndengineActivity.this.onSwipeDown();
+                    }
+            }
+
+            return false;
+
+		}
+	}
+   
+	boolean onSwipeUp() {
+		if(bossTouched){
+			Toast.makeText(AndengineActivity.this, "onSwipeUp", Toast.LENGTH_SHORT).show();
+			
+			return true;
+		}
+		else
+			return false;
 	}
 
-	public boolean onSingleTapUp(MotionEvent e) {
-		// TODO Auto-generated method stub
-		return false;
+	boolean onSwipeRight() {
+		Toast.makeText(AndengineActivity.this, "onSwipeRight", Toast.LENGTH_SHORT).show();	
+		if(bossTouched){
+			Toast.makeText(AndengineActivity.this, "onSwipeRight2", Toast.LENGTH_SHORT).show();	
+		}
+		return true;
 	}
-	
-	//inner class to extend SurfaceGestureDetector
-	
-	
+
+	boolean onSwipeLeft() {
+		Toast.makeText(AndengineActivity.this, "onSwipeLeft", Toast.LENGTH_SHORT).show();
+		if(bossTouched){
+			attackAnimate(heli);	
+		}
+		return true;
+	}
+
+	boolean onSwipeDown() {
+		Toast.makeText(AndengineActivity.this, "onSwipeDown", Toast.LENGTH_SHORT).show();
+		return true;
+	}
 }
 
