@@ -10,6 +10,10 @@ public abstract class KatanaConstants
 	public static final String DESC_CLASS1 = "This is internet explorer. He sucks. Pick Firefox instead.";
 	public static final String DESC_CLASS2 = "You made the right choice.";
 	
+	/** Server Info **/
+	public static final String SERVER_IP = "projectkatana.no-ip.org";
+	public static final int SERVER_PORT = 7777;
+	
 	/** Application Preferences **/
 	// Login Preferences
 	public static final String PREFS_LOGIN = "UserPreferences";
@@ -36,7 +40,7 @@ public abstract class KatanaConstants
     
     // LobbyActivity Constants
     public static final int ROOMNAMEMIN = 1;
-    public static final String DEF_ROOMNAME = "Let's Fun!";
+    public static final String DEF_ROOMNAME = "Lets Fun!";
     public static final String DEF_ROOMDIFF = "Standard";
     public static final int DEF_ROOMMAXP = 4;
     public static final String DIFF_EASY = "Easy";

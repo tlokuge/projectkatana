@@ -27,8 +27,6 @@ public class KatanaService extends Service {
 	public static final String EXTRAS_ROOMID = "roomId";
 	
 	private final IBinder mBinder = new LocalBinder();
-	private static final String SERVER = "10.100.2.3";
-	private static final int PORT = 7777;
 	
 	private Socket socket;
 	private KatanaSocketListener socketListener;
@@ -48,7 +46,7 @@ public class KatanaService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		try
 		{
-			socket = new Socket(SERVER, PORT);
+			socket = new Socket(KatanaConstants.SERVER_IP, KatanaConstants.SERVER_PORT);
 			socketListener = new KatanaSocketListener(socket);
 			socket.setSoLinger(true, 0);
 		}

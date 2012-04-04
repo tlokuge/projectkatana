@@ -262,6 +262,7 @@ public class LobbyActivity extends Activity {
             unregisterReceiver(katanaReceiver);
             stopService(new Intent(LobbyActivity.this,KatanaService.class));
             mBound = false;
+            // Unbind from GPS! :O
         }
     }
       
@@ -491,7 +492,7 @@ public class LobbyActivity extends Activity {
 			public void onLocationChanged(Location location) {
 				lat = String.valueOf(location.getLatitude());
 				lng = String.valueOf(location.getLongitude());
-				Toast.makeText(getApplicationContext(), lat+" "+lng, Toast.LENGTH_SHORT).show();
+				// Toast.makeText(getApplicationContext(), lat+" "+lng, Toast.LENGTH_SHORT).show();
 			}
 
 			@Override
