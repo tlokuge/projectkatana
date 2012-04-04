@@ -79,7 +79,11 @@ public class LobbyActivity extends Activity {
 	
 	private boolean newRoom = false;
 	private boolean inRoom = false;
-		
+	private boolean inValidLoc = false;
+	
+	private int createdRoomId = -1;
+	private int selectedClass = 1;
+	
 	// Service Vars
 	KatanaService katanaService;
 	boolean mBound = false;
@@ -173,6 +177,11 @@ public class LobbyActivity extends Activity {
     	// Set onClickListeners
         b_join.setOnClickListener( new OnClickListener() {
 			public void onClick(View v) {
+    			if(!inValidLoc)
+    			{
+    				Toast.makeText(getApplicationContext(), R.string.b_norealm, Toast.LENGTH_SHORT).show();
+    				return;
+    			}
 				newRoom = false;
 				showSelectClassDialog();
 			}
@@ -180,6 +189,11 @@ public class LobbyActivity extends Activity {
         
         b_create.setOnClickListener( new OnClickListener() {
         	public void onClick(View v){
+    			if(!inValidLoc)
+    			{
+    				Toast.makeText(getApplicationContext(), R.string.b_norealm, Toast.LENGTH_SHORT).show();
+    				return;
+    			}
         		newRoom = true;
         		showCreateRoomDialog();
         	}
@@ -334,7 +348,6 @@ public class LobbyActivity extends Activity {
     	confirm.setOnClickListener( new OnClickListener() {
 			public void onClick(View v) {
 				makeRoom();
-				showSelectClassDialog();
 				createRoomDialog.dismiss();				
 			}   		
     	});
@@ -378,6 +391,10 @@ public class LobbyActivity extends Activity {
     /** Called when the user confirms their class choice */
     public void sendJoinRoomRequest(int class_id){
     	if(newRoom) {       	
+
+    		this.showRoomPlayers(new ArrayList<String>());
+    		selectedRoom.setId(createdRoomId);
+			joinRoom(selectedRoom);
     		viewFlipper.setInAnimation(LobbyActivity.this, R.anim.transition_infrom_left);
     		viewFlipper.setOutAnimation(LobbyActivity.this, R.anim.transition_outfrom_left);
     		viewFlipper.showNext();
@@ -417,37 +434,53 @@ public class LobbyActivity extends Activity {
     	
     	// Set game difficulty preferences
     	int diff = rg_diffSel.getCheckedRadioButtonId();
+    	int difficulty = 1;
     	switch(diff){
     		case R.id.diff1: 
     			gamePrefs.edit().putString(KatanaConstants.GAME_DIFF, "Easy").commit();
     			break;
-    		case R.id.diff2: 
+    		case R.id.diff2:
+    			difficulty = 2;
     			gamePrefs.edit().putString(KatanaConstants.GAME_DIFF, "Standard").commit();
     			break;
     		case R.id.diff3: 
+    			difficulty = 3;
     			gamePrefs.edit().putString(KatanaConstants.GAME_DIFF, "Hard").commit();
     			break;
     		default: 
+    			difficulty = 2;
     			gamePrefs.edit().putString(KatanaConstants.GAME_DIFF, "Standard").commit();
     			break;
     	}
     	
     	// Set game max player preferences
     	int plyr = rg_plyrSel.getCheckedRadioButtonId();
+    	int max = 1;
     	switch(plyr){
 			case R.id.plyr1: 
 				gamePrefs.edit().putInt(KatanaConstants.GAME_MAXP, 1).commit();
 				break;
-			case R.id.plyr2: 
+			case R.id.plyr2:
+				max = 2;
 				gamePrefs.edit().putInt(KatanaConstants.GAME_MAXP, 2).commit();
 				break;
-			case R.id.plyr3: 
+			case R.id.plyr3:
+				max = 3;
 				gamePrefs.edit().putInt(KatanaConstants.GAME_MAXP, 3).commit();
 				break;
 			case R.id.plyr4: 
-			default: gamePrefs.edit().putInt(KatanaConstants.GAME_MAXP, 4).commit();
+			default: 
+				max = 4;
+				gamePrefs.edit().putInt(KatanaConstants.GAME_MAXP, 4).commit();
 				break;	
     	}
+    	
+    	selectedRoom = new Room(-1, name, difficulty, max);
+    	KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_CREATE);
+    	packet.addData(name);
+    	packet.addData(difficulty + "");
+    	packet.addData(max + "");
+    	katanaService.sendPacket(packet);
     }
     
     /** Start LocationManager !! Find a way to look up location on click */
@@ -475,6 +508,7 @@ public class LobbyActivity extends Activity {
         };
         
         locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, KatanaConstants.GPS_MIN_REFRESHTIME, KatanaConstants.GPS_MIN_REFRESHDIST, locListener);
+        locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, KatanaConstants.GPS_MIN_REFRESHTIME, KatanaConstants.GPS_MIN_REFRESHDIST, locListener);
     }
    
     private ServiceConnection katanaConnection = new ServiceConnection() {
@@ -497,9 +531,12 @@ public class LobbyActivity extends Activity {
     	@Override
     	public void onReceive(Context context, Intent intent) {
     		if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_LIST.name())){
+    			inValidLoc = true;
     			String locName = intent.getStringExtra(KatanaService.EXTRAS_LOCNAME);
     			ArrayList<String> al = intent.getStringArrayListExtra(KatanaService.EXTRAS_ROOMSLIST);
     			showRoomList(locName, al);
+    			if(createdRoomId > 0)
+    				b_join.performClick();
     		} else if (intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_JOIN_OK.name())) {
     			ArrayList<String> al = intent.getStringArrayListExtra(KatanaService.EXTRAS_PLAYERLIST);
     			showRoomPlayers(al);
@@ -511,6 +548,16 @@ public class LobbyActivity extends Activity {
     			addPlayer(intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME));
     		} else if (intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_PLAYER_LEAVE.name())) {
     			removePlayer(Integer.parseInt((intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME))));
+    		}
+    		else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_CREATE_OK.name()))
+    		{
+    			createdRoomId = Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_ROOMID));
+    			System.out.println("CreatedRoomId: " + createdRoomId);
+    			refreshList(null);
+    		}
+    		else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_CREATE_NO.name()))
+    		{
+    			selectedRoom = null;
     		}
     	}
     };
@@ -535,16 +582,21 @@ public class LobbyActivity extends Activity {
     	playerList = new ArrayList<Player>();
     	playerRef = new HashMap<Integer, Integer>();
     	
+    	int position = 0;
     	for(int i = 0; i < al.size(); i++) {
     		String[] lines = al.get(i).split(";");
     		
     		if(lines.length < 3)
     			continue;
     		
+    		position = i;
     		playerRef.put(Integer.parseInt(lines[0]), i);
     		playerList.add(new Player(Integer.parseInt(lines[0]),lines[1],Integer.parseInt(lines[2])));
     	}
     	
+    	int pid = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getInt(KatanaConstants.PLAYER_ID, 0);
+    	playerRef.put(pid, position + 1);
+    	playerList.add(new Player(pid, getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getString(KatanaConstants.LOGIN_USER, ""), selectedClass));
     	// Update user interface
     	gv_wroomList.setAdapter(new PlayerListAdapter(this, playerList));
     }

@@ -41,6 +41,7 @@
 	<string name="p2">2</string>
 	<string name="p3">3</string>
 	<string name="p4">4</string>
+	<string name="b_norealm">You must be in a valid location!</string>
 	
 	<!-- Leaderboard dialog strings -->
 	<string name="l_lb">YEYEYE IM A LEADERBOARD!</string>

@@ -254,6 +254,7 @@ public abstract class PacketHandler
         lobby.addRoom(new GameRoom(room_id, name, difficulty, max_players, pl));
         
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_OK);
+        response.addData(room_id + "");
         client.sendPacket(response);
     }
     
@@ -445,7 +446,10 @@ public abstract class PacketHandler
             
             Set<Integer> room_ids = lobby.getRoomIds();
             if(room_ids == null)
+            {
+                client.sendPacket(response);
                 return;
+            }
             
             for(int id : room_ids)
             {
