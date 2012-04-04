@@ -24,9 +24,10 @@ public class KatanaService extends Service {
 	public static final String EXTRAS_PLAYERLIST = "playerList";
 	public static final String EXTRAS_PLAYERNAME = "playerName";
 	public static final String EXTRAS_PLAYERID = "playerId";
+	public static final String EXTRAS_ROOMID = "roomId";
 	
 	private final IBinder mBinder = new LocalBinder();
-	private static final String SERVER = "projectkatana.no-ip.org";
+	private static final String SERVER = "10.100.2.3";
 	private static final int PORT = 7777;
 	
 	private Socket socket;
@@ -163,6 +164,7 @@ public class KatanaService extends Service {
 
 		@Override
 		public void finalize() throws Throwable {
+			System.out.println("finalize");
 			super.finalize();
 			closeListener();
 		}
@@ -179,9 +181,10 @@ public class KatanaService extends Service {
     		case S_PING:
     			sendPacket(new KatanaPacket(0, Opcode.C_PONG)); 
     			break;
-    		case S_REG_OK:
-    		case S_REG_NO: 
     		case S_AUTH_OK:
+    		case S_REG_OK:
+    			getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).edit().putInt(KatanaConstants.PLAYER_ID, Integer.parseInt(packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR)[0]));
+    		case S_REG_NO: 
     		case S_AUTH_NO: 
     			handleRegisterLoginReply(packet, intent); break;
     		case S_ROOM_LIST:
@@ -194,10 +197,15 @@ public class KatanaService extends Service {
     		case S_ROOM_PLAYER_JOIN: 
     		case S_ROOM_PLAYER_LEAVE: 
     			handleRoomPlayerEvents(packet, intent); break;
+    		case S_ROOM_CREATE_OK:
+    			handleRoomCreateOkReply(packet, intent); break;
+    		case S_ROOM_CREATE_NO:
+    			intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
+    			sendBroadcast(intent); break;
     		default: break;
     	}
     }
-	
+
 	private void handleRoomJoinReply(KatanaPacket packet, Intent intent){
 		ArrayList<String> playerList = new ArrayList<String>();
 		String[] lines = packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR);
@@ -238,6 +246,13 @@ public class KatanaService extends Service {
 		intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
 		intent.putExtra(EXTRAS_LOCNAME , locName);
 		intent.putStringArrayListExtra(EXTRAS_ROOMSLIST, roomsList);
+		sendBroadcast(intent);
+	}
+	
+	private void handleRoomCreateOkReply(KatanaPacket packet, Intent intent)
+	{
+		intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
+		intent.putExtra(EXTRAS_ROOMID, packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR)[0]);
 		sendBroadcast(intent);
 	}
 }
