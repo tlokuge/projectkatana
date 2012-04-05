@@ -1,7 +1,5 @@
 package com.CPS630.engine;
 
-import java.util.ArrayList;
-
 import org.anddev.andengine.engine.Engine;
 import org.anddev.andengine.engine.camera.Camera;
 import org.anddev.andengine.engine.handler.IUpdateHandler;
@@ -12,28 +10,23 @@ import org.anddev.andengine.engine.options.EngineOptions.ScreenOrientation;
 import org.anddev.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.anddev.andengine.entity.modifier.MoveModifier;
 import org.anddev.andengine.entity.scene.Scene;
-import org.anddev.andengine.entity.scene.background.ColorBackground;
+import org.anddev.andengine.entity.scene.background.SpriteBackground;
 import org.anddev.andengine.entity.sprite.AnimatedSprite;
 import org.anddev.andengine.entity.sprite.Sprite;
 import org.anddev.andengine.entity.text.ChangeableText;
-import org.anddev.andengine.entity.text.Text;
 import org.anddev.andengine.entity.util.FPSLogger;
 import org.anddev.andengine.input.touch.TouchEvent;
-
 import org.anddev.andengine.opengl.font.Font;
 import org.anddev.andengine.opengl.font.FontManager;
+import org.anddev.andengine.opengl.texture.Texture;
 import org.anddev.andengine.opengl.texture.TextureOptions;
 import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
+import org.anddev.andengine.opengl.texture.region.TextureRegion;
+import org.anddev.andengine.opengl.texture.region.TextureRegionFactory;
 import org.anddev.andengine.opengl.texture.region.TiledTextureRegion;
 import org.anddev.andengine.ui.activity.BaseGameActivity;
-import org.anddev.andengine.util.HorizontalAlign;
 
-import android.gesture.Gesture;
-import android.gesture.GestureLibrary;
-import android.gesture.GestureOverlayView;
-import android.gesture.GestureOverlayView.OnGesturePerformedListener;
-import android.gesture.Prediction;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.Display;
@@ -55,15 +48,19 @@ public class AndengineActivity extends BaseGameActivity {
     private TiledTextureRegion mProjectileTextureRegion;
     private TiledTextureRegion mHeliTextureRegion;
     
+    //for custom background
+    private BitmapTextureAtlas mBgRegion;
+    private TextureRegion mBackground;
+    
     float realMoveDuration;
     
     AnimatedSprite face;
     AnimatedSprite heli;
     AnimatedSprite boss;
     AnimatedSprite face2;
+    Sprite bg;
     Sprite projectile;
     Scene scene = new Scene();
-    private GestureLibrary gestureLib;
     
     private BitmapTextureAtlas mFontTexture;
     private Font mFont;
@@ -96,24 +93,27 @@ public class AndengineActivity extends BaseGameActivity {
 
     public void onLoadResources() {
     	
-    	/* The font. */
+    	/* The font */
         this.mFontTexture = new BitmapTextureAtlas(256, 256, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-
         this.mFont = new Font(this.mFontTexture, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32, true, Color.WHITE);
-
         this.mEngine.getTextureManager().loadTexture(this.mFontTexture);
         this.getFontManager().loadFont(this.mFont);
         
-
+        BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+        
     	this.mBitmapTextureAtlas = new BitmapTextureAtlas(512, 1024, TextureOptions.BILINEAR_PREMULTIPLYALPHA );
     	
-        BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+    	//create background bitmap texture
+    	this.mBgRegion = new BitmapTextureAtlas(1024, 512, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+        this.mBackground = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBgRegion, this,"Background.png", 0, 0);
+        
         this.mFaceTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "face_box_tiled.png", 132, 180, 2, 1);
         this.mHeliTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "player.png",170 , 0, 3, 4);
         this.mProjectileTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this,"projectile.png", 110, 64,1,1);
         
         this.mDevilTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "download.jpeg", 0, 0, 1, 1);
-              
+        
+        this.mEngine.getTextureManager().loadTexture(this.mBgRegion);
         this.mEngine.getTextureManager().loadTexture(this.mBitmapTextureAtlas);
     }
    
@@ -121,10 +121,13 @@ public class AndengineActivity extends BaseGameActivity {
 
     	this.mEngine.registerUpdateHandler(new FPSLogger());
     	
-        scene.setBackground(new ColorBackground(0.09804f, 0.6274f, 0.8784f));
-        
+        //scene.setBackground(new ColorBackground(0.09804f, 0.6274f, 0.8784f));
         final int centerX = (cameraWidth - this.mFaceTextureRegion.getWidth()) / 2;
         final int centerY = (cameraHeight - this.mFaceTextureRegion.getHeight()) / 2;
+       
+        scene.setBackgroundEnabled(true); 
+        bg = new Sprite(0, 0, this.mBackground);
+        scene.setBackground(new SpriteBackground(bg));
         
         heli = new AnimatedSprite(100,100, this.mHeliTextureRegion);
         
@@ -136,7 +139,6 @@ public class AndengineActivity extends BaseGameActivity {
             public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
                    // this.setPosition(pSceneTouchEvent.getX() - this.getWidth() / 2, pSceneTouchEvent.getY() - this.getHeight() / 2);
                     if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-                    	
             			return true;
             		}
             		return false;
@@ -146,17 +148,17 @@ public class AndengineActivity extends BaseGameActivity {
         boss = new AnimatedSprite(centerX, centerY, this.mDevilTextureRegion){
             @Override
             public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-            			bossTouched=true;
+                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {               	
+            			bossTouched=true;  			
             			return true;
             		}
             		return false;
             }
         };
         
-        elapsedText = new ChangeableText(100, 160, this.mFont, "Test", "Seconds elapsed: XXXXXXXXXXX".length());
+        //elapsedText = new ChangeableText(100, 160, this.mFont, "Test", "Seconds elapsed: XXXXXXXXXXX".length());
         
-        mGestureDetector = new GestureDetector(this, new GestureListener());
+        mGestureDetector = new GestureDetector(this, new myGestureListener());
         
         face.setScale(1);
         scene.registerTouchArea(boss);
@@ -165,22 +167,21 @@ public class AndengineActivity extends BaseGameActivity {
         
         scene.setTouchAreaBindingEnabled(true); 
    
-        scene.attachChild(elapsedText);
+  //      scene.attachChild(elapsedText);
 
      //   createSpriteSpawnTimeHandler();
         scene.attachChild(heli);
         scene.attachChild(face);
         scene.attachChild(boss);
+        
        // scene.registerUpdateHandler(detect);
         
-        scene.registerUpdateHandler(new TimerHandler(1 / 20.0f, true, new ITimerCallback() {
+      /*  scene.registerUpdateHandler(new TimerHandler(1 / 20.0f, true, new ITimerCallback() {
             public void onTimePassed(final TimerHandler pTimerHandler) {
                     elapsedText.setText("Seconds elapsed: " + AndengineActivity.this.mEngine.getSecondsElapsedTotal());
                   
             }
-    }));
-
-        
+    })); */
         return scene;
     }
 
@@ -311,21 +312,23 @@ public class AndengineActivity extends BaseGameActivity {
 		});
 	}
 	
-	class GestureListener extends GestureDetector.SimpleOnGestureListener {
+	class myGestureListener extends GestureDetector.SimpleOnGestureListener {
 		@Override
 		public boolean onSingleTapUp(MotionEvent ev) {
 			
-			if(bossTouched){
-				bossTouched=false;				
-			}
-			else {
-				float dest_X=ev.getX();
-				float dest_Y=ev.getY();
+			float dest_X=ev.getX();
+			float dest_Y=ev.getY();
+			
+			if(!bossTouched)
+			{
+				heli.clearEntityModifiers();
 				move(dest_X, dest_Y, heli);
 			}
-			/*
-			Toast.makeText(AndengineActivity.this, "Single tap up",Toast.LENGTH_SHORT).show();
-		*/
+			else{
+
+				bossTouched=false;		
+			}
+		
 			return true;
 		}
 		
@@ -387,7 +390,7 @@ public class AndengineActivity extends BaseGameActivity {
 	boolean onSwipeUp() {
 		if(bossTouched){
 			Toast.makeText(AndengineActivity.this, "onSwipeUp", Toast.LENGTH_SHORT).show();
-			elapsedText.setText("Water Atk");
+			//elapsedText.setText("Water Atk");
 			return true;
 		}
 		else
@@ -397,7 +400,7 @@ public class AndengineActivity extends BaseGameActivity {
 	boolean onSwipeRight() {
 		Toast.makeText(AndengineActivity.this, "onSwipeRight", Toast.LENGTH_SHORT).show();	
 		if(bossTouched){
-			elapsedText.setText("Fire Atk");	
+			//elapsedText.setText("Fire Atk");	
 		}
 		return true;
 	}
@@ -405,7 +408,7 @@ public class AndengineActivity extends BaseGameActivity {
 	boolean onSwipeLeft() {
 		Toast.makeText(AndengineActivity.this, "onSwipeLeft", Toast.LENGTH_SHORT).show();
 		if(bossTouched){
-			elapsedText.setText("Wind Atk");	
+			//elapsedText.setText("Wind Atk");	
 			attackAnimate(heli);	
 		}
 		return true;
@@ -414,7 +417,7 @@ public class AndengineActivity extends BaseGameActivity {
 	boolean onSwipeDown() {
 		Toast.makeText(AndengineActivity.this, "onSwipeDown", Toast.LENGTH_SHORT).show();
 		if(bossTouched){
-			elapsedText.setText("Earth Atk");	
+			//elapsedText.setText("Earth Atk");	
 		}
 		return true;
 	}
