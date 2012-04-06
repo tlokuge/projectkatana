@@ -48,7 +48,7 @@ public class AndengineActivity extends BaseGameActivity {
     private TiledTextureRegion rSpellTextureRegion;
  
     private TiledTextureRegion mDevilTextureRegion;
-    private TiledTextureRegion mProjectileTextureRegion;
+
     private TiledTextureRegion mPlayerTextureRegion;
     
     //for custom background
@@ -61,6 +61,7 @@ public class AndengineActivity extends BaseGameActivity {
     String dSpellfile = "face_box.png";
     String lSpellfile = "face_box.png";
     String rSpellfile = "face_box.png";
+    String background = "Background.png";
     
     AnimatedSprite face;
     AnimatedSprite player;
@@ -82,15 +83,7 @@ public class AndengineActivity extends BaseGameActivity {
 	ChangeableText healthText;
 	
 	private int health=100;
-    
-    /*protected int getLayoutID() {
-            return R.layout.main;
-    }
-
-    protected int getRenderSurfaceViewID() {
-            return R.id.rendersurfaceview;
-    }*/
-    
+        
 	public Engine onLoadEngine() {
 		final Display display = getWindowManager().getDefaultDisplay();
 		cameraWidth = display.getWidth();
@@ -130,8 +123,7 @@ public class AndengineActivity extends BaseGameActivity {
         this.lSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, lSpellfile, 400, 100, 1, 1);
         this.rSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, rSpellfile, 400, 150, 1, 1);
         this.mPlayerTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "player.png",170 , 0, 3, 4);
-        this.mProjectileTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this,"projectile.png", 110, 64,1,1);
-        
+
         this.mDevilTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "download.jpeg", 0, 0, 1, 1);
     }
     
@@ -146,11 +138,10 @@ public class AndengineActivity extends BaseGameActivity {
         player = new AnimatedSprite(100,100, this.mPlayerTextureRegion);
         
         player.setScale(2);
-
-               
+          
         loadSprite();
         loadSidebar();
-		loadHPbar();
+		loadHPbar(player);
         mGestureDetector = new GestureDetector(this, new myGestureListener());
         
         scene.registerTouchArea(boss);
@@ -232,12 +223,12 @@ public class AndengineActivity extends BaseGameActivity {
         };
     }
     
-	public void loadHPbar(){
-    	 playerHP = new HPBar(mCamera, player.getX(), player.getY()-player.getHeight()/2, player.getWidth(), 5);
+	public void loadHPbar(AnimatedSprite sprite){
+    	 playerHP = new HPBar(0, 0, sprite.getWidth(), 2, sprite);
          playerHP.setBackColor(0, 0, 0, 1f);
          playerHP.setHPColor(0, 1f, 0, 1f);
          playerHP.setHP(health);
-         scene.attachChild(playerHP);
+         sprite.attachChild(playerHP);
     }
 	
     public void loadSidebar(){	
@@ -302,8 +293,7 @@ public class AndengineActivity extends BaseGameActivity {
         if(!(offX==0 && offY==0)){
 	        MoveModifier mod = new MoveModifier(realMoveDuration, curr_spriteX, dest_spriteX, curr_spriteY, dest_spriteY);
 	        sprite.registerEntityModifier(mod.deepCopy());
-	        playerHP.move(dest_spriteX, dest_spriteY-sprite.getHeight()/2, realMoveDuration); //move the hp bar with the player
-        }
+	    }
   
     }
     
@@ -344,7 +334,7 @@ public class AndengineActivity extends BaseGameActivity {
 			}
 		});
 	}
-	
+	//Gesture class
 	class myGestureListener extends GestureDetector.SimpleOnGestureListener {
 		@Override
 		public boolean onSingleTapUp(MotionEvent ev) {
