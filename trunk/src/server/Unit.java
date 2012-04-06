@@ -14,6 +14,9 @@ public abstract class Unit
     
     private float move_speed;
     
+    private float pos_x;
+    private float pos_y;
+    
     private int model_id;
     
     private Unit current_target;
@@ -56,6 +59,10 @@ public abstract class Unit
     
     public void setSpeed(float speed) { this.move_speed = speed; }
     public float getMoveSpeed()       { return move_speed; }
+    
+    public void moveTo(float x, float y) { this.pos_x = x; this.pos_y = y; }
+    public float getX()                  { return pos_x; }
+    public float getY()                  { return pos_y; }
     
     public void setModelId(int model) { this.model_id = model; }
     public int getModelId()           { return model_id;   }

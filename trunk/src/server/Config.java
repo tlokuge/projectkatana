@@ -35,7 +35,7 @@ public abstract class Config
         {
             System.err.println("Config: Error loading '" + Constants.CONFIG_FILE + "'");
             ex.printStackTrace();
-            System.exit(Constants.ERR_CONFIG_LOAD_FAIL);
+            KatanaServer.exit(KatanaError.ERR_CONFIG_LOAD_FAIL);
         }
     }
     

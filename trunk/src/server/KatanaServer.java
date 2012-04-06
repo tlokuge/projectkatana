@@ -33,13 +33,25 @@ public class KatanaServer implements Runnable
     
     public void loadCache()    { SQLCache.createCache(); }
     
-    public void run() 
-    { 
-        System.out.println("Starting Thread: " + thread.getName());
-        
-        listenLoop();
+    public void listenLoop()
+    {
+        try
+        {
+            listener = new ServerSocket(port);
+            while(true)
+                new KatanaClient(listener.accept());
+            
+            // Garbage collection thread needed? Probably not
+        }
+        catch(Exception ex)
+        {
+            System.err.println("ERR: Unable to open listen port");
+            ex.printStackTrace();
+            exit(KatanaError.ERR_SERVER_LISTEN_FAIL);
+        }
     }
     
+    public void run()  { listenLoop(); }
     protected void finalize()
     {
         try
@@ -69,10 +81,16 @@ public class KatanaServer implements Runnable
         if(instance == null)
         {
             System.err.println("ERROR: LOST KATANASERVER SINGLETON!");
-            System.exit(Constants.ERR_SERVER_SINGLETON_LOST);
+            exit(KatanaError.ERR_SERVER_SINGLETON_LOST);
         }
         
         return instance;
+    }
+    
+    public static void exit(KatanaError error)
+    {
+        System.err.println("FATAL: " + error.name());
+        System.exit(error.ordinal());
     }
     
     public void addWaitingClient(KatanaClient client)       { waitingClients.add(client); }
@@ -88,24 +106,6 @@ public class KatanaServer implements Runnable
     public Lobby getLobby(int id)               { return lobbies.get(id); }
     public HashMap<Integer, Lobby> getLobbies() { return lobbies; }
     public Set<Integer> getLocationIDs()        { return lobbies.keySet(); }
-    
-    public void listenLoop()
-    {
-        try
-        {
-            listener = new ServerSocket(port);
-            while(true)
-                new KatanaClient(listener.accept());
-            
-            // Garbage collection thread needed? Probably not
-        }
-        catch(Exception ex)
-        {
-            System.err.println("ERR: Unable to open listen port");
-            ex.printStackTrace();
-            System.exit(Constants.ERR_SERVER_LISTEN_FAIL);
-        }
-    }
     
     public int getPort() { return port; }
 }
