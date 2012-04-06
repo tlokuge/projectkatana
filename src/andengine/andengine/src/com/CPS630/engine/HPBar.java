@@ -4,6 +4,7 @@ import org.anddev.andengine.engine.camera.Camera;
 import org.anddev.andengine.engine.camera.hud.HUD;
 import org.anddev.andengine.entity.modifier.MoveModifier;
 import org.anddev.andengine.entity.primitive.Rectangle;
+import org.anddev.andengine.entity.sprite.AnimatedSprite;
 
 public class HPBar extends HUD {
 
@@ -19,18 +20,17 @@ public class HPBar extends HUD {
 	// ===========================================================
 	// Constructors
 	// ===========================================================
-	public HPBar(final Camera pCamera, final float pX, final float pY, final float pWidth, final float pHeight) {
+	public HPBar(final float pX, final float pY, final float pWidth, final float pHeight, AnimatedSprite sprite) {
 		super();
-		super.setCamera(pCamera);
-
-		this.mBackgroundRectangle = new Rectangle(pX - 2, pY - 2, pWidth + 4,
-				pHeight + 4);
+		
+		this.mBackgroundRectangle = new Rectangle(pX - 1, pY - 1, pWidth + 2,
+				pHeight + 2);
 
 		this.mHPRectangle = new Rectangle(pX, pY, pWidth, pHeight);
 
-		super.attachChild(this.mBackgroundRectangle); // This one is drawn first.
+		sprite.attachChild(this.mBackgroundRectangle); // This one is drawn first.
 
-		super.attachChild(this.mHPRectangle); // The progress is drawn afterwards.
+		sprite.attachChild(this.mHPRectangle); // The progress is drawn afterwards.
 
 		this.mPixelsPerPercentRatio = pWidth / 100;
 	}
@@ -60,18 +60,6 @@ public class HPBar extends HUD {
 		this.mHPRectangle.setWidth(this.mPixelsPerPercentRatio * pHP);
 	}
 
-	public void move(final float dest_X, final float dest_Y,
-			float realMoveDuration) {
-		MoveModifier mod = new MoveModifier(realMoveDuration,
-				this.mBackgroundRectangle.getX(), dest_X - 2,
-				this.mBackgroundRectangle.getY(), dest_Y - 2);
-		this.mBackgroundRectangle.registerEntityModifier(mod.deepCopy());
-		MoveModifier mod2 = new MoveModifier(realMoveDuration,
-				this.mHPRectangle.getX(), dest_X, this.mHPRectangle.getY(),
-				dest_Y);
-		this.mHPRectangle.registerEntityModifier(mod2.deepCopy());
-
-	}
 	// ===========================================================
 	// Methods for/from SuperClass/Interfaces
 	// ===========================================================
