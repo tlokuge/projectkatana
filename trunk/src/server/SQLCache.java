@@ -27,7 +27,7 @@ public abstract class SQLCache
     {
         ProgressBar bar = new ProgressBar();
         
-        ArrayList<HashMap<String, Object>> results = SQLHandler.instance().execute("SELECT `location_id`, `location_name`, `latitude`, `longitude`, `radius` FROM `locations`;");
+        ArrayList<HashMap<String, Object>> results = SQLHandler.instance().runLocationQuery();
         if(results == null || results.isEmpty())
         {
             System.err.println("ERROR: NO LOCATIONS LOADED");
@@ -57,7 +57,7 @@ public abstract class SQLCache
         
         ProgressBar bar = new ProgressBar();
         
-        ArrayList<HashMap<String, Object>> results = SQLHandler.instance().execute("SELECT `spell_id`, `spell_name`,`damage`,`cooldown` FROM `spells`");
+        ArrayList<HashMap<String, Object>> results = SQLHandler.instance().runSpellQuery();
         if(results == null || results.isEmpty())
         {
             System.err.println("ERROR: NO SPELLS LOADED");
@@ -86,7 +86,7 @@ public abstract class SQLCache
         
         ProgressBar bar = new ProgressBar();
         
-        ArrayList<HashMap<String, Object>> results = SQLHandler.instance().execute("SELECT `class_id`, `class_name`, `spell_1`, `spell_2`, `spell_3`, `spell_4`, `model_id` FROM `classes`;");
+        ArrayList<HashMap<String, Object>> results = SQLHandler.instance().runClassQuery();
         if(results == null || results.isEmpty())
         {
             System.err.println("ERROR: NO CLASSES LOADED");

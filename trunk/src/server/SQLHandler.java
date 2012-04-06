@@ -1,10 +1,7 @@
 package server;
 
 import com.mysql.jdbc.ResultSetMetaData;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -149,6 +146,315 @@ public class SQLHandler
         }
     }
     
+    public synchronized void runPingQuery()
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.PING_QUERY);
+            query.executeQuery();
+            query.close();
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+    
+    public synchronized ArrayList<HashMap<String, Object>> runLoginQuery(String username, String password)
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.LOGIN_QUERY);
+            query.setString(1, username);
+            query.setString(2, password);
+            ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
+            query.close();
+            return results;
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public synchronized ArrayList<HashMap<String, Object>> runUsernameQuery(String username)
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.USERNAME_QUERY);
+            query.setString(1, username);
+            ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
+            query.close();
+            return results;
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public synchronized void runRegisterUserQuery(String username, String password)
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.REGUSER_QUERY);
+            query.setString(1, username);
+            query.setString(2, password);
+            query.executeQuery();
+            query.close();
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+    
+    public synchronized void runRoomCreateQuery(String room_name, int location, int difficulty, int max_players, int leader_id)
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.ROOMCREATE_QUERY);
+            query.setString(1, room_name);
+            query.setInt(2, location);
+            query.setInt(3, difficulty);
+            query.setInt(4, max_players);
+            query.setInt(5, leader_id);
+            System.out.println(query);
+            query.execute();
+            query.close();
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+    
+    public synchronized ArrayList<HashMap<String, Object>> runRoomLeaderQuery(int leader_id)
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.ROOMLEADER_QUERY);
+            query.setInt(1, leader_id);
+            ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
+            query.close();
+            return results;
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public synchronized void runClearUserRoomQuery(int room_id)
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.CLEARROOM_QUERY);
+            query.setInt(1, room_id);
+            query.executeQuery();
+            query.close();
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+    
+    public synchronized void runDeleteRoomQuery(int room_id)
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.DELROOM_QUERY);
+            query.setInt(1, room_id);
+            query.executeQuery();
+            query.close();
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+    
+    public synchronized void runRoomJoinQuery(int player_id, int room_id, int class_id)
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.ROOMJOIN_QUERY);
+            query.setInt(1, player_id);
+            query.setInt(2, room_id);
+            query.setInt(3, class_id);
+            query.executeQuery();
+            query.close();
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+    
+    public synchronized ArrayList<HashMap<String, Object>> runRoomPlayersQuery(int room_id)
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.ROOMPLAYERS_QUERY);
+            query.setInt(1, room_id);
+            ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
+            query.close();
+            return results;
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public synchronized ArrayList<HashMap<String, Object>> runRoomLeaveQuery(int player_id)
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.ROOMLEADER_QUERY);
+            query.setInt(1, player_id);
+            ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
+            query.close();
+            return results;
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public synchronized ArrayList<HashMap<String, Object>> runClassChangeQuery(int class_id, int player_id)
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.CLASSCHANGE_QUERY);
+            query.setInt(1, class_id);
+            query.setInt(2, player_id);
+            ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
+            query.close();
+            return results;
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public synchronized ArrayList<HashMap<String, Object>> runLeaderboardQuery(int location_id)
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.LEADERBOARD_QUERY);
+            query.setInt(1, location_id);
+            ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
+            query.close();
+            return results;
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public synchronized ArrayList<HashMap<String, Object>> runLocationQuery()
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.LOCATION_QUERY);
+            ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
+            query.close();
+            return results;
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public synchronized ArrayList<HashMap<String, Object>> runSpellQuery()
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.SPELL_QUERY);
+            ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
+            query.close();
+            return results;
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public synchronized ArrayList<HashMap<String, Object>> runClassQuery()
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.CLASS_QUERY);
+            ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
+            query.close();
+            return results;
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    /*
     public ArrayList<HashMap<String, Object>> execute(String query)
     {   
         checkConnection();
@@ -187,5 +493,5 @@ public class SQLHandler
             System.err.println("MySQL: Error executing query '" + query + "'");
             ex.printStackTrace();
         }
-    }
+    }*/
 }
