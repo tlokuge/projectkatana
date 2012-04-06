@@ -108,12 +108,15 @@ public class LobbyActivity extends Activity {
 				KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_DESTROY);
 				katanaService.sendPacket(packet);
 				refreshList(null);
+				roomLeader = false;
+				viewFlipper.setInAnimation(LobbyActivity.this, R.anim.transition_infrom_right);
+				viewFlipper.setOutAnimation(LobbyActivity.this, R.anim.transition_outfrom_right);
+				viewFlipper.showPrevious();
+				return;
 			}
+			
 			inRoom = false;
 			katanaService.sendPacket(new KatanaPacket(0,Opcode.C_ROOM_LEAVE));
-			viewFlipper.setInAnimation(LobbyActivity.this, R.anim.transition_infrom_right);
-			viewFlipper.setOutAnimation(LobbyActivity.this, R.anim.transition_outfrom_right);
-			viewFlipper.showPrevious();
 		} else {
 			this.finish();
 		}
@@ -417,7 +420,7 @@ public class LobbyActivity extends Activity {
    		// Send a join room packet to server
     	KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_JOIN);
     	packet.addData(Integer.toString(selectedRoom.getId()));
-    	gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1);
+    	packet.addData(Integer.toString(gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1)));
     	katanaService.sendPacket(packet);
     }
     
@@ -551,9 +554,21 @@ public class LobbyActivity extends Activity {
     		else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_CREATE_NO.name()))
     		{
     			selectedRoom = null;
+    		} else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_PLAYER_UPDATE_CLASS.name())) {
+    			if(inRoom){
+    				int playerid = intent.getIntExtra(KatanaService.EXTRAS_PLAYERID, -1);
+    				int playerclass = intent.getIntExtra(KatanaService.EXTRAS_PLAYERCLASS, -1);
+    				updatePlayerClass(playerid, playerclass);
+    			}
     		}
     	}
     };
+    
+    private void updatePlayerClass(int playerid, int classid) {
+    	System.out.println("Player " + playerid + " is changing class from " + playerList.get(playerRef.get(playerid)).getClassId() + " to " + classid);
+    	playerList.get(playerRef.get(playerid)).setClassId(classid);
+    	gv_wroomList.setAdapter(new PlayerListAdapter(this,playerList));
+    }
     
     private void addPlayer(String s){
     	int ref = playerList.size();
@@ -589,7 +604,7 @@ public class LobbyActivity extends Activity {
     	
     	int pid = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getInt(KatanaConstants.PLAYER_ID, 0);
     	playerRef.put(pid, position + 1);
-    	playerList.add(new Player(pid, getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getString(KatanaConstants.LOGIN_USER, ""), selectedClass));
+    	playerList.add(new Player(pid, getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getString(KatanaConstants.LOGIN_USER, ""), gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1)));
     	// Update user interface
     	gv_wroomList.setAdapter(new PlayerListAdapter(this, playerList));
     }

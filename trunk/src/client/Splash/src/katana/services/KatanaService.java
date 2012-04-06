@@ -28,6 +28,7 @@ public class KatanaService extends Service {
 	public static final String EXTRAS_LOCNAME = "locName";
 	public static final String EXTRAS_ROOMSLIST = "roomList";
 	public static final String EXTRAS_PLAYERLIST = "playerList";
+	public static final String EXTRAS_PLAYERCLASS = "playerClass";
 	public static final String EXTRAS_PLAYERNAME = "playerName";
 	public static final String EXTRAS_PLAYERID = "playerId";
 	public static final String EXTRAS_ROOMID = "roomId";
@@ -224,10 +225,20 @@ public class KatanaService extends Service {
     		case S_ROOM_CREATE_NO:
     			intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
     			sendBroadcast(intent); break;
+    		case S_PLAYER_UPDATE_CLASS:
+    			intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
+    			handleClassChange(packet, intent);
     		default: break;
     	}
     }
-
+	
+	private void handleClassChange(KatanaPacket packet, Intent intent) {
+		String[] lines = packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR);
+		intent.putExtra(EXTRAS_PLAYERID, Integer.parseInt(lines[0]));
+		intent.putExtra(EXTRAS_PLAYERCLASS, Integer.parseInt(lines[1]));
+		sendBroadcast(intent);
+	}
+	
 	private void handleRoomJoinReply(KatanaPacket packet, Intent intent){
 		ArrayList<String> playerList = new ArrayList<String>();
 		String[] lines = packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR);
