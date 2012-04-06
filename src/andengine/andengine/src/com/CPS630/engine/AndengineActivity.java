@@ -49,7 +49,7 @@ public class AndengineActivity extends BaseGameActivity {
  
     private TiledTextureRegion mDevilTextureRegion;
     private TiledTextureRegion mProjectileTextureRegion;
-    private TiledTextureRegion mHeliTextureRegion;
+    private TiledTextureRegion mPlayerTextureRegion;
     
     //for custom background
     private BitmapTextureAtlas mBgRegion;
@@ -63,12 +63,13 @@ public class AndengineActivity extends BaseGameActivity {
     String rSpellfile = "face_box.png";
     
     AnimatedSprite face;
-    AnimatedSprite heli;
+    AnimatedSprite player;
     AnimatedSprite boss;
     AnimatedSprite lspell,rspell,uspell,dspell;
     Sprite bg;
     Sprite projectile;
     Scene scene = new Scene();
+	HPBar playerHP;
     
     private BitmapTextureAtlas mFontTexture;
     private Font mFont;
@@ -79,6 +80,8 @@ public class AndengineActivity extends BaseGameActivity {
     
 	GestureDetector mGestureDetector;
 	ChangeableText healthText;
+	
+	private int health=100;
     
     /*protected int getLayoutID() {
             return R.layout.main;
@@ -126,7 +129,7 @@ public class AndengineActivity extends BaseGameActivity {
         this.dSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, dSpellfile, 400, 50, 1, 1);
         this.lSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, lSpellfile, 400, 100, 1, 1);
         this.rSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, rSpellfile, 400, 150, 1, 1);
-        this.mHeliTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "player.png",170 , 0, 3, 4);
+        this.mPlayerTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "player.png",170 , 0, 3, 4);
         this.mProjectileTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this,"projectile.png", 110, 64,1,1);
         
         this.mDevilTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "download.jpeg", 0, 0, 1, 1);
@@ -140,25 +143,25 @@ public class AndengineActivity extends BaseGameActivity {
         bg = new Sprite(0, 0, this.mBackground);
         scene.setBackground(new SpriteBackground(bg));
         
-        heli = new AnimatedSprite(100,100, this.mHeliTextureRegion);
+        player = new AnimatedSprite(100,100, this.mPlayerTextureRegion);
         
-        heli.setScale(2);
+        player.setScale(2);
 
                
         loadSprite();
         loadSidebar();
-        
+		loadHPbar();
         mGestureDetector = new GestureDetector(this, new myGestureListener());
         
         scene.registerTouchArea(boss);
         //scene.registerTouchArea(face);
-        scene.registerTouchArea(heli);
+        scene.registerTouchArea(player);
         scene.setTouchAreaBindingEnabled(true); 
    
         scene.attachChild(healthText);
 
      //   createSpriteSpawnTimeHandler();
-        scene.attachChild(heli);
+        scene.attachChild(player);
         scene.attachChild(lspell);
         scene.attachChild(rspell);
         scene.attachChild(uspell);
@@ -229,6 +232,14 @@ public class AndengineActivity extends BaseGameActivity {
         };
     }
     
+	public void loadHPbar(){
+    	 playerHP = new HPBar(mCamera, player.getX(), player.getY()-player.getHeight()/2, player.getWidth(), 5);
+         playerHP.setBackColor(0, 0, 0, 1f);
+         playerHP.setHPColor(0, 1f, 0, 1f);
+         playerHP.setHP(health);
+         scene.attachChild(playerHP);
+    }
+	
     public void loadSidebar(){	
     	healthText = new ChangeableText(cameraWidth-75, 30, this.mFont, "5000", "XXXX".length());
         
@@ -272,7 +283,7 @@ public class AndengineActivity extends BaseGameActivity {
 		}
 	};
     
-    private void move(float dest_spriteX, float dest_spriteY, AnimatedSprite sprite) {
+    private void move(AnimatedSprite sprite, float dest_spriteX, float dest_spriteY ) {
     	
     	float curr_spriteX= sprite.getX();
     	float curr_spriteY= sprite.getY();
@@ -285,12 +296,13 @@ public class AndengineActivity extends BaseGameActivity {
         
         float length = (float) Math.sqrt((offX * offX)
             + (offY * offY));
-        float velocity = 480.0f / 1.0f; // 480 pixels / 1 sec
+        float velocity = 200.0f / 1.0f; // 480 pixels / 1 sec
         realMoveDuration = length / velocity;
 
         if(!(offX==0 && offY==0)){
 	        MoveModifier mod = new MoveModifier(realMoveDuration, curr_spriteX, dest_spriteX, curr_spriteY, dest_spriteY);
 	        sprite.registerEntityModifier(mod.deepCopy());
+	        playerHP.move(dest_spriteX, dest_spriteY-sprite.getHeight()/2, realMoveDuration); //move the hp bar with the player
         }
   
     }
@@ -313,42 +325,11 @@ public class AndengineActivity extends BaseGameActivity {
 		destY -= sprite.getHeight() / 2;
 
 		while (sprite.getX() != destX && sprite.getY() != destY) {
-			sprite.animate(new long[] {100, 100, 100}, new int[] { 3, 4, 5 }, 10);
+			sprite.animate(new long[] {100, 100, 100}, new int[] { 3, 5, 4 }, 100);
 		}
 		sprite.stopAnimation();
 	}
-	/*private void shootProjectile(final float pX, final float pY) {
-
-		    int offX = (int) (pX - face.getX());
-		    int offY = (int) (pY - face.getY());
-		    int realY;
-		    projectile = new Sprite(face.getX(), face.getY(), mProjectileTextureRegion.deepCopy());
-		    scene.attachChild(projectile, 1);
-
-		    int realX = (int) (mCamera.getWidth() + projectile.getWidth() / 2.0f);
-		    float ratio = (float) offY / (float) offX;
-		    
-		    if(pX < face.getX()){
-		    	realY = (int) ((realX * ratio) - projectile.getY());
-		    }
-		    else{
-		    	realY = (int) ((realX * ratio) + projectile.getY());
-		    }
-
-		    int offRealX = (int) (realX - projectile.getX());
-		    int offRealY = (int) (realY - projectile.getY());
-		    
-		    float length = (float) Math.sqrt((offRealX * offRealX)
-		        + (offRealY * offRealY));
-		    float velocity = 480.0f / 1.0f; // 480 pixels / 1 sec
-		    float realMoveDuration = length / velocity;
-
-		    MoveModifier mod = new MoveModifier(realMoveDuration,
-		    projectile.getX(), realX, projectile.getY(), realY);
-		    projectile.registerEntityModifier(mod.deepCopy());
-
-	}*/
-
+	
 	public void removeSprite(final AnimatedSprite _sprite) {
 		runOnUpdateThread(new Runnable() {
 			public void run() {
@@ -373,8 +354,9 @@ public class AndengineActivity extends BaseGameActivity {
 			
 			if(!bossTouched)
 			{
-				heli.clearEntityModifiers();
-				move(dest_X, dest_Y, heli);
+				player.clearEntityModifiers();
+				move(player,dest_X, dest_Y);
+				runAnimate(player, dest_X, dest_Y);
 			}
 			else{
 
@@ -461,7 +443,7 @@ public class AndengineActivity extends BaseGameActivity {
 		Toast.makeText(AndengineActivity.this, "onSwipeLeft", Toast.LENGTH_SHORT).show();
 		if(bossTouched){
 			//elapsedText.setText("Wind Atk");	
-			attackAnimate(heli);	
+			attackAnimate(player);	
 		}
 		return true;
 	}
