@@ -42,7 +42,10 @@ public class AndengineActivity extends BaseGameActivity {
 
     private Camera mCamera;
     private BitmapTextureAtlas mBitmapTextureAtlas;
-    private TiledTextureRegion mFaceTextureRegion;
+    private TiledTextureRegion uSpellTextureRegion;
+    private TiledTextureRegion dSpellTextureRegion;
+    private TiledTextureRegion lSpellTextureRegion;
+    private TiledTextureRegion rSpellTextureRegion;
  
     private TiledTextureRegion mDevilTextureRegion;
     private TiledTextureRegion mProjectileTextureRegion;
@@ -53,6 +56,11 @@ public class AndengineActivity extends BaseGameActivity {
     private TextureRegion mBackground;
     
     float realMoveDuration;
+    //sprite files
+    String uSpellfile = "face_box.png";
+    String dSpellfile = "face_box.png";
+    String lSpellfile = "face_box.png";
+    String rSpellfile = "face_box.png";
     
     AnimatedSprite face;
     AnimatedSprite heli;
@@ -99,6 +107,13 @@ public class AndengineActivity extends BaseGameActivity {
         this.mEngine.getTextureManager().loadTexture(this.mFontTexture);
         this.getFontManager().loadFont(this.mFont);
         
+        loadBitmaps();
+        
+        this.mEngine.getTextureManager().loadTexture(this.mBgRegion);
+        this.mEngine.getTextureManager().loadTexture(this.mBitmapTextureAtlas);
+    }
+    
+    public void loadBitmaps(){
         BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
         
     	this.mBitmapTextureAtlas = new BitmapTextureAtlas(512, 1024, TextureOptions.BILINEAR_PREMULTIPLYALPHA );
@@ -107,24 +122,20 @@ public class AndengineActivity extends BaseGameActivity {
     	this.mBgRegion = new BitmapTextureAtlas(1024, 512, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
         this.mBackground = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBgRegion, this,"Background.png", 0, 0);
         
-        this.mFaceTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "face_box_tiled.png", 132, 180, 2, 1);
+        this.uSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, uSpellfile, 400, 0, 1, 1);
+        this.dSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, dSpellfile, 400, 50, 1, 1);
+        this.lSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, lSpellfile, 400, 100, 1, 1);
+        this.rSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, rSpellfile, 400, 150, 1, 1);
         this.mHeliTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "player.png",170 , 0, 3, 4);
         this.mProjectileTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this,"projectile.png", 110, 64,1,1);
         
         this.mDevilTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "download.jpeg", 0, 0, 1, 1);
-        
-        this.mEngine.getTextureManager().loadTexture(this.mBgRegion);
-        this.mEngine.getTextureManager().loadTexture(this.mBitmapTextureAtlas);
     }
-   
+    
     public Scene onLoadScene() {
 
     	this.mEngine.registerUpdateHandler(new FPSLogger());
-    	
-        //scene.setBackground(new ColorBackground(0.09804f, 0.6274f, 0.8784f));
-        final int centerX = (cameraWidth - this.mFaceTextureRegion.getWidth()) / 2;
-        final int centerY = (cameraHeight - this.mFaceTextureRegion.getHeight()) / 2;
-       
+          
         scene.setBackgroundEnabled(true); 
         bg = new Sprite(0, 0, this.mBackground);
         scene.setBackground(new SpriteBackground(bg));
@@ -133,73 +144,15 @@ public class AndengineActivity extends BaseGameActivity {
         
         heli.setScale(2);
 
-        /* Quickly twinkling face. */
-        lspell = new AnimatedSprite(cameraWidth-50, 100, this.mFaceTextureRegion){
-            @Override
-            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-                   // this.setPosition(pSceneTouchEvent.getX() - this.getWidth() / 2, pSceneTouchEvent.getY() - this.getHeight() / 2);
-                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-            			return true;
-            		}
-            		return false;
-            }
-        };
-        rspell = new AnimatedSprite(cameraWidth-50, 175, this.mFaceTextureRegion){
-            @Override
-            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-                   // this.setPosition(pSceneTouchEvent.getX() - this.getWidth() / 2, pSceneTouchEvent.getY() - this.getHeight() / 2);
-                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-            			return true;
-            		}
-            		return false;
-            }
-        };
-        
-        rspell.setCurrentTileIndex(1);
-        
-        uspell = new AnimatedSprite(cameraWidth-50, 250, this.mFaceTextureRegion){
-            @Override
-            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-                   // this.setPosition(pSceneTouchEvent.getX() - this.getWidth() / 2, pSceneTouchEvent.getY() - this.getHeight() / 2);
-                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-            			return true;
-            		}
-            		return false;
-            }
-        };
-        dspell = new AnimatedSprite(cameraWidth-50, 325, this.mFaceTextureRegion){
-            @Override
-            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-                   // this.setPosition(pSceneTouchEvent.getX() - this.getWidth() / 2, pSceneTouchEvent.getY() - this.getHeight() / 2);
-                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-            			return true;
-            		}
-            		return false;
-            }
-        };
-        boss = new AnimatedSprite(centerX, centerY, this.mDevilTextureRegion){
-            @Override
-            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {               	
-            			bossTouched=true;  			
-            			return true;
-            		}
-            		return false;
-            }
-        };
-        
-        healthText = new ChangeableText(cameraWidth-75, 30, this.mFont, "5000", "XXXX".length());
+               
+        loadSprite();
+        loadSidebar();
         
         mGestureDetector = new GestureDetector(this, new myGestureListener());
         
-        lspell.setScale(2);
-        rspell.setScale(2);
-        dspell.setScale(2);
-        uspell.setScale(2);
         scene.registerTouchArea(boss);
         //scene.registerTouchArea(face);
         scene.registerTouchArea(heli);
-        
         scene.setTouchAreaBindingEnabled(true); 
    
         scene.attachChild(healthText);
@@ -222,7 +175,68 @@ public class AndengineActivity extends BaseGameActivity {
     })); */
         return scene;
     }
-
+    
+    public void loadSprite(){
+    	final int centerX = (cameraWidth - this.dSpellTextureRegion.getWidth()) / 2;
+        final int centerY = (cameraHeight - this.dSpellTextureRegion.getHeight()) / 2;
+    	boss = new AnimatedSprite(centerX, centerY, this.mDevilTextureRegion){
+            @Override
+            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {               	
+            			bossTouched=true;  			
+            			return true;
+            		}
+            		return false;
+            }
+        };
+    	lspell = new AnimatedSprite(cameraWidth-50, 100, this.lSpellTextureRegion){
+            @Override
+            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+            			return true;
+            		}
+            		return false;
+            }
+        };
+        dspell = new AnimatedSprite(cameraWidth-50, 175, this.dSpellTextureRegion){
+            @Override
+            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+            	if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+            		return true;
+            	}
+            	return false;
+            }
+        };
+        
+        
+        uspell = new AnimatedSprite(cameraWidth-50, 250, this.uSpellTextureRegion){
+            @Override
+            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+            	if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+            		return true;
+            	}
+            	return false;
+            }
+        };
+        rspell = new AnimatedSprite(cameraWidth-50, 325, this.rSpellTextureRegion){
+            @Override
+            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+            	if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+            		return true;
+            	}
+            	return false;
+            }
+        };
+    }
+    
+    public void loadSidebar(){	
+    	healthText = new ChangeableText(cameraWidth-75, 30, this.mFont, "5000", "XXXX".length());
+        
+    	lspell.setScale(2);
+        rspell.setScale(2);
+        dspell.setScale(2);
+        uspell.setScale(2);
+    }
     
     public void onLoadComplete() {
 
