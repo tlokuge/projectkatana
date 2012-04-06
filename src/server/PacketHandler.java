@@ -47,8 +47,7 @@ public abstract class PacketHandler
         if(username == null || username.isEmpty() || password == null || password.isEmpty() || client == null)
             return null;
         
-        SQLHandler sql = SQLHandler.instance();
-        ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `user_id` FROM `users` WHERE `username` LIKE '" + username + "' AND `password` LIKE SHA1('" + password + "');");
+        ArrayList<HashMap<String, Object>> results = SQLHandler.instance().runLoginQuery(username, password);
         if(results == null || results.size() != 1) // Bad login
             return null;
         
@@ -95,7 +94,7 @@ public abstract class PacketHandler
         String password = data[1];
         
         SQLHandler sql = SQLHandler.instance();
-        ArrayList results = sql.execute("SELECT `username` FROM `users` WHERE `username` LIKE '" + username + "';");
+        ArrayList results = sql.runUsernameQuery(username);
         if(results != null && !results.isEmpty())
         {
             // Handle case where the user reinstalled the app (if password matches database,log her in)
@@ -119,7 +118,7 @@ public abstract class PacketHandler
         }
         
         // New user, create her account then log her in
-        sql.executeQuery("INSERT INTO `users` (`username`,`password`) VALUES ('" + username + "', SHA1('" + password + "'));");
+        sql.runRegisterUserQuery(username, password);
         Player player = loginClient(username, password, client);
         if(player == null)
         {
@@ -236,9 +235,9 @@ public abstract class PacketHandler
             return;
         }
         
-        sql.executeQuery("INSERT INTO `rooms` (`room_name`, `location_id`, `difficulty`, `max_players`, `leader`) VALUES ('" + name + "'," + pl.getLocation() + "," + difficulty + "," + max_players + "," + client.getId() + ");");
+        sql.runRoomCreateQuery(name, pl.getLocation(), difficulty, max_players, pl.getId());
         
-        ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `room_id` FROM `rooms` WHERE `leader` = " + client.getId() + ";");
+        ArrayList<HashMap<String, Object>> results = sql.runRoomLeaderQuery(pl.getId());
         if(results == null || results.isEmpty())
         {
             // Error occurred
@@ -288,8 +287,8 @@ public abstract class PacketHandler
         }
         
         SQLHandler sql = SQLHandler.instance();
-        sql.executeQuery("DELETE FROM `user_rooms` WHERE `room_id` = " + room.getId() + ";");
-        sql.executeQuery("DELETE FROM `rooms` WHERE `room_id` = " + room.getId() + ";");
+        sql.runClearUserRoomQuery(room.getId());
+        sql.runDeleteRoomQuery(room.getId());
         
         lobby.removeRoom(room.getId());
         pl.setRoomLeader(false);
@@ -339,10 +338,10 @@ public abstract class PacketHandler
         
         room.addPlayer(pl);
         SQLHandler sql = SQLHandler.instance();
-        sql.executeQuery("INSERT INTO `user_rooms` VALUES (" + client.getId() + ", " + room_id + "," + class_id + ")");
+        sql.runRoomJoinQuery(pl.getId(), room_id, class_id);
         // Response
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_JOIN_OK);
-        ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `u`.`user_id`, `u`.`username`,`ur`.`class_id` FROM `user_rooms` ur INNER JOIN `users` u ON `ur`.`user_id` = `u`.`user_id` WHERE `ur`.`room_id` = " + room_id + ";");
+        ArrayList<HashMap<String, Object>> results = sql.runRoomPlayersQuery(room_id);
         if(results != null && !results.isEmpty())
         {
             pl.addToRoom(room_id);
@@ -372,8 +371,7 @@ public abstract class PacketHandler
         int room_id = pl.getRoom();
         pl.removeFromRoom();
         
-        SQLHandler sql = SQLHandler.instance();
-        sql.executeQuery("DELETE FROM `user_rooms` WHERE `user_id` = " + client.getId() + ";");
+        SQLHandler.instance().runRoomLeaveQuery(pl.getId());
         
         GameRoom room = KatanaServer.instance().getLobby(pl.getLocation()).getRoom(room_id);
         if(room == null)
@@ -468,7 +466,6 @@ public abstract class PacketHandler
         catch(NumberFormatException ex)
         {
             System.err.println("handleRoomListPacket: Received bad data");
-            ex.printStackTrace();
         }
     }
     
@@ -516,7 +513,7 @@ public abstract class PacketHandler
         for(Player p : room.getPlayers())
             p.sendPacket(notify);
         
-        SQLHandler.instance().executeQuery("UPDATE `user_rooms` SET `class_id` = " + class_id + "WHERE `user_id` = " + client.getId() + " AND `room_id` = " + room_id + ";");
+        SQLHandler.instance().runClassChangeQuery(class_id, pl.getId());
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_CLASS_CHANGE_OK);
         client.sendPacket(response);
     }
@@ -545,8 +542,7 @@ public abstract class PacketHandler
         }
         
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_LEADERBOARD);
-        SQLHandler sql = SQLHandler.instance();
-        ArrayList<HashMap<String, Object>> results = sql.execute("SELECT `u`.`username`,`lb`.`points` FROM `leaderboard` lb INNER JOIN `users` u ON `lb`.`user_id` = `u`.`user_id` WHERE `location_id` = " + location + " ORDER BY `points` DESC;");
+        ArrayList<HashMap<String, Object>> results = SQLHandler.instance().runLeaderboardQuery(location);
         if(results != null && !results.isEmpty())
             for(HashMap map : results)
                 response.addData(map.get("username") + ";" + map.get("points") + ";");
