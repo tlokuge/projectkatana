@@ -12,12 +12,18 @@ import katana.shared.KatanaConstants;
 import katana.shared.KatanaPacket;
 import katana.shared.Opcode;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 
 public class KatanaService extends Service {
-	public static final String BROADCAST_ACTION = "com.katana.splash.katanaservice";
+	public static final String BROADCAST_ACTION = "com.katana.splash.server";
+	public static final String BROADCAST_LOCATION = "com.katana.splash.loc";
 	public static final String EXTRAS_OPCODE = "opCode";
 	public static final String EXTRAS_LOCNAME = "locName";
 	public static final String EXTRAS_ROOMSLIST = "roomList";
@@ -26,12 +32,12 @@ public class KatanaService extends Service {
 	public static final String EXTRAS_PLAYERID = "playerId";
 	public static final String EXTRAS_ROOMID = "roomId";
 	
-	private final IBinder mBinder = new LocalBinder();
+	private final IBinder mBinder = new KatanaSBinder();
 	
 	private Socket socket;
 	private KatanaSocketListener socketListener;
-
-	public class LocalBinder extends Binder {
+	
+	public class KatanaSBinder extends Binder {
 		public KatanaService getService() {
 			return KatanaService.this;
 		}
@@ -44,6 +50,21 @@ public class KatanaService extends Service {
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+		locManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+		
+		locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 
+				KatanaConstants.GPS_MIN_REFRESHTIME, 
+				KatanaConstants.GPS_MIN_REFRESHDIST, 
+				locList);
+		
+		locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
+				KatanaConstants.GPS_MIN_REFRESHTIME, 
+				KatanaConstants.GPS_MIN_REFRESHDIST, 
+				locList);
+		
+		latitude = 0.0;
+		longitude = 0.0;
+		
 		try
 		{
 			socket = new Socket(KatanaConstants.SERVER_IP, KatanaConstants.SERVER_PORT);
@@ -135,6 +156,8 @@ public class KatanaService extends Service {
 				System.err.println("Exception: " + ex.getLocalizedMessage());
 				closeListener();
 				ex.printStackTrace();
+				locManager.removeUpdates(locList);
+				locManager = null;
 			}
 		}
 
@@ -164,6 +187,7 @@ public class KatanaService extends Service {
 		public void finalize() throws Throwable {
 			System.out.println("finalize");
 			super.finalize();
+			
 			closeListener();
 		}
 	}
@@ -252,5 +276,47 @@ public class KatanaService extends Service {
 		intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
 		intent.putExtra(EXTRAS_ROOMID, packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR)[0]);
 		sendBroadcast(intent);
+	}
+
+	/** For Location Manager */
+	private LocationManager locManager;
+	private double latitude;
+	private double longitude;
+	
+	public static final String EXTRAS_LATITUDE = "lat";
+	public static final String EXTRAS_LONGITUDE = "lng";
+	
+	LocationListener locList = new LocationListener(){
+		@Override
+		public void onLocationChanged(Location location) {
+			latitude = location.getLatitude();
+			longitude = location.getLongitude();
+			// Send broadcast with new location (check if in range first!)
+			Intent intent = new Intent(BROADCAST_LOCATION);
+			intent.putExtra(EXTRAS_LATITUDE, latitude);
+			intent.putExtra(EXTRAS_LONGITUDE, longitude);
+			sendBroadcast(intent);
+		}
+
+		@Override
+		public void onProviderDisabled(String arg0) {
+		}
+
+		@Override
+		public void onProviderEnabled(String arg0) {
+		}
+
+		@Override
+		public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
+
+		}
+	};
+	
+	public double getLatitude(){
+		return latitude;
+	}
+	
+	public double getLongitude(){
+		return longitude;
 	}
 }
