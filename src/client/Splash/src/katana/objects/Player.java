@@ -22,4 +22,8 @@ public class Player {
 	public int getClassId(){
 		return class_id;
 	}
+	
+	public void setClassId(int i){
+		class_id = i;
+	}
 }

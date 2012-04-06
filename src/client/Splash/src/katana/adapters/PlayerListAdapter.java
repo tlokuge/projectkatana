@@ -50,9 +50,7 @@ public class PlayerListAdapter extends BaseAdapter {
 			
 			// Hold the view objects in an object so they don't need to be re-fetched
 			playerView = new PlayerView();
-			playerView.username = (TextView) gridView.findViewById(R.id.name);
-			//playerView.diff = (TextView) gridView.findViewById(R.id.diff);
-			//playerView.maxp = (TextView) gridView.findViewById(R.id.maxp);
+			playerView.username = (TextView) gridView.findViewById(R.id.name); 
 			playerView.icon = (ImageView) gridView.findViewById(R.id.icon);
 			
 			gridView.setTag(playerView);
@@ -63,8 +61,11 @@ public class PlayerListAdapter extends BaseAdapter {
 		// Transfer the stock data from the data object to the view objects
 		Player currentPlayer = (Player) players.get(position);
 		playerView.username.setText(currentPlayer.getUsername());
-		playerView.icon.setImageResource(R.drawable.qr);
-		
+		switch(currentPlayer.getClassId()) {
+			case 1: playerView.icon.setImageResource(R.drawable.class1); break;
+			case 2: playerView.icon.setImageResource(R.drawable.class2); break;
+			default: break;
+		}
 		return gridView;
 	}
 	
