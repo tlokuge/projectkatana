@@ -15,6 +15,8 @@ public class Lobby
     private ArrayList<Player> players;
     private HashMap<Integer, GameRoom> rooms;
     
+    private int nextRoomId;
+    
     public Lobby(int id, String name, double latitude, double longitude, double radius)
     {
         this.id = id;
@@ -22,6 +24,8 @@ public class Lobby
         this.latitude = latitude;
         this.longitude = longitude;
         this.radius = radius;
+        
+        this.nextRoomId = 0;
     }
     
     public int getLocationId()    { return id; }
@@ -55,6 +59,7 @@ public class Lobby
     public double getLongitude() { return longitude; }
     public double getRadius()    { return radius; }
     public String getName()      { return name; }
+    public int getNextRoomId()   { return nextRoomId++; }
     
     public String toString()
     {

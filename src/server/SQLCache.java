@@ -25,14 +25,14 @@ public abstract class SQLCache
     
     private static void cacheLocations()
     {
+        System.out.println("Loading Locations....");
         ProgressBar bar = new ProgressBar();
         
         ArrayList<HashMap<String, Object>> results = SQLHandler.instance().runLocationQuery();
         if(results == null || results.isEmpty())
         {
             System.err.println("ERROR: NO LOCATIONS LOADED");
-            return;
-            //System.exit(Constants.NO_LOCATIONS);
+            KatanaServer.exit(KatanaError.ERR_SQLCACHE_NO_LOCATIONS);
         }
         
         for(int i = 0; i < results.size(); ++i)
@@ -53,6 +53,7 @@ public abstract class SQLCache
     
     private static void cacheSpells()
     {
+        System.out.println("Loading spells....");
         spell_map.clear();
         
         ProgressBar bar = new ProgressBar();
@@ -61,8 +62,7 @@ public abstract class SQLCache
         if(results == null || results.isEmpty())
         {
             System.err.println("ERROR: NO SPELLS LOADED");
-            return;
-            //System.exit(Constants.NO_SPELLS);
+            KatanaServer.exit(KatanaError.ERR_SQLCACHE_NO_SPELLS);
         }
         
         for(int i = 0; i < results.size(); ++i)
@@ -82,6 +82,7 @@ public abstract class SQLCache
     
     private static void cacheClasses()
     {
+        System.out.println("Loading classes....");
         class_map.clear();
         
         ProgressBar bar = new ProgressBar();
@@ -90,8 +91,7 @@ public abstract class SQLCache
         if(results == null || results.isEmpty())
         {
             System.err.println("ERROR: NO CLASSES LOADED");
-            return;
-            // System.exit(Constants.NO_CLASSES);
+            KatanaServer.exit(KatanaError.ERR_SQLCACHE_NO_CLASSES);
         }
         
         for(int i = 0; i < results.size(); ++i)

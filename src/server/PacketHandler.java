@@ -235,18 +235,7 @@ public abstract class PacketHandler
             return;
         }
         
-        sql.runRoomCreateQuery(name, pl.getLocation(), difficulty, max_players, pl.getId());
-        
-        ArrayList<HashMap<String, Object>> results = sql.runRoomLeaderQuery(pl.getId());
-        if(results == null || results.isEmpty())
-        {
-            // Error occurred
-            KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_NO);
-            client.sendPacket(response);
-            return;
-        }
-        
-        int room_id = (Integer)results.get(0).get("room_id");
+        int room_id = lobby.getNextRoomId();
         pl.addToRoom(room_id);
         pl.setRoomLeader(true);
         
@@ -285,10 +274,6 @@ public abstract class PacketHandler
             lobby.addPlayer(p);
             p.sendPacket(response);
         }
-        
-        SQLHandler sql = SQLHandler.instance();
-        sql.runClearUserRoomQuery(room.getId());
-        sql.runDeleteRoomQuery(room.getId());
         
         lobby.removeRoom(room.getId());
         pl.setRoomLeader(false);
@@ -336,29 +321,16 @@ public abstract class PacketHandler
             return;
         }
         
-        room.addPlayer(pl);
-        SQLHandler sql = SQLHandler.instance();
-        sql.runRoomJoinQuery(pl.getId(), room_id, class_id);
         // Response
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_JOIN_OK);
-        ArrayList<HashMap<String, Object>> results = sql.runRoomPlayersQuery(room_id);
-        if(results != null && !results.isEmpty())
+        KatanaPacket notify = new KatanaPacket(-1, Opcode.S_ROOM_PLAYER_JOIN);
+        notify.addData(pl.getId() + ";" + pl.getName() + ";" + class_id);
+        for(Player p : room.getPlayers())
         {
-            pl.addToRoom(room_id);
-            pl.setClass(class_id);
-            
-            KatanaPacket notify = new KatanaPacket(-1, Opcode.S_ROOM_PLAYER_JOIN);
-            notify.addData(pl.getId() + ";" + pl.getName() + ";" + class_id);
-            for(HashMap map : results)
-            {
-                int id = (Integer)map.get("user_id");
-                if(id == pl.getId())
-                    continue;
-                
-                response.addData(id + ";" + map.get("username") + ";" + map.get("class_id") + ";");
-                KatanaServer.instance().getPlayer(id).sendPacket(notify);
-            }
+            response.addData(p.getId() + ";" + p.getName() + ";" + p.getClassId() + ";");
+            p.sendPacket(notify);
         }
+        room.addPlayer(pl);
         
         client.sendPacket(response);
     }
@@ -370,8 +342,6 @@ public abstract class PacketHandler
         Player pl = KatanaServer.instance().getPlayer(client.getId());
         int room_id = pl.getRoom();
         pl.removeFromRoom();
-        
-        SQLHandler.instance().runRoomLeaveQuery(pl.getId());
         
         GameRoom room = KatanaServer.instance().getLobby(pl.getLocation()).getRoom(room_id);
         if(room == null)
@@ -513,7 +483,6 @@ public abstract class PacketHandler
         for(Player p : room.getPlayers())
             p.sendPacket(notify);
         
-        SQLHandler.instance().runClassChangeQuery(class_id, pl.getId());
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_CLASS_CHANGE_OK);
         client.sendPacket(response);
     }
