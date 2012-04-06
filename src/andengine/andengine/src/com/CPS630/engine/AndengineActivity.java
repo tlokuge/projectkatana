@@ -57,7 +57,7 @@ public class AndengineActivity extends BaseGameActivity {
     AnimatedSprite face;
     AnimatedSprite heli;
     AnimatedSprite boss;
-    AnimatedSprite face2;
+    AnimatedSprite lspell,rspell,uspell,dspell;
     Sprite bg;
     Sprite projectile;
     Scene scene = new Scene();
@@ -70,7 +70,7 @@ public class AndengineActivity extends BaseGameActivity {
     boolean bossTouched=false;
     
 	GestureDetector mGestureDetector;
-	ChangeableText elapsedText;
+	ChangeableText healthText;
     
     /*protected int getLayoutID() {
             return R.layout.main;
@@ -134,7 +134,7 @@ public class AndengineActivity extends BaseGameActivity {
         heli.setScale(2);
 
         /* Quickly twinkling face. */
-        face = new AnimatedSprite(50, 50, this.mFaceTextureRegion){
+        lspell = new AnimatedSprite(cameraWidth-50, 100, this.mFaceTextureRegion){
             @Override
             public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
                    // this.setPosition(pSceneTouchEvent.getX() - this.getWidth() / 2, pSceneTouchEvent.getY() - this.getHeight() / 2);
@@ -144,7 +144,39 @@ public class AndengineActivity extends BaseGameActivity {
             		return false;
             }
         };
-          
+        rspell = new AnimatedSprite(cameraWidth-50, 175, this.mFaceTextureRegion){
+            @Override
+            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+                   // this.setPosition(pSceneTouchEvent.getX() - this.getWidth() / 2, pSceneTouchEvent.getY() - this.getHeight() / 2);
+                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+            			return true;
+            		}
+            		return false;
+            }
+        };
+        
+        rspell.setCurrentTileIndex(1);
+        
+        uspell = new AnimatedSprite(cameraWidth-50, 250, this.mFaceTextureRegion){
+            @Override
+            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+                   // this.setPosition(pSceneTouchEvent.getX() - this.getWidth() / 2, pSceneTouchEvent.getY() - this.getHeight() / 2);
+                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+            			return true;
+            		}
+            		return false;
+            }
+        };
+        dspell = new AnimatedSprite(cameraWidth-50, 325, this.mFaceTextureRegion){
+            @Override
+            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+                   // this.setPosition(pSceneTouchEvent.getX() - this.getWidth() / 2, pSceneTouchEvent.getY() - this.getHeight() / 2);
+                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+            			return true;
+            		}
+            		return false;
+            }
+        };
         boss = new AnimatedSprite(centerX, centerY, this.mDevilTextureRegion){
             @Override
             public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
@@ -156,22 +188,28 @@ public class AndengineActivity extends BaseGameActivity {
             }
         };
         
-        //elapsedText = new ChangeableText(100, 160, this.mFont, "Test", "Seconds elapsed: XXXXXXXXXXX".length());
+        healthText = new ChangeableText(cameraWidth-75, 30, this.mFont, "5000", "XXXX".length());
         
         mGestureDetector = new GestureDetector(this, new myGestureListener());
         
-        face.setScale(1);
+        lspell.setScale(2);
+        rspell.setScale(2);
+        dspell.setScale(2);
+        uspell.setScale(2);
         scene.registerTouchArea(boss);
-        scene.registerTouchArea(face);
+        //scene.registerTouchArea(face);
         scene.registerTouchArea(heli);
         
         scene.setTouchAreaBindingEnabled(true); 
    
-  //      scene.attachChild(elapsedText);
+        scene.attachChild(healthText);
 
      //   createSpriteSpawnTimeHandler();
         scene.attachChild(heli);
-        scene.attachChild(face);
+        scene.attachChild(lspell);
+        scene.attachChild(rspell);
+        scene.attachChild(uspell);
+        scene.attachChild(dspell);
         scene.attachChild(boss);
         
        // scene.registerUpdateHandler(detect);
