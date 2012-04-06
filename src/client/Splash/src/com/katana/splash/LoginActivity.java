@@ -1,7 +1,7 @@
 package com.katana.splash;
 
 import katana.services.KatanaService;
-import katana.services.KatanaService.LocalBinder;
+import katana.services.KatanaService.KatanaSBinder;
 import katana.shared.KatanaConstants;
 import katana.shared.KatanaPacket;
 import katana.shared.Opcode;
@@ -131,7 +131,7 @@ public class LoginActivity extends Activity {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
-            LocalBinder binder = (LocalBinder) service;
+            KatanaSBinder binder = (KatanaSBinder) service;
             katanaService = binder.getService();
             System.out.println(katanaService);
             mBound = true;
