@@ -134,15 +134,7 @@ public class AndengineActivity extends BaseGameActivity {
           
         scene.setBackgroundEnabled(true); 
         loadBackground(1);
-        //load players sprite
-        for(int i=0;i<pEntityList.size();i++){
-        	scene.attachChild(pEntityList.get(i).getPlayerSprite());
-        }
-        
-        //load monster sprite
-        for(int i=0;i<mEntityList.size();i++){
-        	scene.attachChild(mEntityList.get(i).getMonsterSprite());
-        }
+     
         player = new AnimatedSprite(100,100, this.mPlayerTextureRegion);
         
         player.setScale(2);
@@ -170,7 +162,7 @@ public class AndengineActivity extends BaseGameActivity {
         
       /*  scene.registerUpdateHandler(new TimerHandler(1 / 20.0f, true, new ITimerCallback() {
             public void onTimePassed(final TimerHandler pTimerHandler) {
-                    elapsedText.setText("Seconds elapsed: " + AndengineActivity.this.mEngine.getSecondsElapsedTotal());
+                   healthText.setText("Seconds elapsed: " + AndengineActivity.this.mEngine.getSecondsElapsedTotal());
                   
             }
     })); */
@@ -186,24 +178,24 @@ public class AndengineActivity extends BaseGameActivity {
         scene.setBackground(new SpriteBackground(bg));
     }
     
-    public void createPlayer(int playerID, int playerClass, int playerHP){
+    public void createPlayer(int playerID, int playerClass, int playerHP, float pX, float pY){
     	
-    	AnimatedSprite player1;
+    	AnimatedSprite players;
     	PlayerEntity pEntity = new PlayerEntity(playerID, playerClass, playerHP);
     	
 		if (playerClass==1)
-    		player1 = new AnimatedSprite(50, 50, this.mPlayerTextureRegion);
+    		players = new AnimatedSprite(pX, pY, this.mPlayerTextureRegion);
     	else
-    		player1 = new AnimatedSprite(50, 50, this.mPlayerTextureRegion);
+    		players = new AnimatedSprite(pX, pY, this.mPlayerTextureRegion);
 		
-    	pEntity.setPlayerSprite(player1);
-    	HPBar pHP = new HPBar(0, 0, player1.getWidth(), 2, player1);
+    	pEntity.setPlayerSprite(players);
+    	HPBar pHP = new HPBar(0, 0, players.getWidth(), 2, players);
     	pHP.setBackColor(0, 0, 0, 1f);
         pHP.setHPColor(0, 1f, 0, 1f);
         pHP.setHP(playerHP);
         pEntity.setHPBar(pHP);
         pEntityList.add(pEntity);
-        scene.attachChild(player1);
+        scene.attachChild(players);
     }
     
     public void createMonster(int monsterID, int monsterType, int monsterHP, float mX, float mY){
@@ -248,6 +240,7 @@ public class AndengineActivity extends BaseGameActivity {
     	for(int i=0;i<pEntityList.size();i++){
         	if(pEntityList.get(i).getPlayerID()==playerID){
         		move(pEntityList.get(i).getPlayerSprite(),pX,pY);
+        		break;
         	}		
         }
     }
@@ -256,31 +249,45 @@ public class AndengineActivity extends BaseGameActivity {
     	for(int i=0;i<mEntityList.size();i++){
         	if(mEntityList.get(i).getMonsterID()==monsterID){
         		move(mEntityList.get(i).getMonsterSprite(),pX,pY);
+        		break;
         	}
         		
         }
     }
     
-    public void on_pDamage(int playerID, int dValue){
-    	int pHealth;
+    public void update_pHP(int playerID, int hp){
+ 
     	for(int i=0;i<pEntityList.size();i++){
-        	if(pEntityList.get(i).getPlayerID()==playerID){
-        		pHealth=pEntityList.get(i).getPlayerHP()-dValue;
-        		pEntityList.get(i).setPlayerHP(pHealth);
-        		pEntityList.get(i).getHPBar().setHP(pHealth);
+        	if(pEntityList.get(i).getPlayerID()==playerID){	
+        		pEntityList.get(i).setPlayerHP(hp); //may not be needed
+        		pEntityList.get(i).getHPBar().setHP(hp);
+        		break;
         	}		
         }
     }
+
+    public void remove_player(int playerID){
+    	
+    	for(int i=0;i<pEntityList.size();i++){
+        	if(pEntityList.get(i).getPlayerID()==playerID){
+        		removeSprite(pEntityList.get(i).getPlayerSprite());
+        		pEntityList.remove(i);
+        		break;
+        	}		
+        }
+    	
+    }
     
-    public void on_mDamage(int monsterID, int dValue){
-    	int mHealth;
+    public void remove_monster(int monsterID){
+    	
     	for(int i=0;i<mEntityList.size();i++){
         	if(mEntityList.get(i).getMonsterID()==monsterID){
-        		mHealth=mEntityList.get(i).getmonsterHP()-dValue;
-        		mEntityList.get(i).setMonsterHP(mHealth);
-        	}
-        		
+        		removeSprite(mEntityList.get(i).getMonsterSprite());
+        		mEntityList.remove(i);
+        		break;
+        	}		
         }
+    	
     }
     
     public void loadSpellSign(){
