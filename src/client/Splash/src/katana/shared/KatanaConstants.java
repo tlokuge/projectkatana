@@ -29,8 +29,13 @@ public abstract class KatanaConstants
 	public static final String GAME_CLASS = "class";
 	
 	// GPS
+<<<<<<< .mine
+	public static final int GPS_MIN_REFRESHTIME = 0;
+	public static final int GPS_MIN_REFRESHDIST = 0;
+=======
 	public static final int GPS_MIN_REFRESHTIME = 5000;
 	public static final int GPS_MIN_REFRESHDIST = 20;
+>>>>>>> .r85
 	
 	// LoginActivity Constants
     public static final int PASSMIN = 1;

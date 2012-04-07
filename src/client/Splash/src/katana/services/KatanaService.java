@@ -32,6 +32,7 @@ public class KatanaService extends Service {
 	public static final String EXTRAS_PLAYERNAME = "playerName";
 	public static final String EXTRAS_PLAYERID = "playerId";
 	public static final String EXTRAS_ROOMID = "roomId";
+	public static final String EXTRAS_SCORES = "scores";
 	
 	private final IBinder mBinder = new KatanaSBinder();
 	
@@ -225,9 +226,22 @@ public class KatanaService extends Service {
     		case S_ROOM_CREATE_NO:
     			intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
     			sendBroadcast(intent); break;
+<<<<<<< .mine
     		case S_PLAYER_UPDATE_CLASS:
     			intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
     			handleClassChange(packet, intent);
+    		case S_ROOM_DESTROY:
+    			intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
+    			sendBroadcast(intent); break;
+    		case S_LEADERBOARD:
+    			intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
+    			intent.putExtra(EXTRAS_SCORES, packet.getData());
+    			sendBroadcast(intent); break;
+=======
+    		case S_PLAYER_UPDATE_CLASS:
+    			intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
+    			handleClassChange(packet, intent);
+>>>>>>> .r85
     		default: break;
     	}
     }
