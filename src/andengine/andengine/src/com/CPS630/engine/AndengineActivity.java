@@ -1,10 +1,10 @@
 package com.CPS630.engine;
 
+import java.util.ArrayList;
+
 import org.anddev.andengine.engine.Engine;
 import org.anddev.andengine.engine.camera.Camera;
 import org.anddev.andengine.engine.handler.IUpdateHandler;
-import org.anddev.andengine.engine.handler.timer.ITimerCallback;
-import org.anddev.andengine.engine.handler.timer.TimerHandler;
 import org.anddev.andengine.engine.options.EngineOptions;
 import org.anddev.andengine.engine.options.EngineOptions.ScreenOrientation;
 import org.anddev.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
@@ -18,12 +18,10 @@ import org.anddev.andengine.entity.util.FPSLogger;
 import org.anddev.andengine.input.touch.TouchEvent;
 import org.anddev.andengine.opengl.font.Font;
 import org.anddev.andengine.opengl.font.FontManager;
-import org.anddev.andengine.opengl.texture.Texture;
 import org.anddev.andengine.opengl.texture.TextureOptions;
 import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.anddev.andengine.opengl.texture.region.TextureRegion;
-import org.anddev.andengine.opengl.texture.region.TextureRegionFactory;
 import org.anddev.andengine.opengl.texture.region.TiledTextureRegion;
 import org.anddev.andengine.ui.activity.BaseGameActivity;
 
@@ -78,11 +76,13 @@ public class AndengineActivity extends BaseGameActivity {
     int cameraWidth;
     int cameraHeight;
     boolean bossTouched=false;
+    ArrayList <PlayerEntity> pEntityList= new ArrayList <PlayerEntity>();
+    ArrayList <MonsterEntity> mEntityList= new ArrayList <MonsterEntity>();
     
 	GestureDetector mGestureDetector;
 	ChangeableText healthText;
 	
-	private int health=100;
+	private int health=5000;
         
 	public Engine onLoadEngine() {
 		final Display display = getWindowManager().getDefaultDisplay();
@@ -122,6 +122,7 @@ public class AndengineActivity extends BaseGameActivity {
         this.dSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, dSpellfile, 400, 50, 1, 1);
         this.lSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, lSpellfile, 400, 100, 1, 1);
         this.rSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, rSpellfile, 400, 150, 1, 1);
+        
         this.mPlayerTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "player.png",170 , 0, 3, 4);
 
         this.mDevilTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "download.jpeg", 0, 0, 1, 1);
@@ -132,26 +133,32 @@ public class AndengineActivity extends BaseGameActivity {
     	this.mEngine.registerUpdateHandler(new FPSLogger());
           
         scene.setBackgroundEnabled(true); 
-        bg = new Sprite(0, 0, this.mBackground);
-        scene.setBackground(new SpriteBackground(bg));
+        loadBackground(1);
+        //load players sprite
+        for(int i=0;i<pEntityList.size();i++){
+        	scene.attachChild(pEntityList.get(i).getPlayerSprite());
+        }
         
+        //load monster sprite
+        for(int i=0;i<mEntityList.size();i++){
+        	scene.attachChild(mEntityList.get(i).getMonsterSprite());
+        }
         player = new AnimatedSprite(100,100, this.mPlayerTextureRegion);
         
         player.setScale(2);
           
-        loadSprite();
+        loadSpellSign();
         loadSidebar();
 		loadHPbar(player);
         mGestureDetector = new GestureDetector(this, new myGestureListener());
-        
+
         scene.registerTouchArea(boss);
-        //scene.registerTouchArea(face);
+
         scene.registerTouchArea(player);
         scene.setTouchAreaBindingEnabled(true); 
    
         scene.attachChild(healthText);
 
-     //   createSpriteSpawnTimeHandler();
         scene.attachChild(player);
         scene.attachChild(lspell);
         scene.attachChild(rspell);
@@ -170,7 +177,113 @@ public class AndengineActivity extends BaseGameActivity {
         return scene;
     }
     
-    public void loadSprite(){
+    public void loadBackground(int location){
+    	if(location==1)
+    		bg = new Sprite(0, 0, this.mBackground);
+    	else
+    		bg = new Sprite(0, 0, this.mBackground);
+    	
+        scene.setBackground(new SpriteBackground(bg));
+    }
+    
+    public void createPlayer(int playerID, int playerClass, int playerHP){
+    	
+    	AnimatedSprite player1;
+    	PlayerEntity pEntity = new PlayerEntity(playerID, playerClass, playerHP);
+    	
+		if (playerClass==1)
+    		player1 = new AnimatedSprite(50, 50, this.mPlayerTextureRegion);
+    	else
+    		player1 = new AnimatedSprite(50, 50, this.mPlayerTextureRegion);
+		
+    	pEntity.setPlayerSprite(player1);
+    	HPBar pHP = new HPBar(0, 0, player1.getWidth(), 2, player1);
+    	pHP.setBackColor(0, 0, 0, 1f);
+        pHP.setHPColor(0, 1f, 0, 1f);
+        pHP.setHP(playerHP);
+        pEntity.setHPBar(pHP);
+        pEntityList.add(pEntity);
+        scene.attachChild(player1);
+    }
+    
+    public void createMonster(int monsterID, int monsterType, int monsterHP, float mX, float mY){
+    	AnimatedSprite monster;
+    	MonsterEntity mEntity = new MonsterEntity(monsterID, monsterType, monsterHP);
+    	
+		if (monsterType == 1) {
+			monster = new AnimatedSprite(mX, mY, this.mDevilTextureRegion) {
+				@Override
+				public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,
+						final float pTouchAreaLocalX,
+						final float pTouchAreaLocalY) {
+					if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+						bossTouched = true;
+						return true;
+					}
+					return false;
+				}
+			};
+		} else {
+			monster = new AnimatedSprite(mX, mY, this.mDevilTextureRegion) {
+				@Override
+				public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,
+						final float pTouchAreaLocalX,
+						final float pTouchAreaLocalY) {
+					if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+						bossTouched = true;
+						return true;
+					}
+					return false;
+				}
+			};
+    	}
+        
+    	mEntity.setMonsterSprite(monster);
+    	mEntityList.add(mEntity);
+    	scene.attachChild(monster);
+    	scene.registerTouchArea(monster);
+    }
+    
+    public void move_pEntity(int playerID, float pX, float pY){
+    	for(int i=0;i<pEntityList.size();i++){
+        	if(pEntityList.get(i).getPlayerID()==playerID){
+        		move(pEntityList.get(i).getPlayerSprite(),pX,pY);
+        	}		
+        }
+    }
+    
+    public void move_mEntity(int monsterID, float pX, float pY){
+    	for(int i=0;i<mEntityList.size();i++){
+        	if(mEntityList.get(i).getMonsterID()==monsterID){
+        		move(mEntityList.get(i).getMonsterSprite(),pX,pY);
+        	}
+        		
+        }
+    }
+    
+    public void on_pDamage(int playerID, int dValue){
+    	int pHealth;
+    	for(int i=0;i<pEntityList.size();i++){
+        	if(pEntityList.get(i).getPlayerID()==playerID){
+        		pHealth=pEntityList.get(i).getPlayerHP()-dValue;
+        		pEntityList.get(i).setPlayerHP(pHealth);
+        		pEntityList.get(i).getHPBar().setHP(pHealth);
+        	}		
+        }
+    }
+    
+    public void on_mDamage(int monsterID, int dValue){
+    	int mHealth;
+    	for(int i=0;i<mEntityList.size();i++){
+        	if(mEntityList.get(i).getMonsterID()==monsterID){
+        		mHealth=mEntityList.get(i).getmonsterHP()-dValue;
+        		mEntityList.get(i).setMonsterHP(mHealth);
+        	}
+        		
+        }
+    }
+    
+    public void loadSpellSign(){
     	final int centerX = (cameraWidth - this.dSpellTextureRegion.getWidth()) / 2;
         final int centerY = (cameraHeight - this.dSpellTextureRegion.getHeight()) / 2;
     	boss = new AnimatedSprite(centerX, centerY, this.mDevilTextureRegion){
@@ -228,7 +341,7 @@ public class AndengineActivity extends BaseGameActivity {
          playerHP.setBackColor(0, 0, 0, 1f);
          playerHP.setHPColor(0, 1f, 0, 1f);
          playerHP.setHP(health);
-         sprite.attachChild(playerHP);
+         //sprite.attachChild(playerHP);
     }
 	
     public void loadSidebar(){	
@@ -248,7 +361,7 @@ public class AndengineActivity extends BaseGameActivity {
         	return this.mEngine.getFontManager();
     }
     
-    IUpdateHandler detect = new IUpdateHandler() {
+   /* IUpdateHandler detect = new IUpdateHandler() {
 		public void reset() {
 		}
 
@@ -272,7 +385,7 @@ public class AndengineActivity extends BaseGameActivity {
 				}
 			}
 		}
-	};
+	};*/
     
     private void move(AnimatedSprite sprite, float dest_spriteX, float dest_spriteY ) {
     	
