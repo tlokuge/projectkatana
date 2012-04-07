@@ -62,7 +62,7 @@ public class AndengineActivity extends BaseGameActivity {
     String background = "Background.png";
     
     AnimatedSprite face;
-    AnimatedSprite player;
+    AnimatedSprite user;
     AnimatedSprite boss;
     AnimatedSprite lspell,rspell,uspell,dspell;
     Sprite bg;
@@ -134,24 +134,21 @@ public class AndengineActivity extends BaseGameActivity {
           
         scene.setBackgroundEnabled(true); 
         loadBackground(1);
-     
-        player = new AnimatedSprite(100,100, this.mPlayerTextureRegion);
-        
-        player.setScale(2);
+         
+        createUserChar(1, 1, 5000, 100, 100);
           
         loadSpellSign();
         loadSidebar();
-		loadHPbar(player);
+
         mGestureDetector = new GestureDetector(this, new myGestureListener());
 
         scene.registerTouchArea(boss);
 
-        scene.registerTouchArea(player);
+        
         scene.setTouchAreaBindingEnabled(true); 
    
         scene.attachChild(healthText);
 
-        scene.attachChild(player);
         scene.attachChild(lspell);
         scene.attachChild(rspell);
         scene.attachChild(uspell);
@@ -178,15 +175,75 @@ public class AndengineActivity extends BaseGameActivity {
         scene.setBackground(new SpriteBackground(bg));
     }
     
-    public void createPlayer(int playerID, int playerClass, int playerHP, float pX, float pY){
+    public void createUserChar(int playerID, int playerClass, int playerHP, float pX, float pY){
+    	
+    	PlayerEntity pEntity = new PlayerEntity(playerID, playerClass, playerHP);
+    	
+		if (playerClass==1)
+    		user = new AnimatedSprite(pX, pY, this.mPlayerTextureRegion){
+			@Override
+			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,
+					final float pTouchAreaLocalX,
+					final float pTouchAreaLocalY) {
+				if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+					return true;
+				}
+				return false;
+			}
+		};
+    	else
+    		user = new AnimatedSprite(pX, pY, this.mPlayerTextureRegion){
+			@Override
+			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,
+					final float pTouchAreaLocalX,
+					final float pTouchAreaLocalY) {
+				if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+					return true;
+				}
+				return false;
+			}
+		};
+		pEntity.setPlayerSprite(user);
+    	HPBar pHP = new HPBar(0, 0, user.getWidth(), 2, user);
+    	pHP.setBackColor(0, 0, 0, 1f);
+        pHP.setHPColor(0, 1f, 0, 1f);
+        pHP.setHP(playerHP);
+        pEntity.setHPBar(pHP);
+        pEntityList.add(pEntity);
+        user.setScale(2);
+        scene.attachChild(user);
+        scene.registerTouchArea(user);
+    }
+    
+    public void createTeammate(int playerID, int playerClass, int playerHP, float pX, float pY){
     	
     	AnimatedSprite players;
     	PlayerEntity pEntity = new PlayerEntity(playerID, playerClass, playerHP);
     	
 		if (playerClass==1)
-    		players = new AnimatedSprite(pX, pY, this.mPlayerTextureRegion);
+    		players = new AnimatedSprite(pX, pY, this.mPlayerTextureRegion){
+			@Override
+			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,
+					final float pTouchAreaLocalX,
+					final float pTouchAreaLocalY) {
+				if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+					return true;
+				}
+				return false;
+			}
+		};
     	else
-    		players = new AnimatedSprite(pX, pY, this.mPlayerTextureRegion);
+    		players = new AnimatedSprite(pX, pY, this.mPlayerTextureRegion){
+			@Override
+			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,
+					final float pTouchAreaLocalX,
+					final float pTouchAreaLocalY) {
+				if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+					return true;
+				}
+				return false;
+			}
+		};
 		
     	pEntity.setPlayerSprite(players);
     	HPBar pHP = new HPBar(0, 0, players.getWidth(), 2, players);
@@ -196,6 +253,7 @@ public class AndengineActivity extends BaseGameActivity {
         pEntity.setHPBar(pHP);
         pEntityList.add(pEntity);
         scene.attachChild(players);
+        scene.registerTouchArea(players);
     }
     
     public void createMonster(int monsterID, int monsterType, int monsterHP, float mX, float mY){
@@ -464,9 +522,9 @@ public class AndengineActivity extends BaseGameActivity {
 			
 			if(!bossTouched)
 			{
-				player.clearEntityModifiers();
-				move(player,dest_X, dest_Y);
-				runAnimate(player, dest_X, dest_Y);
+				user.clearEntityModifiers();
+				move(user,dest_X, dest_Y);
+				runAnimate(user, dest_X, dest_Y);
 			}
 			else{
 
@@ -553,7 +611,7 @@ public class AndengineActivity extends BaseGameActivity {
 		Toast.makeText(AndengineActivity.this, "onSwipeLeft", Toast.LENGTH_SHORT).show();
 		if(bossTouched){
 			//elapsedText.setText("Wind Atk");	
-			attackAnimate(player);	
+			attackAnimate(user);	
 		}
 		return true;
 	}
