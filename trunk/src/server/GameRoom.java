@@ -63,7 +63,7 @@ public class GameRoom
         players.add(pl.getId());
         return true;
     }
-    public void removePlayer(Player pl) { players.remove(pl.getId()); }
+    public void removePlayer(Player pl) { players.remove((Object)pl.getId()); }
     
     public ArrayList<Integer> getPlayers() { return players; }
     

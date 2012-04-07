@@ -34,7 +34,7 @@ public class Lobby
     public int getLocationId()    { return id; }
     
     public void addPlayer(Player pl)      { players.add(pl.getId()); }
-    public void removePlayer(Player pl)   { players.remove(pl.getId()); }
+    public void removePlayer(Player pl)   { players.remove((Object)pl.getId()); }
     public ArrayList<Integer> getPlayers() { return players; }
     
     public void addRoom(GameRoom room)    
