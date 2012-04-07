@@ -31,7 +31,7 @@ public class MonsterEntity {
 	private String[] spells;
 	private AnimatedSprite monsterSprite;
 	
-	public monsters(int monsterID, int monsterType, int monsterHP){
+	public MonsterEntity(int monsterID, int monsterType, int monsterHP){
 		this.monsterID = monsterID;
 		this.monsterHP = monsterHP;
 		maxHP = monsterHP;
