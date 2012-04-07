@@ -25,9 +25,11 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -68,20 +70,19 @@ public class LobbyActivity extends Activity {
 	private RadioGroup rg_plyrSel;
 	
 	private EditText et_rmName;
-    
+	
+	private PowerManager.WakeLock mWakeLock;
 	// Vars
 	private int selection = 0;
 	ArrayList<Room> roomList;
 	Room selectedRoom;
 	
 	private boolean roomLeader = false;
-	private boolean newRoom = false;
 	private boolean inRoom = false;
 	private boolean inValidLoc = false;
 	
 	private int createdRoomId = -1;
-	private int selectedClass = 1;
-	
+
 	// Service Vars
 	KatanaService katanaService; 
 	boolean serviceBound = false;
@@ -103,6 +104,7 @@ public class LobbyActivity extends Activity {
 	public void onBackPressed() {
 		Log.d("CDA", "onBackPressed Called"); 
 		if (inRoom == true) {
+			inRoom = false;
 			if(roomLeader == true) {
 				System.out.println("DESTROY ALL THE ROOM!");
 				KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_DESTROY);
@@ -113,10 +115,12 @@ public class LobbyActivity extends Activity {
 				viewFlipper.setOutAnimation(LobbyActivity.this, R.anim.transition_outfrom_right);
 				viewFlipper.showPrevious();
 				return;
+			} else {
+				katanaService.sendPacket(new KatanaPacket(0,Opcode.C_ROOM_LEAVE));
+				viewFlipper.setInAnimation(LobbyActivity.this, R.anim.transition_infrom_right);
+				viewFlipper.setOutAnimation(LobbyActivity.this, R.anim.transition_outfrom_right);
+				viewFlipper.showPrevious();
 			}
-			
-			inRoom = false;
-			katanaService.sendPacket(new KatanaPacket(0,Opcode.C_ROOM_LEAVE));
 		} else {
 			this.finish();
 		}
@@ -126,14 +130,54 @@ public class LobbyActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.lobby_menu, menu);
+        if(!inRoom) {
+        	inflater.inflate(R.menu.lobby_menu, menu);
+        }
+        else {
+        	inflater.inflate(R.menu.wroom_menu, menu);
+        }
         return true;
     }
 	
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+    	menu.clear();
+    	MenuInflater inflater = getMenuInflater();
+        if(!inRoom) {
+        	inflater.inflate(R.menu.lobby_menu, menu);
+        }
+        else {
+        	inflater.inflate(R.menu.wroom_menu, menu);
+        }
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.about:
+                return true;
+            case R.id.leaderboards:
+            	katanaService.sendPacket(new KatanaPacket(0, Opcode.C_LEADERBOARD));
+                return true;
+            case R.id.change_class:
+            	showSelectClassDialog(false);
+            	return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+    
 	/** Called when the activity is first created */
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, "My Tag");
+        mWakeLock.acquire();
+        
         setContentView(R.layout.viewflipper);
         
         // Bind Views
@@ -233,15 +277,16 @@ public class LobbyActivity extends Activity {
 	@Override
 	protected void onPause(){
 		super.onPause();
+		mWakeLock.release();
 		// Unbind KatanaService and Receiver
 		doUnbindService();
+		// Send logout packet to server
+		katanaService.sendPacket(new KatanaPacket(0,Opcode.C_LOGOUT));
 	}
 	
 	/** Called when the activity is stopped */
 	@Override
 	protected void onStop(){
-        // Send logout packet to server
-     	katanaService.sendPacket(new KatanaPacket(0,Opcode.C_LOGOUT));
 		super.onStop();
 	}
 	    
@@ -267,7 +312,6 @@ public class LobbyActivity extends Activity {
             unregisterReceiver(katanaLocReceiver);
             stopService(new Intent(LobbyActivity.this,KatanaService.class));
             serviceBound = false;
-            // Unbind from GPS! :O
         }
     }
     
@@ -377,7 +421,7 @@ public class LobbyActivity extends Activity {
     	katanaService.sendPacket(packet);
     }
     
-    public void showLeaderboardDialog(){
+    public void showLeaderboardDialog(String scores){
     	leaderboardDialog = new Dialog(this, R.style.DialogTheme);
     	leaderboardDialog.setContentView(R.layout.leaderboard);
     	leaderboardDialog.setTitle("Leaderboards");
@@ -398,6 +442,8 @@ public class LobbyActivity extends Activity {
     		}
     	});
     	
+    	TextView tv = (TextView)leaderboardDialog.findViewById(R.id.l_lb);
+    	tv.setText(scores);
     	leaderboardDialog.show();
     }
     
@@ -496,6 +542,7 @@ public class LobbyActivity extends Activity {
     	packet.addData(name);
     	packet.addData(difficulty + "");
     	packet.addData(max + "");
+    	packet.addData(gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1) + "");
     	katanaService.sendPacket(packet);
     }
     
@@ -538,9 +585,10 @@ public class LobbyActivity extends Activity {
     			showRoomPlayers(al);
     			joinRoom(selectedRoom);
     		} else if (intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_JOIN_NO.name())) {
-    			Toast.makeText(getApplicationContext(), "S_ROOM_CREATE_NO", Toast.LENGTH_SHORT).show();
+    			Toast.makeText(getApplicationContext(), "You cant join this room.", Toast.LENGTH_SHORT).show();
     		} else if (intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_PLAYER_JOIN.name())) {
-    			addPlayer(intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME));
+    			addPlayer(intent);
+    			
     		} else if (intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_PLAYER_LEAVE.name())) {
     			removePlayer(Integer.parseInt((intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME))));
     		}
@@ -560,6 +608,17 @@ public class LobbyActivity extends Activity {
     				int playerclass = intent.getIntExtra(KatanaService.EXTRAS_PLAYERCLASS, -1);
     				updatePlayerClass(playerid, playerclass);
     			}
+    		} else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_DESTROY.name())) {
+    			if(inRoom){
+    				refreshList(null);
+    				inRoom = false;
+    				roomLeader = false;
+    				viewFlipper.setInAnimation(LobbyActivity.this, R.anim.transition_infrom_right);
+    				viewFlipper.setOutAnimation(LobbyActivity.this, R.anim.transition_outfrom_right);
+    				viewFlipper.showPrevious();
+    			}
+    		} else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_LEADERBOARD.name())) {
+    			showLeaderboardDialog(intent.getStringExtra(KatanaService.EXTRAS_SCORES));
     		}
     	}
     };
@@ -570,7 +629,8 @@ public class LobbyActivity extends Activity {
     	gv_wroomList.setAdapter(new PlayerListAdapter(this,playerList));
     }
     
-    private void addPlayer(String s){
+    private void addPlayer(Intent intent){
+    	String s = intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME);
     	int ref = playerList.size();
     	String lines[] = s.split(";");
     	playerRef.put(Integer.parseInt(lines[0]), ref);
@@ -592,6 +652,7 @@ public class LobbyActivity extends Activity {
     	
     	int position = 0;
     	for(int i = 0; i < al.size(); i++) {
+    		System.out.println(al.get(i));
     		String[] lines = al.get(i).split(";");
     		
     		if(lines.length < 3)
@@ -603,7 +664,11 @@ public class LobbyActivity extends Activity {
     	}
     	
     	int pid = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getInt(KatanaConstants.PLAYER_ID, 0);
-    	playerRef.put(pid, position + 1);
+    	if(al.isEmpty()){
+    		playerRef.put(pid, 0);
+    	} else {
+    		playerRef.put(pid, position + 1);
+    	}
     	playerList.add(new Player(pid, getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getString(KatanaConstants.LOGIN_USER, ""), gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1)));
     	// Update user interface
     	gv_wroomList.setAdapter(new PlayerListAdapter(this, playerList));
@@ -625,6 +690,19 @@ public class LobbyActivity extends Activity {
     	gv_roomsList.setAdapter(new RoomListAdapter(this,roomList));       
     }
 
+    //
+    
+    private void changeClass(int i){
+		int pid = getSharedPreferences(KatanaConstants.PREFS_LOGIN,MODE_PRIVATE).getInt(KatanaConstants.PLAYER_ID, 0);
+		System.out.println("my id: " + playerRef.get(pid));
+		System.out.println("playerlist size: " + playerList.size());
+		playerList.get(playerRef.get(pid)).setClassId(i);
+		gv_wroomList.setAdapter(new PlayerListAdapter(this,playerList));
+		KatanaPacket packet = new KatanaPacket(0, Opcode.C_CLASS_CHANGE);
+		packet.addData(Integer.toString(i));
+		katanaService.sendPacket(packet);
+    }
+    
     /** OnClickListeners */
     private OnClickListener class1Listener = new OnClickListener() {
 		@Override
@@ -640,7 +718,9 @@ public class LobbyActivity extends Activity {
 					gamePrefs.edit().putInt(KatanaConstants.GAME_CLASS, selection).commit();
 					if(!inRoom) 
 						sendJoinRoomRequest();
-
+					else {
+						changeClass(1);
+					}
 					classDialog.dismiss();
 				} else {
 					// Highlight class 1
@@ -673,6 +753,9 @@ public class LobbyActivity extends Activity {
 					gamePrefs.edit().putInt(KatanaConstants.GAME_CLASS, selection).commit();
 					if(!inRoom)
 						sendJoinRoomRequest();
+					else {
+						changeClass(2);
+					}
 					classDialog.dismiss();
 				} else{
 					// Highlight class 2
