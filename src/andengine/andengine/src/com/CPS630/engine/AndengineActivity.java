@@ -138,9 +138,6 @@ public class AndengineActivity extends BaseGameActivity {
         loadBackground(1);
          
         createUserChar(1, 1, 5000, 100, 100);
-        //createTeammate(2, 1, 5000, 100, 100);
-        //move_pEntity(2, 500, 100);
-        
         
         loadSpellSign();
         loadSidebar();    	
@@ -148,23 +145,7 @@ public class AndengineActivity extends BaseGameActivity {
         mGestureDetector = new GestureDetector(this, new myGestureListener());
 
         scene.setTouchAreaBindingEnabled(true); 
-   
-        scene.attachChild(healthText);
-
-        scene.attachChild(lspell);
-        scene.attachChild(rspell);
-        scene.attachChild(uspell);
-        scene.attachChild(dspell);
-
-        
-     // scene.registerUpdateHandler(detect);
-        
-      /*  scene.registerUpdateHandler(new TimerHandler(1 / 20.0f, true, new ITimerCallback() {
-            public void onTimePassed(final TimerHandler pTimerHandler) {
-                   healthText.setText("Seconds elapsed: " + AndengineActivity.this.mEngine.getSecondsElapsedTotal());
-                  
-            }
-    })); */
+  
         return scene;
     }
     
@@ -421,6 +402,11 @@ public class AndengineActivity extends BaseGameActivity {
         	        uspell = new AnimatedSprite(cameraWidth-50, 250, this.uSpellTextureRegion);
         	        rspell = new AnimatedSprite(cameraWidth-50, 325, this.rSpellTextureRegion);
         		}
+        		scene.attachChild(lspell);
+                scene.attachChild(rspell);
+                scene.attachChild(uspell);
+                scene.attachChild(dspell);
+                break;
         			
         	}		
         }
@@ -429,7 +415,7 @@ public class AndengineActivity extends BaseGameActivity {
     	
     public void loadSidebar(){	
     	healthText = new ChangeableText(cameraWidth-75, 30, this.mFont, "5000", "XXXX".length());
-        
+        scene.attachChild(healthText);
     	lspell.setScale(2);
         rspell.setScale(2);
         dspell.setScale(2);
