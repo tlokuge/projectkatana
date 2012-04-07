@@ -132,23 +132,14 @@ public class AndengineActivity extends BaseGameActivity {
     
     public Scene onLoadScene() {
 
-    	this.mEngine.registerUpdateHandler(new FPSLogger());
-          
-        scene.setBackgroundEnabled(true); 
-        loadBackground(1);
-         
-        createUserChar(1, 1, 5000, 100, 100);
-        
-        loadSpellSign();
-        loadSidebar();    	
-        
+    	this.mEngine.registerUpdateHandler(new FPSLogger());        
+        scene.setBackgroundEnabled(true);     	    
         mGestureDetector = new GestureDetector(this, new myGestureListener());
-
         scene.setTouchAreaBindingEnabled(true); 
-  
         return scene;
     }
     
+    //setup background of the game base on location
     public void loadBackground(int location){
     	if(location==1)
     		bg = new Sprite(0, 0, this.mBackground);
@@ -158,6 +149,7 @@ public class AndengineActivity extends BaseGameActivity {
         scene.setBackground(new SpriteBackground(bg));
     }
     
+    //creating player himself
     public void createUserChar(int playerID, int playerClass, int playerHP, float pX, float pY){
     	
     	final PlayerEntity pEntity = new PlayerEntity(playerID, playerClass, playerHP);
@@ -201,7 +193,7 @@ public class AndengineActivity extends BaseGameActivity {
         scene.attachChild(user);
         scene.registerTouchArea(user);
     }
-    
+    //create teammate
     public void createTeammate(int playerID, int playerClass, int playerHP, float pX, float pY){
     	
     	AnimatedSprite players;
@@ -244,7 +236,7 @@ public class AndengineActivity extends BaseGameActivity {
         scene.attachChild(players);
         scene.registerTouchArea(players);
     }
-    
+    //creating monster
     public void createMonster(int monsterID, int monsterType, int monsterHP, float mX, float mY){
     	AnimatedSprite monster;
     	final MonsterEntity mEntity = new MonsterEntity(monsterID, monsterType, monsterHP);
@@ -284,7 +276,7 @@ public class AndengineActivity extends BaseGameActivity {
     	scene.attachChild(monster);
     	scene.registerTouchArea(monster);
     }
-    
+    //move the characters on screen for both monster and player
     public void move_Entity(int ID, float pX, float pY){
     	for(int i=0;i<EntityList.size();i++){
         	if(EntityList.get(i).getCharID()==ID){
@@ -293,7 +285,7 @@ public class AndengineActivity extends BaseGameActivity {
         	}		
         }
     }
-    
+    //update HP 
     public void update_pHP(int ID, int hp){
  
     	for(int i=0;i<EntityList.size();i++){
@@ -310,6 +302,7 @@ public class AndengineActivity extends BaseGameActivity {
     	
     }
     
+    //destroy character
     public void remove_char(int ID){
     	
     	for(int i=0;i<EntityList.size();i++){
@@ -321,7 +314,7 @@ public class AndengineActivity extends BaseGameActivity {
         }
     	
     }
-    
+    //casting spell
     public void spellCasting(int casterID, int targetID, int spellID){	
     	for(int i=0;i<EntityList.size();i++){
         	if(EntityList.get(i).getCharID()==casterID){
@@ -366,7 +359,7 @@ public class AndengineActivity extends BaseGameActivity {
 	        			//do monster spell3 dmg animation
 	        		}	
 	        	    if(spellID==4){
-	        	    	//do mosnter spell4 dmg animation
+	        	    	//do monster spell4 dmg animation
 	        	    }
         		}
         		else{
@@ -386,8 +379,8 @@ public class AndengineActivity extends BaseGameActivity {
         	}	
         }
     }
-    
-    public void loadSpellSign(){
+    //load up spell display
+    public void loadSpellDisplay(){
     	for(int i=0;i<EntityList.size();i++){
         	if(EntityList.get(i).getCharID()==userID){
         		if(((PlayerEntity) EntityList.get(i)).getPlayerClass()==1){
@@ -412,8 +405,8 @@ public class AndengineActivity extends BaseGameActivity {
         }
     	
     }
-    	
-    public void loadSidebar(){	
+    //load up HP display
+    public void load_HPdisplay(){	
     	healthText = new ChangeableText(cameraWidth-75, 30, this.mFont, "5000", "XXXX".length());
         scene.attachChild(healthText);
     	lspell.setScale(2);
@@ -430,32 +423,7 @@ public class AndengineActivity extends BaseGameActivity {
         	return this.mEngine.getFontManager();
     }
     
-   /* IUpdateHandler detect = new IUpdateHandler() {
-		public void reset() {
-		}
-
-		public void onUpdate(float pSecondsElapsed) {
-			boolean hit = false;
-			if (projectile != null) {
-				if (projectile.getX() >= mCamera.getWidth()
-						|| projectile.getY() >= mCamera.getHeight()
-								+ projectile.getHeight()
-						|| projectile.getY() <= -projectile.getHeight()) {
-					removeSprite(projectile);
-				}
-
-				if (boss.collidesWith(projectile)) {
-					removeSprite(projectile);
-					hit = true;
-				}
-				if (hit) {
-					removeSprite(boss);
-					hit = false;
-				}
-			}
-		}
-	};*/
-    
+    //This move class is for andengine itselfs, not for server uses
     private void move(AnimatedSprite sprite, float dest_spriteX, float dest_spriteY ) {
     	
     	float curr_spriteX= sprite.getX();
@@ -478,19 +446,19 @@ public class AndengineActivity extends BaseGameActivity {
 	    }
   
     }
-    
+    //gesture detection
     public boolean onTouchEvent(MotionEvent event) {
     	if (mGestureDetector.onTouchEvent(event))
 			return true;
 		else
 			return false;
     }
-    
+    //Placeholder for animation class
     public void attackAnimate(AnimatedSprite sprite) {
 
     	sprite.animate(new long[] { 10, 20, 50, 20 }, new int[] { 1, 3, 6 , 5 },  10);
 	}
-
+  //Placeholder for animation class
 	public void runAnimate(AnimatedSprite sprite, float destX, float destY) {
 
 		destX -= sprite.getWidth() / 2;
@@ -501,7 +469,7 @@ public class AndengineActivity extends BaseGameActivity {
 		}
 		sprite.stopAnimation();
 	}
-	
+	//remove method for andengine uses
 	public void removeSprite(final AnimatedSprite _sprite) {
 		runOnUpdateThread(new Runnable() {
 			public void run() {
@@ -509,6 +477,7 @@ public class AndengineActivity extends BaseGameActivity {
 			}
 		});
 	}
+	//remove method for andengine uses
 	public void removeSprite(final Sprite _sprite) {
 		runOnUpdateThread(new Runnable() {
 			public void run() {
