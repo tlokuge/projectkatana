@@ -25,7 +25,7 @@ public class MonsterEntity {
 	
 	private int monsterID;
 	private int monsterType;
-	private int monsterHP
+	private int monsterHP;
 	private int maxHP;
 	private String monsterSpriteFile;	
 	private String[] spells;
@@ -35,8 +35,8 @@ public class MonsterEntity {
 		this.monsterID = monsterID;
 		this.monsterHP = monsterHP;
 		maxHP = monsterHP;
-		this.monsterClass=monsterClass;
-		if(monsterClass == BOS){
+		this.monsterType=monsterType;
+		if(monsterType == BOS){
 			monsterSpriteFile = BOS_SPRITE;
 			//spells = ATK_SPELLS;
 		}
@@ -49,8 +49,8 @@ public class MonsterEntity {
 		return monsterID;
 	}
 	
-	public int getMonsterClass(){
-		return monsterClass;
+	public int getMonsterType(){
+		return monsterType;
 	}
 	/*
 	public String getSpell(int monsterClass, int spell){

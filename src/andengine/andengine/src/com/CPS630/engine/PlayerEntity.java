@@ -25,7 +25,7 @@ public class PlayerEntity {
 	
 	private int playerID;
 	private int playerClass;
-	private int playerHP
+	private int playerHP;
 	private int maxHP;
 	private String playerSpriteFile;	
 	private String[] spells;
@@ -76,7 +76,7 @@ public class PlayerEntity {
 		this.playerSprite = playerSprite;
 	}
 	
-	public void setHPBar(int hpbar){
+	public void setHPBar(HPBar hpbar){
 		this.hpbar = hpbar;
 	}
 }
