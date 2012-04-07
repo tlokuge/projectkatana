@@ -31,6 +31,7 @@ public class PlayerEntity extends CharacterEntity{
 	
 	public PlayerEntity(int playerID, int playerClass, int playerHP){
 		super(playerID,playerHP);
+		this.setType("player");
 		this.playerClass=playerClass;
 		if(playerClass == CLASS_ATK){
 			//playerSpriteFile = ATK_SPRITE;

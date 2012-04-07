@@ -34,6 +34,7 @@ public class MonsterEntity extends CharacterEntity{
 	public MonsterEntity(int monsterID, int monsterType, int monsterHP){
 		super(monsterID, monsterHP);
 		this.monsterType=monsterType;
+		this.setType("monster");
 		/*
 		if(monsterType == BOS){
 			monsterSpriteFile = BOS_SPRITE;

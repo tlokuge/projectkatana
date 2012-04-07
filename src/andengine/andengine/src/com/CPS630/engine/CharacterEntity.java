@@ -7,6 +7,7 @@ public class CharacterEntity {
 	private int charHP;
 	private AnimatedSprite charSprite;
 	private boolean isSelected;
+	private String type;
 	
 	public CharacterEntity(int charID, int charHP){
 		this.charID = charID;
@@ -18,6 +19,13 @@ public class CharacterEntity {
 		return charID;
 	}
 	
+	public void setType(String type){
+		this.type=type;
+	}
+	
+	public String getType(){
+		return type;
+	}
 	
 	public AnimatedSprite getCharSprite(){
 		return charSprite;
