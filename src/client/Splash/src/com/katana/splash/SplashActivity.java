@@ -1,12 +1,12 @@
 package com.katana.splash;
 
+import katana.receivers.KatanaReceiver;
 import katana.services.KatanaService;
 import katana.services.KatanaService.KatanaSBinder;
 import katana.shared.KatanaConstants;
 import katana.shared.KatanaPacket;
 import katana.shared.Opcode;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -26,6 +26,8 @@ public class SplashActivity extends Activity {
 	KatanaService katanaService;
 	boolean mBound = false;
 	
+	private KatanaReceiver katanaReceiver = new KatanaReceiver(0);
+	private Context myContext = this;
 	
 	/** Android hardware buttons */
 	// Called on android back button pressed
@@ -36,8 +38,7 @@ public class SplashActivity extends Activity {
 		KatanaPacket packet = new KatanaPacket(0, Opcode.C_LOGOUT);
 		katanaService.sendPacket(packet);
 	}
-	
-	
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,7 +63,7 @@ public class SplashActivity extends Activity {
         			
         			if (user == null || pass == null){
         				// No user login stored
-        				startLoginActivity();
+        				katanaReceiver.startMyActivity(myContext, LoginActivity.class);
         			} else {
         				// User login found, send to server
         				checkLogin(user,pass);
@@ -72,7 +73,6 @@ public class SplashActivity extends Activity {
         		} 
         	}
         };
-        
         splashTimer.start();
     }
     
@@ -82,18 +82,7 @@ public class SplashActivity extends Activity {
     	super.onPause();
         // Unbind KatanaService and Receiver
         doUnbindService();
-    }
-    
-    /** Called when the activity is stopped. */
-    @Override
-    protected void onStop() {
-    	super.onStop();
-    }
-    
-    /** Final cleanup when activity is finished */
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
+        this.finish();
     }
     
     /** Disconnect from KatanaService */
@@ -136,31 +125,4 @@ public class SplashActivity extends Activity {
             mBound = false;
         }
     };
-    
-    /** on Receive broadcast from KatanaService */
-    private BroadcastReceiver katanaReceiver = new BroadcastReceiver() {
-    	@Override
-    	public void onReceive(Context context, Intent intent) {
-    		if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_AUTH_OK.name())){
-    			startLobbyActivity();
-    		} else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_AUTH_NO.name())){
-    			startLoginActivity();
-    		} 
-    	}
-    };
-    
-    /** Switch user to appropriate activities */
-    private void startLoginActivity(){
-    	Intent i = new Intent();
-		i.setClass(SplashActivity.this, LoginActivity.class);
-		startActivity(i);
-		finish();
-    }
-    
-    private void startLobbyActivity(){
-    	Intent i = new Intent();
-		i.setClass(SplashActivity.this, LobbyActivity.class);
-		startActivity(i);
-		finish();
-    }
 }

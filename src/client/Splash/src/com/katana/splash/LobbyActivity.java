@@ -7,6 +7,8 @@ import katana.adapters.PlayerListAdapter;
 import katana.adapters.RoomListAdapter;
 import katana.objects.Player;
 import katana.objects.Room;
+import katana.receivers.KatanaReceiver;
+import katana.receivers.LocationReceiver;
 import katana.services.KatanaService;
 import katana.services.KatanaService.KatanaSBinder;
 import katana.shared.KatanaConstants;
@@ -14,7 +16,6 @@ import katana.shared.KatanaPacket;
 import katana.shared.Opcode;
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -75,21 +76,23 @@ public class LobbyActivity extends Activity {
 	// Vars
 	private int selection = 0;
 	ArrayList<Room> roomList;
-	Room selectedRoom;
+	public Room selectedRoom;
 	
 	private boolean roomLeader = false;
-	private boolean inRoom = false;
-	private boolean inValidLoc = false;
+	public boolean inRoom = false;
+	public boolean inValidLoc = false;
 	
-	private int createdRoomId = -1;
+	public int createdRoomId = -1;
 
 	// Service Vars
 	KatanaService katanaService; 
 	boolean serviceBound = false;
+	private KatanaReceiver katanaReceiver = new KatanaReceiver(2);
+	private LocationReceiver katanaLocReceiver = new LocationReceiver();
 	
 	// Location Manager
-	private double lat;
-	private double lng;
+	private double latitude;
+	private double longitude;
 	
 	// Preferences
 	private SharedPreferences gamePrefs;
@@ -103,25 +106,24 @@ public class LobbyActivity extends Activity {
 	@Override 
 	public void onBackPressed() {
 		Log.d("CDA", "onBackPressed Called"); 
+		
 		if (inRoom == true) {
 			inRoom = false;
 			if(roomLeader == true) {
+				roomLeader = false;
 				System.out.println("DESTROY ALL THE ROOM!");
 				KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_DESTROY);
 				katanaService.sendPacket(packet);
 				refreshList(null);
-				roomLeader = false;
-				viewFlipper.setInAnimation(LobbyActivity.this, R.anim.transition_infrom_right);
-				viewFlipper.setOutAnimation(LobbyActivity.this, R.anim.transition_outfrom_right);
-				viewFlipper.showPrevious();
+				transitionToLobby();
 				return;
 			} else {
 				katanaService.sendPacket(new KatanaPacket(0,Opcode.C_ROOM_LEAVE));
-				viewFlipper.setInAnimation(LobbyActivity.this, R.anim.transition_infrom_right);
-				viewFlipper.setOutAnimation(LobbyActivity.this, R.anim.transition_outfrom_right);
-				viewFlipper.showPrevious();
+				transitionToLobby();
+				return;
 			}
 		} else {
+			super.onBackPressed();
 			this.finish();
 		}
 	}
@@ -282,6 +284,7 @@ public class LobbyActivity extends Activity {
 		doUnbindService();
 		// Send logout packet to server
 		katanaService.sendPacket(new KatanaPacket(0,Opcode.C_LOGOUT));
+		this.finish();
 	}
 	
 	/** Called when the activity is stopped */
@@ -416,8 +419,8 @@ public class LobbyActivity extends Activity {
     public void refreshList(View view){
     	// Send server refresh room list packet
     	KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_LIST);
-    	packet.addData(Double.toString(lat));
-    	packet.addData(Double.toString(lng));
+    	packet.addData(Double.toString(latitude));
+    	packet.addData(Double.toString(longitude));
     	katanaService.sendPacket(packet);
     }
     
@@ -561,75 +564,13 @@ public class LobbyActivity extends Activity {
         }
     };
     
-    /** on Receive broadcast from KatanaLocationService */
-    private BroadcastReceiver katanaLocReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			lat = intent.getDoubleExtra(KatanaService.EXTRAS_LATITUDE, 0.0);
-			lng = intent.getDoubleExtra(KatanaService.EXTRAS_LONGITUDE, 0.0);
-			refreshList(null);
-		}
-    };
-    
-    /** on Receive broadcast from KatanaService */
-    private BroadcastReceiver katanaReceiver = new BroadcastReceiver() {
-    	@Override
-    	public void onReceive(Context context, Intent intent) {
-    		if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_LIST.name())){
-    			inValidLoc = true;
-    			String locName = intent.getStringExtra(KatanaService.EXTRAS_LOCNAME);
-    			ArrayList<String> al = intent.getStringArrayListExtra(KatanaService.EXTRAS_ROOMSLIST);
-    			showRoomList(locName, al);
-    		} else if (intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_JOIN_OK.name())) {
-    			ArrayList<String> al = intent.getStringArrayListExtra(KatanaService.EXTRAS_PLAYERLIST);
-    			showRoomPlayers(al);
-    			joinRoom(selectedRoom);
-    		} else if (intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_JOIN_NO.name())) {
-    			Toast.makeText(getApplicationContext(), "You cant join this room.", Toast.LENGTH_SHORT).show();
-    		} else if (intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_PLAYER_JOIN.name())) {
-    			addPlayer(intent);
-    			
-    		} else if (intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_PLAYER_LEAVE.name())) {
-    			removePlayer(Integer.parseInt((intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME))));
-    		}
-    		else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_CREATE_OK.name()))
-    		{
-    			createdRoomId = Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_ROOMID));
-    			System.out.println("CreatedRoomId: " + createdRoomId);
-    			joinCreatedRoom();
-    			refreshList(null);
-    		}
-    		else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_CREATE_NO.name()))
-    		{
-    			selectedRoom = null;
-    		} else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_PLAYER_UPDATE_CLASS.name())) {
-    			if(inRoom){
-    				int playerid = intent.getIntExtra(KatanaService.EXTRAS_PLAYERID, -1);
-    				int playerclass = intent.getIntExtra(KatanaService.EXTRAS_PLAYERCLASS, -1);
-    				updatePlayerClass(playerid, playerclass);
-    			}
-    		} else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_ROOM_DESTROY.name())) {
-    			if(inRoom){
-    				refreshList(null);
-    				inRoom = false;
-    				roomLeader = false;
-    				viewFlipper.setInAnimation(LobbyActivity.this, R.anim.transition_infrom_right);
-    				viewFlipper.setOutAnimation(LobbyActivity.this, R.anim.transition_outfrom_right);
-    				viewFlipper.showPrevious();
-    			}
-    		} else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_LEADERBOARD.name())) {
-    			showLeaderboardDialog(intent.getStringExtra(KatanaService.EXTRAS_SCORES));
-    		}
-    	}
-    };
-    
-    private void updatePlayerClass(int playerid, int classid) {
+    public void updatePlayerClass(int playerid, int classid) {
     	System.out.println("Player " + playerid + " is changing class from " + playerList.get(playerRef.get(playerid)).getClassId() + " to " + classid);
     	playerList.get(playerRef.get(playerid)).setClassId(classid);
     	gv_wroomList.setAdapter(new PlayerListAdapter(this,playerList));
     }
     
-    private void addPlayer(Intent intent){
+    public void addPlayer(Intent intent){
     	String s = intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME);
     	int ref = playerList.size();
     	String lines[] = s.split(";");
@@ -638,14 +579,25 @@ public class LobbyActivity extends Activity {
     	gv_wroomList.setAdapter(new PlayerListAdapter(this,playerList));
     }
     
-    private void removePlayer(int player_id) {
+    public void removePlayer(int player_id) {
     	int ref = playerRef.get(player_id);
+    	
+    	System.out.println(ref);
+    	System.out.println(playerList.size());
+    	
+    	for(int value : playerRef.values()) {
+    		if(value  > ref) {
+    			value--;
+    		}
+    	}
+    	
     	playerList.remove(ref);
+    	playerRef.remove(player_id);
     	gv_wroomList.setAdapter(new PlayerListAdapter(this,playerList));
     }
     
     /** Refresh waiting room with players */
-    private void showRoomPlayers(ArrayList<String> al) {
+    public void showRoomPlayers(ArrayList<String> al) {
     	// Update user interface and bounce user to waiting room :D
     	playerList = new ArrayList<Player>();
     	playerRef = new HashMap<Integer, Integer>();
@@ -675,7 +627,7 @@ public class LobbyActivity extends Activity {
     }
     
     /** Refresh room list with server response */
-    private void showRoomList(String locName, ArrayList<String> al){
+    public void showRoomList(String locName, ArrayList<String> al){
     	roomList = new ArrayList<Room>();
     	
     	for (int i = 0; i < al.size(); i++){
@@ -843,5 +795,38 @@ public class LobbyActivity extends Activity {
     		l_maxplayers.setText(Integer.toString(selectedRoom.getMaxPlyr()));
     	}
     };
+    
+    /** public methods */
+    public void setLatitude(double d) {
+    	latitude = d;
+    }
+    
+    public void setLongitude(double d) {
+    	longitude = d;
+    }
+
+	public void setCreatedRoomId(int i) {
+		createdRoomId = i;
+	}
+
+	public void setSelectedRoom(Room r) {
+		selectedRoom = r;
+	}
+
+	public void setInRoom(boolean b) {
+		inRoom = b;
+		
+	}
+
+	public void setRoomLeader(boolean b) {
+		roomLeader = b;
+		
+	}
+
+	public void transitionToLobby() {
+		viewFlipper.setInAnimation(LobbyActivity.this, R.anim.transition_infrom_right);
+		viewFlipper.setOutAnimation(LobbyActivity.this, R.anim.transition_outfrom_right);
+		viewFlipper.showPrevious();
+	}
 }
 
