@@ -25,5 +25,9 @@ SERVER_PORT: 7777
 /***************************************************************/
 * UPDATE_DIFF: Time in which to update timers                  *
 *              (default 100)                                   *
+* MAX_PINGS: Maximum number of pings sent to client before     *
+*            closing their connection if no pongs received     *
+*            (default 5)                                       *
 ***************************************************************/
 UPDATE_DIFF: 100
+MAX_PINGS: 5

@@ -26,40 +26,36 @@ public class Lobby
         this.radius = radius;
         
         this.nextRoomId = 0;
+        
+        players = new ArrayList<>();
+        rooms   = new HashMap<>();
     }
     
     public int getLocationId()    { return id; }
     
-    public void addPlayer(Player pl)      
-    {
-        if(players == null)
-            players = new ArrayList<Player>();
-        players.add(pl); 
-    }
+    public void addPlayer(Player pl) { players.add(pl); }
     public void removePlayer(Player pl)   { players.remove(pl); }
     public ArrayList<Player> getPlayers() { return players; }
     
     public void addRoom(GameRoom room)    
     {
-        if(rooms == null)
-            rooms = new HashMap<Integer, GameRoom>();
+        if(room == null)
+        {
+            System.err.println("Lobby " + getLocationId() + " attempted to add null room");
+            return;
+        }
         rooms.put(room.getId(), room);
         System.out.println("Lobby: " + name + " (" + id + ") added room: " + room.getId() + " - " + room.getName());
     }
     public void removeRoom(int room) { rooms.remove(room); }
-    public GameRoom getRoom(int room){ return rooms.get(id);  }
-    public Set<Integer> getRoomIds() 
-    { 
-        if(rooms == null)
-            return null;
-        return rooms.keySet(); 
-    }
+    public GameRoom getRoom(int room){ return rooms.get(room);  }
+    public Set<Integer> getRoomIds() { return rooms.keySet(); }
     
     public double getLatitude()  { return latitude; }
     public double getLongitude() { return longitude; }
     public double getRadius()    { return radius; }
     public String getName()      { return name; }
-    public int getNextRoomId()   { return nextRoomId++; }
+    public int getNextRoomId()   { return ++nextRoomId; }
     
     public String toString()
     {

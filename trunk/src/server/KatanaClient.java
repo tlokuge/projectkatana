@@ -15,6 +15,7 @@ import shared.Opcode;
 public class KatanaClient implements Runnable
 {
     private int id;
+    private int pings_sent;
     private Socket client;
     private Player player;
     
@@ -33,6 +34,7 @@ public class KatanaClient implements Runnable
             ex.printStackTrace();
         }
         id = -1;
+        pings_sent = 0;
         this.client = client;
         player = null;
         
@@ -41,6 +43,10 @@ public class KatanaClient implements Runnable
         thread = new Thread(this, "Client " + client_count++ + ": " + client.getInetAddress().getHostAddress() + ":" + client.getPort());
         thread.start();
     }
+    
+    public void sentPing()    { pings_sent++; }
+    public void pongReceived(){ pings_sent = 0; }
+    public int getPingsSent() { return pings_sent; }
     
     public void setPlayer(Player pl) 
     {
@@ -57,8 +63,23 @@ public class KatanaClient implements Runnable
         {
             if(logout)
                 sendPacket(new KatanaPacket(-1, Opcode.S_LOGOUT));
+            
+            if(player != null)
+            {
+                if(player.getRoom() != -1)
+                {
+                    if(player.isRoomLeader())
+                    {
+                        Lobby lobby = KatanaServer.instance().getLobby(player.getLocation());
+                        PacketHandler.destroyRoom(lobby, lobby.getRoom(player.getRoom()));
+                    }
+                    else
+                        PacketHandler.handleRoomLeavePacket(this);
+                }
+                KatanaServer.instance().removePlayer(id);
+            }
+            
             client.close();
-            KatanaServer.instance().removePlayer(id);
             thread.interrupt();
         }
         catch(IOException ex)
@@ -114,7 +135,7 @@ public class KatanaClient implements Runnable
         catch(Exception ex)
         {
             remove(true);
-            ex.printStackTrace();
+            System.err.println("KatanaClient " + id + " - received " + ex.getLocalizedMessage() + ". Disconnecting");
         }
     }
     

@@ -23,6 +23,8 @@ public class GameRoom
         
         players = new ArrayList<Player>();
         addPlayer(leader);
+        
+        System.out.println(this);
     }
     
     public int getId() { return id; }

@@ -12,6 +12,7 @@ public abstract class Constants
     public final static String CONFIG_PING_INTERVAL= "PING_INTERVAL";
     public final static String CONFIG_UPDATE_DIFF  = "UPDATE_DIFF";
     public final static String CONFIG_SERVER_PORT  = "SERVER_PORT";
+    public final static String CONFIG_MAX_PINGS    = "MAX_PINGS";
     
     /** KatanaPacket **/
     public final static String PACKET_DATA_SEPERATOR = "\n";

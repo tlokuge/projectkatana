@@ -30,6 +30,8 @@ public class Player extends Unit
         is_room_leader = false;
     }
     
+    public KatanaClient getClient() { return client; }
+    
     public void sendPacket(KatanaPacket packet)
     {
         client.sendPacket(packet);
@@ -52,8 +54,10 @@ public class Player extends Unit
     public void setRoomLeader(boolean leader) { this.is_room_leader = leader; }
     public boolean isRoomLeader()             { return is_room_leader; }
     
+    @Override
     public void update(int diff)
     {
+        super.update(diff);
         if(m_class == null)
             return;
         
