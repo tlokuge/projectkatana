@@ -158,8 +158,6 @@ public class KatanaService extends Service {
 				System.err.println("Exception: " + ex.getLocalizedMessage());
 				closeListener();
 				ex.printStackTrace();
-				locManager.removeUpdates(locList);
-				locManager = null;
 			}
 		}
 
@@ -189,8 +187,8 @@ public class KatanaService extends Service {
 		public void finalize() throws Throwable {
 			System.out.println("finalize");
 			super.finalize();
-			
 			closeListener();
+			
 		}
 	}
 	
@@ -201,6 +199,9 @@ public class KatanaService extends Service {
     	switch(packet.getOpcode()){
     		case S_LOGOUT:
     			socketListener.closeListener();
+				locManager.removeUpdates(locList);
+				locManager = null;
+				this.stopSelf();
     			break;
     		case S_PING:
     			sendPacket(new KatanaPacket(0, Opcode.C_PONG)); 
@@ -226,7 +227,6 @@ public class KatanaService extends Service {
     		case S_ROOM_CREATE_NO:
     			intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
     			sendBroadcast(intent); break;
-<<<<<<< .mine
     		case S_PLAYER_UPDATE_CLASS:
     			intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
     			handleClassChange(packet, intent);
@@ -237,11 +237,6 @@ public class KatanaService extends Service {
     			intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
     			intent.putExtra(EXTRAS_SCORES, packet.getData());
     			sendBroadcast(intent); break;
-=======
-    		case S_PLAYER_UPDATE_CLASS:
-    			intent.putExtra(EXTRAS_OPCODE, packet.getOpcode().name());
-    			handleClassChange(packet, intent);
->>>>>>> .r85
     		default: break;
     	}
     }
