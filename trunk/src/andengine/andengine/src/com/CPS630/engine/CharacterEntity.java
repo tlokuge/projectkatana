@@ -36,5 +36,11 @@ public class CharacterEntity {
 		this.charHP = charHP;
 	}
 	
+	public boolean getSelected(){
+		return isSelected;
+	}
 	
+	public void setSelected(boolean selected){
+		isSelected = selected;
+	}
 }
