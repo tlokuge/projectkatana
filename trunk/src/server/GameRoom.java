@@ -11,7 +11,7 @@ public class GameRoom
     private int max_players;
     private int leader_id;
     
-    private ArrayList<Player> players;
+    private ArrayList<Integer> players;
     
     public GameRoom(int id, String name, int difficulty, int max_players, Player leader)
     {
@@ -21,7 +21,7 @@ public class GameRoom
         this.max_players= max_players;
         this.leader_id  = leader.getId();
         
-        players = new ArrayList<Player>();
+        players = new ArrayList<Integer>();
         addPlayer(leader);
         
         System.out.println(this);
@@ -60,12 +60,12 @@ public class GameRoom
     {
         if(players.size() == max_players)
             return false;
-        players.add(pl);
+        players.add(pl.getId());
         return true;
     }
-    public void removePlayer(Player pl) { players.remove(pl); }
+    public void removePlayer(Player pl) { players.remove(pl.getId()); }
     
-    public ArrayList<Player> getPlayers() { return players; }
+    public ArrayList<Integer> getPlayers() { return players; }
     
     public String toString()
     {

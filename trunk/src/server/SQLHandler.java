@@ -299,6 +299,25 @@ public class SQLHandler
         return null;
     }
     
+    public synchronized ArrayList<HashMap<String, Object>> runCreatureQuery()
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.CREATURE_QUERY);
+            ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
+            query.close();
+            return results;
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
     /*
     public ArrayList<HashMap<String, Object>> execute(String query)
     {   

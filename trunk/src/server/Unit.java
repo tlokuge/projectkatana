@@ -1,5 +1,8 @@
 package server;
 
+import shared.KatanaPacket;
+import shared.Opcode;
+
 public abstract class Unit
 {
     private int id;
@@ -50,6 +53,7 @@ public abstract class Unit
     
     public void setHealth(int health) { this.cur_health = health; }
     public int getHealth()            { return cur_health; }
+    public void setMaxhealth(int max) { this.max_health = max; }
     public int getMaxHealth()         { return max_health; }
     
     public void setAttackSpeed(int speed)   { this.atk_speed = speed; }
@@ -76,9 +80,9 @@ public abstract class Unit
         return id + " - " + name;
     }
     
-    public abstract void onHealReceived(int heal, Unit healer);
-    public abstract void onDamageTaken(int damage, Unit attacker);
-    public abstract void onDamageDeal(int damage, Unit target, Spell spell, boolean is_auto_attack);
+    public int onHealReceived(int heal, Unit healer)    { return heal; }
+    public int onDamageTaken(int damage, Unit attacker) { return damage; }
+    public abstract int onDamageDeal(int damage, Unit target, Spell spell, boolean is_auto_attack);
     public abstract void onSpellHit(Spell spell, Unit caster);
     public abstract void onSpellCast(Spell spell, Unit target);
     public abstract void onDeath(Unit killer);
@@ -93,17 +97,25 @@ public abstract class Unit
         int damage = spell.getDamage();
         if(damage < 0) // it's a heal!
         {
-            int health = target.getHealth() - damage;
+            damage = onHealReceived(damage * -1, this);
+            int health = target.getHealth() + damage;
             if(health > target.getMaxHealth())
                 target.setHealth(target.getMaxHealth());
             else
                 target.setHealth(health);
-            target.onHealReceived(damage * -1, this);
-            return true;
+        }
+        else
+        {
+            damage = onDamageDeal(damage, target, spell, false);
+            dealDamage(damage, target);
         }
         
-        onDamageDeal(damage, target, spell, false);
-        dealDamage(damage, target);
+        KatanaPacket packet = new KatanaPacket(id, Opcode.S_GAME_SPELL_CAST);
+        packet.addData(id + "");
+        packet.addData(target.getId() + "");
+        packet.addData(spell.getId() + "");
+        packet.addData(damage + "");
+        // Map->sendPacket(packet);
         
         return true;
     }
@@ -121,7 +133,7 @@ public abstract class Unit
         target.setHealth(health);
     }
     
-    public void doAutoAttackIfReady(int diff)
+   /* public void doAutoAttackIfReady(int diff)
     {
         if(current_target == null)
             return;
@@ -133,10 +145,10 @@ public abstract class Unit
             dealDamage(damage, current_target);
             attack_timer = atk_speed;
         }else attack_timer -= diff;
-    }
+    }*/
     
     public void update(int diff)
     {
-        doAutoAttackIfReady(diff);
+        //doAutoAttackIfReady(diff);
     }
 }
