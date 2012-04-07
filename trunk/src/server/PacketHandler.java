@@ -10,14 +10,14 @@ import shared.Opcode;
 
 public abstract class PacketHandler
 {
-    public static boolean handlePacket(KatanaClient client, KatanaPacket packet)
+    public static void handlePacket(KatanaClient client, KatanaPacket packet)
     {
         if(packet == null)
-            return false;
+            return;
         
         switch(packet.getOpcode())
         {
-            case C_LOGOUT:      handleLogoutPacket(client, packet);     return true;
+            case C_LOGOUT:      handleLogoutPacket(client, packet);     break;
             case C_REGISTER:    handleRegisterPacket(client, packet);   break;
             case C_LOGIN:       handleLoginPacket(client, packet);      break;
             case C_PONG:        handlePongPacket(client, packet);       break;
@@ -38,8 +38,6 @@ public abstract class PacketHandler
             case C_SPELL:
                 break;
         }
-        
-        return false;
     }
     
     private static Player loginClient(String username, String password, KatanaClient client)

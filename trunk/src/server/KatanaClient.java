@@ -128,8 +128,7 @@ public class KatanaClient implements Runnable
             if(packet != null)
             {
                 System.out.println("[" + packet.getPacketId() + " - " + packet.getOpcode().name() + "] <== [CLIENT " + id + "]");
-                if(PacketHandler.handlePacket(this, packet))
-                    remove(true);
+                PacketHandler.handlePacket(this, packet);
             }
         }
         catch(Exception ex)
