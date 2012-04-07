@@ -9,7 +9,7 @@ import org.anddev.andengine.opengl.texture.region.TextureRegion;
 import org.anddev.andengine.opengl.texture.region.TextureRegionFactory;
 import org.anddev.andengine.opengl.texture.region.TiledTextureRegion;
 
-public class PlayerEntity {
+public class PlayerEntity extends CharacterEntity{
 	
 	private static final int CLASS_ATK = 2;
 	private static final int CLASS_HLR = 1;
@@ -23,31 +23,23 @@ public class PlayerEntity {
 	private static final String[] ATK_SPELLS = {"Simple Attack", "Poison", "Rapid Fire", "Kamikaze"};
 	private static final String[] HLR_SPELLS = {"Small Heal", "Big Heal", "Simple Attack", "Shield"};
 	
-	private int playerID;
 	private int playerClass;
-	private int playerHP;
-	private int maxHP;
-	private String playerSpriteFile;	
+	//private String playerSpriteFile;	
 	private String[] spells;
 	private AnimatedSprite playerSprite;
 	private HPBar hpbar;
 	
 	public PlayerEntity(int playerID, int playerClass, int playerHP){
-		this.playerID = playerID;
-		this.playerHP = playerHP;
-		maxHP = playerHP;
+		super(playerID,playerHP);
 		this.playerClass=playerClass;
 		if(playerClass == CLASS_ATK){
-			playerSpriteFile = ATK_SPRITE;
+			//playerSpriteFile = ATK_SPRITE;
 			spells = ATK_SPELLS;
 		}
 		else{
-			playerSpriteFile = HLR_SPRITE;
+			//playerSpriteFile = HLR_SPRITE;
 			spells = HLR_SPELLS;
 		}
-	}
-	public int getPlayerID(){
-		return playerID;
 	}
 	
 	public int getPlayerClass(){
@@ -60,21 +52,7 @@ public class PlayerEntity {
 		else
 			return HLR_SPELLS[spell];
 	}
-	public int getPlayerHP(){
-		return playerHP;
-	}
-
-	public void setPlayerHP(int playerHP){
-		this.playerHP = playerHP;
-	}
 	
-	public AnimatedSprite getPlayerSprite(){
-		return playerSprite;
-	}
-	
-	public void setPlayerSprite(AnimatedSprite playerSprite){
-		this.playerSprite = playerSprite;
-	}
 	
 	public void setHPBar(HPBar hpbar){
 		this.hpbar = hpbar;
