@@ -9,7 +9,7 @@ import org.anddev.andengine.opengl.texture.region.TextureRegion;
 import org.anddev.andengine.opengl.texture.region.TextureRegionFactory;
 import org.anddev.andengine.opengl.texture.region.TiledTextureRegion;
 
-public class MonsterEntity {
+public class MonsterEntity extends CharacterEntity{
 	
 	private static final int BOS = 2;
 	private static final int MIN = 1;
@@ -26,16 +26,15 @@ public class MonsterEntity {
 	private int monsterID;
 	private int monsterType;
 	private int monsterHP;
-	private int maxHP;
-	private String monsterSpriteFile;	
+	
+	//private String monsterSpriteFile;	
 	private String[] spells;
 	private AnimatedSprite monsterSprite;
 	
 	public MonsterEntity(int monsterID, int monsterType, int monsterHP){
-		this.monsterID = monsterID;
-		this.monsterHP = monsterHP;
-		maxHP = monsterHP;
+		super(monsterID, monsterHP);
 		this.monsterType=monsterType;
+		/*
 		if(monsterType == BOS){
 			monsterSpriteFile = BOS_SPRITE;
 			//spells = ATK_SPELLS;
@@ -44,9 +43,7 @@ public class MonsterEntity {
 			monsterSpriteFile = MIN_SPRITE;
 			//spells = HLR_SPELLS;
 		}
-	}
-	public int getMonsterID(){
-		return monsterID;
+		*/
 	}
 	
 	public int getMonsterType(){
@@ -59,20 +56,6 @@ public class MonsterEntity {
 		else
 			return HLR_SPELLS[spell];
 	}*/
-	public int getmonsterHP(){
-		return monsterHP;
-	}
-
-	public void setMonsterHP(int monsterHP){
-		this.monsterHP = monsterHP;
-	}
 	
-	public AnimatedSprite getMonsterSprite(){
-		return monsterSprite;
-	}
-	
-	public void setMonsterSprite(AnimatedSprite monsterSprite){
-		this.monsterSprite = monsterSprite;
-	}
 	
 }
