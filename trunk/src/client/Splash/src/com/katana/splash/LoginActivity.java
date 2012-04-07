@@ -1,12 +1,12 @@
 package com.katana.splash;
 
+import katana.receivers.KatanaReceiver;
 import katana.services.KatanaService;
 import katana.services.KatanaService.KatanaSBinder;
 import katana.shared.KatanaConstants;
 import katana.shared.KatanaPacket;
 import katana.shared.Opcode;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -29,6 +29,8 @@ public class LoginActivity extends Activity {
 	private EditText passField;
 	private EditText cpasField;
 	
+    private KatanaReceiver katanaReceiver = new KatanaReceiver(1);
+	
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -43,18 +45,13 @@ public class LoginActivity extends Activity {
     	passField = (EditText)findViewById(R.id.password);
     	cpasField = (EditText)findViewById(R.id.cpassword);
     }
-       
+
     /** Called when the activity is paused. */
     protected void onPause() {
     	super.onPause();
         // Unbind KatanaService and Receiver
     	doUnbindService();
-    }
-    
-    /** Called when the activity is destroyed. */
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    	this.finish();
     }
     
     /** Called when android back button is pressed. */
@@ -142,49 +139,18 @@ public class LoginActivity extends Activity {
         }
     };
     
-    /** on Receive broadcast from KatanaService **/
-    private BroadcastReceiver katanaReceiver = new BroadcastReceiver() {
-    	@Override
-    	public void onReceive(Context context, Intent intent) {
-    		if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_REG_OK.name())){
-    			// Registered new user on server    			
-    			userLoggedIn(true);
-    		} else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_AUTH_OK.name())){
-    			userLoggedIn(false);
-    		} else if(intent.getStringExtra(KatanaService.EXTRAS_OPCODE).equals(Opcode.S_REG_NO.name())){
-    			Toast.makeText(LoginActivity.this, "Username already exists or wrong password!", Toast.LENGTH_SHORT).show();
-    		} 
-    		
-    	}
-    };
-    
-    /** User is validated by server and is logged in */
-    private void userLoggedIn(boolean isNewUser){
+    public void setUserLoginPrefs(boolean isNewUser){
     	String user = userField.getText().toString().trim();
     	String pass = passField.getText().toString().trim();
-    	
-    	// Save user login
-	    getSharedPreferences(KatanaConstants.PREFS_LOGIN,MODE_PRIVATE).edit().putString(KatanaConstants.LOGIN_USER, user).commit();
+    	getSharedPreferences(KatanaConstants.PREFS_LOGIN,MODE_PRIVATE).edit().putString(KatanaConstants.LOGIN_USER, user).commit();
 	    getSharedPreferences(KatanaConstants.PREFS_LOGIN,MODE_PRIVATE).edit().putString(KatanaConstants.LOGIN_PASS, pass).commit();
-    	
-    	if ( isNewUser ){
-    		String message = "Welcome to  " + KatanaConstants.GAMENAME + ", " + user + "!";
+	    if( isNewUser ) {
+	    	String message = "Welcome to  " + KatanaConstants.GAMENAME + ", " + user + "!";
     		Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
-    		
-			startLobbyActivity();
-    	} else {
-    		String message = "Welcome back " + user + "!";
+	    } else {
+	    	String message = "Welcome back " + user + "!";
     		Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
-    		
-    		startLobbyActivity();
-    	}
-    }
-    
-    /** Switch user to appropriate activities */
-    private void startLobbyActivity(){
-    	Intent i = new Intent();
-		i.setClass(LoginActivity.this, LobbyActivity.class);
-		startActivity(i);
-		finish();
+	    }
+	    katanaReceiver.startMyActivity(this, LobbyActivity.class);
     }
 }
