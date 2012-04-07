@@ -32,7 +32,7 @@ public class PlayerEntity {
 	private AnimatedSprite playerSprite;
 	private HPBar hpbar;
 	
-	public Players(int playerID, int playerClass, int playerHP){
+	public PlayerEntity(int playerID, int playerClass, int playerHP){
 		this.playerID = playerID;
 		this.playerHP = playerHP;
 		maxHP = playerHP;
