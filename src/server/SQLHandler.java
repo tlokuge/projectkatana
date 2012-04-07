@@ -212,7 +212,7 @@ public class SQLHandler
             PreparedStatement query = connection.prepareStatement(Constants.REGUSER_QUERY);
             query.setString(1, username);
             query.setString(2, password);
-            query.executeQuery();
+            query.execute();
             query.close();
         }
         catch(Exception ex)

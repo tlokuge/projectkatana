@@ -70,6 +70,12 @@ public abstract class Unit
     public void setCurrentTarget(Unit target) { this.current_target = target; }
     public Unit getCurrentTarget()            { return current_target; }
     
+    @Override
+    public String toString()
+    {
+        return id + " - " + name;
+    }
+    
     public abstract void onHealReceived(int heal, Unit healer);
     public abstract void onDamageTaken(int damage, Unit attacker);
     public abstract void onDamageDeal(int damage, Unit target, Spell spell, boolean is_auto_attack);

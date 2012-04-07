@@ -22,7 +22,8 @@ public class ServerMain
         KatanaServer.instance().loadCache();
         
         PingServer ping = new PingServer(
-                Integer.parseInt(Config.getConfig(Constants.CONFIG_PING_INTERVAL)));
+                Integer.parseInt(Config.getConfig(Constants.CONFIG_PING_INTERVAL)),
+                Integer.parseInt(Config.getConfig(Constants.CONFIG_MAX_PINGS)));
         UpdateThread update = new UpdateThread(
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_UPDATE_DIFF)));
     }
