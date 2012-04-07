@@ -32,7 +32,7 @@ public class HPBar extends HUD {
 
 		sprite.attachChild(this.mHPRectangle); // The progress is drawn afterwards.
 
-		this.mPixelsPerPercentRatio = pWidth / 100;
+		this.mPixelsPerPercentRatio = pWidth / 5000;
 	}
 
 	// ===========================================================
@@ -52,7 +52,7 @@ public class HPBar extends HUD {
 	 * Set the current hp of this hp bar.
 	 * 
 	 * @param hp
-	 *            is <b> BETWEEN </b> 0 - 100.
+	 *            is <b> BETWEEN </b> 0 - 5000.
 	 */
 	public void setHP(final float pHP) {
 		if (pHP < 0)
