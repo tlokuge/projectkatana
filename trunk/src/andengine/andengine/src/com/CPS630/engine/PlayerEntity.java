@@ -9,7 +9,7 @@ import org.anddev.andengine.opengl.texture.region.TextureRegion;
 import org.anddev.andengine.opengl.texture.region.TextureRegionFactory;
 import org.anddev.andengine.opengl.texture.region.TiledTextureRegion;
 
-public class Players {
+public class PlayerEntity {
 	
 	private static final int CLASS_ATK = 2;
 	private static final int CLASS_HLR = 1;
