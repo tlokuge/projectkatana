@@ -25,13 +25,17 @@ public class PlayerEntity {
 	
 	private int playerID;
 	private int playerClass;
+	private int playerHP;
+	private int maxHP;
 	private String playerSpriteFile;	
 	private String[] spells;
 	private AnimatedSprite playerSprite;
 	private HPBar hpbar;
 	
-	public PlayerEntity(int playerID, int playerClass){
+	public PlayerEntity(int playerID, int playerClass, int playerHP){
 		this.playerID = playerID;
+		this.playerHP = playerHP;
+		maxHP = playerHP;
 		this.playerClass=playerClass;
 		if(playerClass == CLASS_ATK){
 			playerSpriteFile = ATK_SPRITE;
@@ -56,6 +60,13 @@ public class PlayerEntity {
 		else
 			return HLR_SPELLS[spell];
 	}
+	public int getPlayerHP(){
+		return playerHP;
+	}
+
+	public void setPlayerHP(int playerHP){
+		this.playerHP = playerHP;
+	}
 	
 	public AnimatedSprite getPlayerSprite(){
 		return playerSprite;
@@ -67,5 +78,9 @@ public class PlayerEntity {
 	
 	public void setHPBar(HPBar hpbar){
 		this.hpbar = hpbar;
+	}
+	
+	public HPBar getHPBar(){
+		return this.hpbar;
 	}
 }
