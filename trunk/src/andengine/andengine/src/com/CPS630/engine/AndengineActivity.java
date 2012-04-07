@@ -62,7 +62,7 @@ public class AndengineActivity extends BaseGameActivity {
     String background = "Background.png";
     
     AnimatedSprite face;
-    AnimatedSprite user;
+    
     AnimatedSprite boss;
     AnimatedSprite lspell,rspell,uspell,dspell;
     Sprite bg;
@@ -76,12 +76,14 @@ public class AndengineActivity extends BaseGameActivity {
     int cameraWidth;
     int cameraHeight;
     boolean bossTouched=false;
-    ArrayList <PlayerEntity> pEntityList= new ArrayList <PlayerEntity>();
-    ArrayList <MonsterEntity> mEntityList= new ArrayList <MonsterEntity>();
+    ArrayList <CharacterEntity> EntityList= new ArrayList <CharacterEntity>();
     
 	GestureDetector mGestureDetector;
 	ChangeableText healthText;
 	
+	AnimatedSprite user;
+	int userID;
+	boolean playerSelected;
 	private int health=5000;
         
 	public Engine onLoadEngine() {
@@ -136,15 +138,15 @@ public class AndengineActivity extends BaseGameActivity {
         loadBackground(1);
          
         createUserChar(1, 1, 5000, 100, 100);
-          
+        //createTeammate(2, 1, 5000, 100, 100);
+        //move_pEntity(2, 500, 100);
+        
+        
         loadSpellSign();
-        loadSidebar();
-
+        loadSidebar();    	
+        
         mGestureDetector = new GestureDetector(this, new myGestureListener());
 
-        scene.registerTouchArea(boss);
-
-        
         scene.setTouchAreaBindingEnabled(true); 
    
         scene.attachChild(healthText);
@@ -153,9 +155,9 @@ public class AndengineActivity extends BaseGameActivity {
         scene.attachChild(rspell);
         scene.attachChild(uspell);
         scene.attachChild(dspell);
-        scene.attachChild(boss);
+
         
-       // scene.registerUpdateHandler(detect);
+     // scene.registerUpdateHandler(detect);
         
       /*  scene.registerUpdateHandler(new TimerHandler(1 / 20.0f, true, new ITimerCallback() {
             public void onTimePassed(final TimerHandler pTimerHandler) {
@@ -177,7 +179,8 @@ public class AndengineActivity extends BaseGameActivity {
     
     public void createUserChar(int playerID, int playerClass, int playerHP, float pX, float pY){
     	
-    	PlayerEntity pEntity = new PlayerEntity(playerID, playerClass, playerHP);
+    	final PlayerEntity pEntity = new PlayerEntity(playerID, playerClass, playerHP);
+    	userID=playerID;
     	
 		if (playerClass==1)
     		user = new AnimatedSprite(pX, pY, this.mPlayerTextureRegion){
@@ -186,6 +189,7 @@ public class AndengineActivity extends BaseGameActivity {
 					final float pTouchAreaLocalX,
 					final float pTouchAreaLocalY) {
 				if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+					pEntity.setSelected(true);
 					return true;
 				}
 				return false;
@@ -198,18 +202,20 @@ public class AndengineActivity extends BaseGameActivity {
 					final float pTouchAreaLocalX,
 					final float pTouchAreaLocalY) {
 				if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+					pEntity.setSelected(true);
 					return true;
 				}
 				return false;
 			}
 		};
-		pEntity.setPlayerSprite(user);
+		pEntity.setSelected(playerSelected);
+		pEntity.setCharSprite(user);
     	HPBar pHP = new HPBar(0, 0, user.getWidth(), 2, user);
     	pHP.setBackColor(0, 0, 0, 1f);
         pHP.setHPColor(0, 1f, 0, 1f);
         pHP.setHP(playerHP);
         pEntity.setHPBar(pHP);
-        pEntityList.add(pEntity);
+        EntityList.add(pEntity);
         user.setScale(2);
         scene.attachChild(user);
         scene.registerTouchArea(user);
@@ -218,7 +224,7 @@ public class AndengineActivity extends BaseGameActivity {
     public void createTeammate(int playerID, int playerClass, int playerHP, float pX, float pY){
     	
     	AnimatedSprite players;
-    	PlayerEntity pEntity = new PlayerEntity(playerID, playerClass, playerHP);
+    	final PlayerEntity pEntity = new PlayerEntity(playerID, playerClass, playerHP);
     	
 		if (playerClass==1)
     		players = new AnimatedSprite(pX, pY, this.mPlayerTextureRegion){
@@ -227,6 +233,7 @@ public class AndengineActivity extends BaseGameActivity {
 					final float pTouchAreaLocalX,
 					final float pTouchAreaLocalY) {
 				if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+					pEntity.setSelected(true);
 					return true;
 				}
 				return false;
@@ -239,26 +246,27 @@ public class AndengineActivity extends BaseGameActivity {
 					final float pTouchAreaLocalX,
 					final float pTouchAreaLocalY) {
 				if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+					pEntity.setSelected(true);
 					return true;
 				}
 				return false;
 			}
 		};
 		
-    	pEntity.setPlayerSprite(players);
+    	pEntity.setCharSprite(players);
     	HPBar pHP = new HPBar(0, 0, players.getWidth(), 2, players);
     	pHP.setBackColor(0, 0, 0, 1f);
         pHP.setHPColor(0, 1f, 0, 1f);
         pHP.setHP(playerHP);
         pEntity.setHPBar(pHP);
-        pEntityList.add(pEntity);
+        EntityList.add(pEntity);
         scene.attachChild(players);
         scene.registerTouchArea(players);
     }
     
     public void createMonster(int monsterID, int monsterType, int monsterHP, float mX, float mY){
     	AnimatedSprite monster;
-    	MonsterEntity mEntity = new MonsterEntity(monsterID, monsterType, monsterHP);
+    	final MonsterEntity mEntity = new MonsterEntity(monsterID, monsterType, monsterHP);
     	
 		if (monsterType == 1) {
 			monster = new AnimatedSprite(mX, mY, this.mDevilTextureRegion) {
@@ -268,6 +276,7 @@ public class AndengineActivity extends BaseGameActivity {
 						final float pTouchAreaLocalY) {
 					if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
 						bossTouched = true;
+						mEntity.setSelected(true);
 						return true;
 					}
 					return false;
@@ -281,6 +290,7 @@ public class AndengineActivity extends BaseGameActivity {
 						final float pTouchAreaLocalY) {
 					if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
 						bossTouched = true;
+						mEntity.setSelected(true);
 						return true;
 					}
 					return false;
@@ -288,127 +298,135 @@ public class AndengineActivity extends BaseGameActivity {
 			};
     	}
         
-    	mEntity.setMonsterSprite(monster);
-    	mEntityList.add(mEntity);
+    	mEntity.setCharSprite(monster);
+    	EntityList.add(mEntity);
     	scene.attachChild(monster);
     	scene.registerTouchArea(monster);
     }
     
-    public void move_pEntity(int playerID, float pX, float pY){
-    	for(int i=0;i<pEntityList.size();i++){
-        	if(pEntityList.get(i).getPlayerID()==playerID){
-        		move(pEntityList.get(i).getPlayerSprite(),pX,pY);
+    public void move_Entity(int ID, float pX, float pY){
+    	for(int i=0;i<EntityList.size();i++){
+        	if(EntityList.get(i).getCharID()==ID){
+        		move(EntityList.get(i).getCharSprite(),pX,pY);
         		break;
         	}		
         }
     }
     
-    public void move_mEntity(int monsterID, float pX, float pY){
-    	for(int i=0;i<mEntityList.size();i++){
-        	if(mEntityList.get(i).getMonsterID()==monsterID){
-        		move(mEntityList.get(i).getMonsterSprite(),pX,pY);
-        		break;
-        	}
-        		
-        }
-    }
-    
-    public void update_pHP(int playerID, int hp){
+    public void update_pHP(int ID, int hp){
  
-    	for(int i=0;i<pEntityList.size();i++){
-        	if(pEntityList.get(i).getPlayerID()==playerID){	
-        		pEntityList.get(i).setPlayerHP(hp); //may not be needed
-        		pEntityList.get(i).getHPBar().setHP(hp);
+    	for(int i=0;i<EntityList.size();i++){
+        	if(EntityList.get(i).getCharID()==ID){	
+        		EntityList.get(i).setCharHP(hp); //may not be needed
+        		((PlayerEntity) EntityList.get(i)).getHPBar().setHP(hp);
         		break;
         	}		
         }
     }
 
-    public void remove_player(int playerID){
+     //method to send spell
+    public void send_spell(int caster, int targetID, int spellID){
     	
-    	for(int i=0;i<pEntityList.size();i++){
-        	if(pEntityList.get(i).getPlayerID()==playerID){
-        		removeSprite(pEntityList.get(i).getPlayerSprite());
-        		pEntityList.remove(i);
+    }
+    
+    public void remove_char(int ID){
+    	
+    	for(int i=0;i<EntityList.size();i++){
+        	if(EntityList.get(i).getCharID()==ID){
+        		removeSprite(EntityList.get(i).getCharSprite());
+        		EntityList.remove(i);
         		break;
         	}		
         }
     	
     }
     
-    public void remove_monster(int monsterID){
-    	
-    	for(int i=0;i<mEntityList.size();i++){
-        	if(mEntityList.get(i).getMonsterID()==monsterID){
-        		removeSprite(mEntityList.get(i).getMonsterSprite());
-        		mEntityList.remove(i);
-        		break;
-        	}		
+    public void spellCasting(int casterID, int targetID, int spellID){	
+    	for(int i=0;i<EntityList.size();i++){
+        	if(EntityList.get(i).getCharID()==casterID){
+        		if(EntityList.get(i).getType()=="monster"){
+	        		if(spellID==1){
+	        			//do monster spell1 atk animation
+	        		}	
+	        	    if(spellID==2){
+	        	    	//do monster spell2 atk animation
+	        	    }
+	        	    if(spellID==3){
+	        			//do monster spell3 atk animation
+	        		}	
+	        	    if(spellID==4){
+	        	    	//do monster spell4 atk animation
+	        	    }
+        		}
+        		else{
+        			if(spellID==1){
+	        			//do player spell1 atk animation
+	        		}	
+	        	    if(spellID==2){
+	        	    	//do player spell2 atk animation
+	        	    }
+	        	    if(spellID==3){
+	        			//do player spell3 atk animation
+	        		}	
+	        	    if(spellID==4){
+	        	    	//do player spell4 atk animation
+	        	    }
+        		}
+        	}
+        	if(EntityList.get(i).getCharID()==targetID){
+        		if(EntityList.get(i).getType()=="monster"){
+	        		if(spellID==1){
+	        			//do monster spell1 dmg animation
+	        		}	
+	        	    if(spellID==2){
+	        	    	//do monster spell2 dmg animation
+	        	    }
+	        	    if(spellID==3){
+	        			//do monster spell3 dmg animation
+	        		}	
+	        	    if(spellID==4){
+	        	    	//do mosnter spell4 dmg animation
+	        	    }
+        		}
+        		else{
+					if (spellID == 1) {
+						// do player spell1 dmg animation
+					}
+					if (spellID == 2) {
+						// do player spell2 dmg animation
+					}
+					if (spellID == 3) {
+						// do player spell3 dmg animation
+					}
+					if (spellID == 4) {
+						// do player spell4 dmg animation
+					}
+        		}
+        	}	
         }
-    	
     }
     
     public void loadSpellSign(){
-    	final int centerX = (cameraWidth - this.dSpellTextureRegion.getWidth()) / 2;
-        final int centerY = (cameraHeight - this.dSpellTextureRegion.getHeight()) / 2;
-    	boss = new AnimatedSprite(centerX, centerY, this.mDevilTextureRegion){
-            @Override
-            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {               	
-            			bossTouched=true;  			
-            			return true;
-            		}
-            		return false;
-            }
-        };
-    	lspell = new AnimatedSprite(cameraWidth-50, 100, this.lSpellTextureRegion){
-            @Override
-            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-                    if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-            			return true;
-            		}
-            		return false;
-            }
-        };
-        dspell = new AnimatedSprite(cameraWidth-50, 175, this.dSpellTextureRegion){
-            @Override
-            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-            	if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-            		return true;
-            	}
-            	return false;
-            }
-        };
-        
-        
-        uspell = new AnimatedSprite(cameraWidth-50, 250, this.uSpellTextureRegion){
-            @Override
-            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-            	if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-            		return true;
-            	}
-            	return false;
-            }
-        };
-        rspell = new AnimatedSprite(cameraWidth-50, 325, this.rSpellTextureRegion){
-            @Override
-            public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-            	if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-            		return true;
-            	}
-            	return false;
-            }
-        };
+    	for(int i=0;i<EntityList.size();i++){
+        	if(EntityList.get(i).getCharID()==userID){
+        		if(((PlayerEntity) EntityList.get(i)).getPlayerClass()==1){
+        			lspell = new AnimatedSprite(cameraWidth-50, 100, this.lSpellTextureRegion);
+        	        dspell = new AnimatedSprite(cameraWidth-50, 175, this.dSpellTextureRegion);
+        	        uspell = new AnimatedSprite(cameraWidth-50, 250, this.uSpellTextureRegion);
+        	        rspell = new AnimatedSprite(cameraWidth-50, 325, this.rSpellTextureRegion);
+        		}
+        		else{
+        			lspell = new AnimatedSprite(cameraWidth-50, 100, this.lSpellTextureRegion);
+        	        dspell = new AnimatedSprite(cameraWidth-50, 175, this.dSpellTextureRegion);
+        	        uspell = new AnimatedSprite(cameraWidth-50, 250, this.uSpellTextureRegion);
+        	        rspell = new AnimatedSprite(cameraWidth-50, 325, this.rSpellTextureRegion);
+        		}
+        			
+        	}		
+        }
+    	
     }
-    
-	public void loadHPbar(AnimatedSprite sprite){
-    	 playerHP = new HPBar(0, 0, sprite.getWidth(), 2, sprite);
-         playerHP.setBackColor(0, 0, 0, 1f);
-         playerHP.setHPColor(0, 1f, 0, 1f);
-         playerHP.setHP(health);
-         //sprite.attachChild(playerHP);
-    }
-	
+    	
     public void loadSidebar(){	
     	healthText = new ChangeableText(cameraWidth-75, 30, this.mFont, "5000", "XXXX".length());
         
@@ -541,7 +559,6 @@ public class AndengineActivity extends BaseGameActivity {
 		
 		@Override
 		public void onShowPress(MotionEvent ev) {
-			
 		}
 
 		@Override
@@ -591,8 +608,12 @@ public class AndengineActivity extends BaseGameActivity {
    
 	boolean onSwipeUp() {
 		if(bossTouched){
-			Toast.makeText(AndengineActivity.this, "onSwipeUp", Toast.LENGTH_SHORT).show();
-			//elapsedText.setText("Water Atk");
+			//Toast.makeText(AndengineActivity.this, "onSwipeUp", Toast.LENGTH_SHORT).show();
+			for(int i=0;i<EntityList.size();i++){
+	        	if(EntityList.get(i).getSelected()==true){	
+	    			send_spell(userID, EntityList.get(i).getCharID(), 1);
+	        	}		
+	        }
 			return true;
 		}
 		else
@@ -602,7 +623,11 @@ public class AndengineActivity extends BaseGameActivity {
 	boolean onSwipeRight() {
 		Toast.makeText(AndengineActivity.this, "onSwipeRight", Toast.LENGTH_SHORT).show();	
 		if(bossTouched){
-			//elapsedText.setText("Fire Atk");	
+			for(int i=0;i<EntityList.size();i++){
+	        	if(EntityList.get(i).getSelected()==true){	
+	    			send_spell(userID, EntityList.get(i).getCharID(), 2);
+	        	}		
+	        }	
 		}
 		return true;
 	}
@@ -610,8 +635,11 @@ public class AndengineActivity extends BaseGameActivity {
 	boolean onSwipeLeft() {
 		Toast.makeText(AndengineActivity.this, "onSwipeLeft", Toast.LENGTH_SHORT).show();
 		if(bossTouched){
-			//elapsedText.setText("Wind Atk");	
-			attackAnimate(user);	
+			for(int i=0;i<EntityList.size();i++){
+	        	if(EntityList.get(i).getSelected()==true){	
+	    			send_spell(userID, EntityList.get(i).getCharID(), 3);
+	        	}		
+	        }
 		}
 		return true;
 	}
@@ -619,7 +647,11 @@ public class AndengineActivity extends BaseGameActivity {
 	boolean onSwipeDown() {
 		Toast.makeText(AndengineActivity.this, "onSwipeDown", Toast.LENGTH_SHORT).show();
 		if(bossTouched){
-			//elapsedText.setText("Earth Atk");	
+			for(int i=0;i<EntityList.size();i++){
+	        	if(EntityList.get(i).getSelected()==true){	
+	    			send_spell(userID, EntityList.get(i).getCharID(), 4);
+	        	}		
+	        }
 		}
 		return true;
 	}
