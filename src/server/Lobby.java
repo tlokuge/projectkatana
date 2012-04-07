@@ -12,7 +12,7 @@ public class Lobby
     private double longitude;
     private double radius;
     
-    private ArrayList<Player> players;
+    private ArrayList<Integer> players;
     private HashMap<Integer, GameRoom> rooms;
     
     private int nextRoomId;
@@ -33,9 +33,9 @@ public class Lobby
     
     public int getLocationId()    { return id; }
     
-    public void addPlayer(Player pl) { players.add(pl); }
-    public void removePlayer(Player pl)   { players.remove(pl); }
-    public ArrayList<Player> getPlayers() { return players; }
+    public void addPlayer(Player pl)      { players.add(pl.getId()); }
+    public void removePlayer(Player pl)   { players.remove(pl.getId()); }
+    public ArrayList<Integer> getPlayers() { return players; }
     
     public void addRoom(GameRoom room)    
     {

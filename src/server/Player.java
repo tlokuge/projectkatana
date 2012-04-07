@@ -1,7 +1,6 @@
 package server;
 
 import shared.KatanaPacket;
-import shared.Opcode;
 
 public class Player extends Unit
 {
@@ -42,7 +41,8 @@ public class Player extends Unit
         this.class_id = class_id;
         m_class = new PlayerClass(SQLCache.getClass(class_id));
     }
-    public int getClassId()            { return class_id; }
+    public int getClassId()                { return class_id; }
+    public int getSpellCooldown(int spell) { return m_class.getSpellById(spell).getCooldown(); }
     public boolean isSpellReady(int spell) { return m_class.getSpellById(spell).getCooldown() == 0; }
     
     public void setLocation(int id)     { this.location = id; }
@@ -65,21 +65,23 @@ public class Player extends Unit
     }
 
     @Override
-    public void onHealReceived(int heal, Unit healer) 
+    public int onHealReceived(int heal, Unit healer) 
     {
-        KatanaPacket packet = new KatanaPacket(-1, Opcode.S_UPDATE_DAMAGE_TAKEN);
-        packet.addData(getId() + "");
-        packet.addData(heal + "");
+//        KatanaPacket packet = new KatanaPacket(-1, Opcode.S_UPDATE_DAMAGE_TAKEN);
+//        packet.addData(getId() + "");
+//        packet.addData(heal + "");
         // broadcastToMap(packet);
+        return heal;
     }
 
     @Override
-    public void onDamageTaken(int damage, Unit attacker) 
+    public int onDamageTaken(int damage, Unit attacker) 
     {
-        KatanaPacket packet = new KatanaPacket(-1, Opcode.S_UPDATE_DAMAGE_TAKEN);
-        packet.addData(getId() + "");
-        packet.addData(damage + "");
+//        KatanaPacket packet = new KatanaPacket(-1, Opcode.S_UPDATE_DAMAGE_TAKEN);
+//        packet.addData(getId() + "");
+//        packet.addData(damage + "");
         // broadcastToMap(packet);
+        return damage;
     }
 
     @Override
@@ -91,10 +93,7 @@ public class Player extends Unit
     @Override
     public void onSpellCast(Spell spell, Unit target)
     {
-        KatanaPacket packet = new KatanaPacket(-1, Opcode.S_UPDATE_SPELL);
-        packet.addData(getId() + "");
-        packet.addData(spell.getId() + "");
-        // broadcastToMap(packet);
+        spell.setCooldown(spell.getCooldown());
     }
     
     @Override
@@ -104,14 +103,17 @@ public class Player extends Unit
     }
 
     @Override
-    public void onDamageDeal(int damage, Unit target, Spell spell, boolean is_auto_attack) 
+    public int onDamageDeal(int damage, Unit target, Spell spell, boolean is_auto_attack) 
     {
-        if(spell == null)
+        if(spell == null || is_auto_attack)
         {
+            /* This was supposed to be for auto attacks - not dealing with that for now
             KatanaPacket packet = new KatanaPacket(-1, Opcode.S_UPDATE_DAMAGE_DONE);
             packet.addData(target.getId() + "");
             packet.addData(damage + "");
-            // broadcastToMap(packet);
+            // broadcastToMap(packet);*/
         }
+        
+        return damage;
     }
 }

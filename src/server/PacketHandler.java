@@ -264,8 +264,8 @@ public abstract class PacketHandler
         client.sendPacket(response);
         
         KatanaPacket notify = createRoomListPacket(lobby);
-        for(Player p : lobby.getPlayers())
-            p.sendPacket(notify);
+        for(Integer i : lobby.getPlayers())
+            KatanaServer.instance().getPlayer(i).sendPacket(notify);
     }
     
     // Room ID? Is it necessary? Room ID should be stored inside player.
@@ -337,13 +337,15 @@ public abstract class PacketHandler
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_JOIN_OK);
         KatanaPacket notify = new KatanaPacket(-1, Opcode.S_ROOM_PLAYER_JOIN);
         notify.addData(pl.getId() + ";" + pl.getName() + ";" + class_id);
-        for(Player p : room.getPlayers())
+        for(Integer i : room.getPlayers())
         {
+            Player p = KatanaServer.instance().getPlayer(i);
             response.addData(p.getId() + ";" + p.getName() + ";" + p.getClassId() + ";");
             p.sendPacket(notify);
         }
         room.addPlayer(pl);
         pl.addToRoom(room_id);
+        pl.setClass(class_id);
         
         client.sendPacket(response);
     }
@@ -358,9 +360,11 @@ public abstract class PacketHandler
         
         Player leader = KatanaServer.instance().getPlayer(room.getLeader());
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_DESTROY);
-        for(Player p : room.getPlayers())
+        for(Integer i : room.getPlayers())
         {
+            Player p = KatanaServer.instance().getPlayer(i);
             p.removeFromRoom();
+            p.setRoomLeader(false);
             p.setLocation(lobby.getLocationId());
             lobby.addPlayer(p);
             p.sendPacket(response);
@@ -383,13 +387,19 @@ public abstract class PacketHandler
             return;
         }
         
+        if(pl.isRoomLeader())
+        {
+            destroyRoom(KatanaServer.instance().getLobby(pl.getLocation()), room);
+            return;
+        }
+        
         room.removePlayer(pl);
         pl.removeFromRoom();
 
         KatanaPacket notify = new KatanaPacket(-1, Opcode.S_ROOM_PLAYER_LEAVE);
         notify.addData(pl.getId() + "");
-        for(Player p : room.getPlayers())
-            p.sendPacket(notify);
+        for(Integer i : room.getPlayers())
+            KatanaServer.instance().getPlayer(i).sendPacket(notify);
     }
     
     private static KatanaPacket createRoomListPacket(Lobby lobby)
@@ -521,9 +531,12 @@ public abstract class PacketHandler
         KatanaPacket notify = new KatanaPacket(-1, Opcode.S_PLAYER_UPDATE_CLASS);
         notify.addData(pl.getId() + "");
         notify.addData(class_id + "");
-        for(Player p : room.getPlayers())
+        for(Integer i : room.getPlayers())
+        {
+            Player p = KatanaServer.instance().getPlayer(i);
             if(p != pl)
                 p.sendPacket(notify);
+        }
         
         KatanaPacket response = new KatanaPacket(-1, Opcode.S_CLASS_CHANGE_OK);
         client.sendPacket(response);

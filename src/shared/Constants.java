@@ -33,7 +33,7 @@ public abstract class Constants
     public static final String LOCATION_QUERY = "SELECT `location_id`, `location_name`, `latitude`, `longitude`, `radius` FROM `locations`;";
     public static final String SPELL_QUERY = "SELECT `spell_id`, `spell_name`,`damage`,`cooldown` FROM `spells`;";
     public static final String CLASS_QUERY = "SELECT `class_id`, `class_name`, `spell_1`, `spell_2`, `spell_3`, `spell_4`, `model_id` FROM `classes`;";
-    
+    public static final String CREATURE_QUERY = "SELECT `creature_id`, `creature_name`, `health`, `level`, `attack_speed`, `attack_damage`, `move_speed`, `model_id`, `script` FROM `creatures`;";
     
     // Default player stats
     public static final int DEFAULT_PLAYER_HEALTH  = 5000;

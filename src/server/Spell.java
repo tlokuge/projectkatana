@@ -26,8 +26,8 @@ public class Spell
     public int getId()       { return id; }
     
     public void setCooldown(int cd) { this.current_cooldown = cd; }
-    public int getCooldown() { return current_cooldown; }
-    public int getCooldownTimer() { return cooldown_timer; }
+    public int getCooldown()        { return current_cooldown; }
+    public int getCooldownTimer()   { return cooldown_timer; }
     
     public int getDamage()   { return damage; }
 }
