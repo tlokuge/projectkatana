@@ -30,6 +30,7 @@ public class PlayerEntity {
 	private String playerSpriteFile;	
 	private String[] spells;
 	private AnimatedSprite playerSprite;
+	private HPBar hpbar;
 	
 	public Players(int playerID, int playerClass, int playerHP){
 		this.playerID = playerID;
@@ -75,4 +76,7 @@ public class PlayerEntity {
 		this.playerSprite = playerSprite;
 	}
 	
+	public void setHPBar(int hpbar){
+		this.hpbar = hpbar;
+	}
 }
