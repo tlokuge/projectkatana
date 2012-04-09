@@ -21,12 +21,11 @@ import android.util.Log;
 public class SplashActivity extends Activity {
 
 	// Preferences
-	private SharedPreferences pref;
+	private SharedPreferences client_prefs;
 	// KatanaService
-	KatanaService katanaService;
-	boolean mBound = false;
-	
+	private KatanaService katanaService;
 	private KatanaReceiver katanaReceiver = new KatanaReceiver(0);
+	private boolean serviceBound = false;
 	private Context myContext = this;
 	
 	/** Android hardware buttons */
@@ -37,11 +36,12 @@ public class SplashActivity extends Activity {
 		Log.d("CDA", "onBackPressed Called"); 
 		KatanaPacket packet = new KatanaPacket(0, Opcode.C_LOGOUT);
 		katanaService.sendPacket(packet);
+		doKillService();
 	}
 
     /** Called when the activity is first created. */
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash);
         
@@ -57,9 +57,9 @@ public class SplashActivity extends Activity {
         			sleep(5000);
         			
         			// Check preferences file for stored user/pass
-        			pref = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE);
-        			String user = pref.getString(KatanaConstants.LOGIN_USER, null);
-        			String pass = pref.getString(KatanaConstants.LOGIN_PASS, null);
+        			client_prefs = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE);
+        			String user = client_prefs.getString(KatanaConstants.LOGIN_USER, null);
+        			String pass = client_prefs.getString(KatanaConstants.LOGIN_PASS, null);
         			
         			if (user == null || pass == null){
         				// No user login stored
@@ -85,14 +85,28 @@ public class SplashActivity extends Activity {
         this.finish();
     }
     
-    /** Disconnect from KatanaService */
+
+    private void doBindService() {
+    	serviceBound = true;
+        Intent intent = new Intent(this,KatanaService.class);
+        bindService(intent, katanaConnection, Context.BIND_AUTO_CREATE);
+        registerReceiver(katanaReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
+    }
+    
     private void doUnbindService() {
-        if (mBound) {
+        if (serviceBound) {
             // Detach our existing connection and broadcast receiver
             unbindService(katanaConnection);
             unregisterReceiver(katanaReceiver);
-            mBound = false;
+            serviceBound = false;
         }
+    }
+    
+    private void doKillService() {
+        unbindService(katanaConnection);
+        unregisterReceiver(katanaReceiver);
+        stopService(new Intent(SplashActivity.this,KatanaService.class));
+        serviceBound = false;
     }
     
     /** Verify user credentials with server */
@@ -103,13 +117,7 @@ public class SplashActivity extends Activity {
 		katanaService.sendPacket(packet);
     }
     
-    /** Connect to KatanaService */
-    private void doBindService() {
-    	mBound = true;
-        Intent intent = new Intent(this,KatanaService.class);
-        bindService(intent, katanaConnection, Context.BIND_AUTO_CREATE);
-        registerReceiver(katanaReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
-    }
+
 
     private ServiceConnection katanaConnection = new ServiceConnection() {
         @Override
@@ -117,12 +125,12 @@ public class SplashActivity extends Activity {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             KatanaSBinder binder = (KatanaSBinder) service;
             katanaService = binder.getService();
-            mBound = true;
+            serviceBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            mBound = false;
+            serviceBound = false;
         }
     };
 }
