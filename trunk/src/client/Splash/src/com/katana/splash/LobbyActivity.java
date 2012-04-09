@@ -166,11 +166,6 @@ public class LobbyActivity extends Activity {
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        wakeLockManager = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, "My Tag");
-        wakeLockManager.acquire();
-        
         setContentView(R.layout.viewflipper);
         
         // Bind Views
@@ -247,27 +242,20 @@ public class LobbyActivity extends Activity {
 	@Override
 	protected void onStart(){
 		super.onStart();
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-        // Bind to KatanaService
-		// Start KatanaReceiver
 		doBindService();
-    	// Call KatanaService to get current location
-    	// Display "Loading" until current location is found by service *or timeout?*
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        wakeLockManager = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, "My Tag");
+        wakeLockManager.acquire();	
 	}
 	
 	@Override
-	protected void onPause(){
-		super.onPause();
-		wakeLockManager.release();
-		// Unbind KatanaService and Receiver
+	protected void onStop() {
+		super.onStop();
 		doUnbindService();
-		// Send logout packet to server
 		katanaService.sendPacket(new KatanaPacket(0,Opcode.C_LOGOUT));
+		wakeLockManager.release();
 		this.finish();
+		
 	}
     
     /** Button onClick Functions **/   
@@ -404,9 +392,7 @@ public class LobbyActivity extends Activity {
 	}
 
 	private void lobbyJoinRoom() {
-		// Show select class dialog
 		showSelectClassDialog(false);
-		// Send info to server and wait for response
 	}
 
 	public void lobbySendJoinRequest(){
@@ -418,10 +404,7 @@ public class LobbyActivity extends Activity {
 	}
 
 	private void lobbyCreateRoom(){
-		// Show room options dialog
 		showCreateRoomDialog();
-		// Show select class dialog
-		// Send info to server and wait for response
 	}
 
 	public void lobbySendCreateRequest(){
@@ -575,6 +558,11 @@ public class LobbyActivity extends Activity {
     public void waitingRoomUpdatePlayers() {
 		room_playerGridView.setAdapter(new PlayerListAdapter(this, room_playerList));
 	}
+    
+    public void waitingRoomStartGame(View view) {
+    	// TODO Implement game start logic
+    	System.out.println("TODO: Implement game start logic");
+    }
 
 	/** public get/set methods methods */
     public void setLatitude(double d) {
@@ -789,5 +777,9 @@ public class LobbyActivity extends Activity {
 			lobby_maxPlayerLabel.setText(Integer.toString(lobby_selectedRoom.getMaxPlyr()));
 		}
 	};
+
+	public boolean isInValidLocation() {
+		return client_inValidLocation;
+	}
 }
 
