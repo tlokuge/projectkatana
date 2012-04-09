@@ -270,41 +270,7 @@ public class LobbyActivity extends Activity {
 		this.finish();
 	}
     
-    /** KatanaService binding */
-	private void doBindService(){
-	    Intent intent = new Intent(this,KatanaService.class);
-	    bindService(intent, katanaServiceConn, Context.BIND_AUTO_CREATE);
-	    registerReceiver(katanaReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
-	    registerReceiver(katanaLocReceiver, new IntentFilter(KatanaService.BROADCAST_LOCATION));
-	}
-
-	private void doUnbindService() {
-	    if (serviceBound) {
-	        // Detach our existing connection and broadcast receiver
-	        unbindService(katanaServiceConn);
-	        unregisterReceiver(katanaReceiver);
-	        unregisterReceiver(katanaLocReceiver);
-	        stopService(new Intent(LobbyActivity.this,KatanaService.class));
-	        serviceBound = false;
-	    }
-	}
-
-	private ServiceConnection katanaServiceConn = new ServiceConnection() {
-	    @Override
-	    public void onServiceConnected(ComponentName className, IBinder service) {
-	        // We've bound to LocalService, cast the IBinder and get LocalService instance
-	        KatanaSBinder binder = (KatanaSBinder) service;
-	        katanaService = binder.getService();
-	        serviceBound = true;
-	    }
-	
-	    @Override
-	    public void onServiceDisconnected(ComponentName arg0) {
-	        serviceBound = false;
-	    }
-	};
-
-	/** Button onClick Functions **/   
+    /** Button onClick Functions **/   
     public void showSelectClassDialog(boolean newRoom){
     	// Load class preference
     	int classChoice = client_gamePrefs.getInt(KatanaConstants.GAME_CLASS, -1);
@@ -650,6 +616,39 @@ public class LobbyActivity extends Activity {
 		viewFlipper.showNext();
 	}
 
+	/** KatanaService binding */
+	private void doBindService(){
+	    Intent intent = new Intent(this,KatanaService.class);
+	    bindService(intent, katanaConnection, Context.BIND_AUTO_CREATE);
+	    registerReceiver(katanaReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
+	    registerReceiver(katanaLocReceiver, new IntentFilter(KatanaService.BROADCAST_LOCATION));
+	}
+
+	private void doUnbindService() {
+	    if (serviceBound) {
+	        // Detach our existing connection and broadcast receiver
+	        unbindService(katanaConnection);
+	        unregisterReceiver(katanaReceiver);
+	        unregisterReceiver(katanaLocReceiver);
+	        stopService(new Intent(LobbyActivity.this,KatanaService.class));
+	        serviceBound = false;
+	    }
+	}
+
+	private ServiceConnection katanaConnection = new ServiceConnection() {
+	    @Override
+	    public void onServiceConnected(ComponentName className, IBinder service) {
+	        // We've bound to LocalService, cast the IBinder and get LocalService instance
+	        KatanaSBinder binder = (KatanaSBinder) service;
+	        katanaService = binder.getService();
+	        serviceBound = true;
+	    }
+	
+	    @Override
+	    public void onServiceDisconnected(ComponentName arg0) {
+	        serviceBound = false;
+	    }
+	};
 	/** OnClickListeners */
 	private OnClickListener class1Listener = new OnClickListener() {
 		@Override
