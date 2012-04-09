@@ -265,7 +265,7 @@ public class KatanaService extends Service {
 	public static final String EXTRAS_LATITUDE = "lat";
 	public static final String EXTRAS_LONGITUDE = "lng";
 	
-	LocationListener locList = new LocationListener(){
+	private LocationListener locList = new LocationListener(){
 		@Override
 		public void onLocationChanged(Location location) {
 			latitude = location.getLatitude();
