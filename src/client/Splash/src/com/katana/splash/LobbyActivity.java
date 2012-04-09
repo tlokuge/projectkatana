@@ -97,12 +97,10 @@ public class LobbyActivity extends Activity {
 	// Preferences
 	private SharedPreferences gamePrefs;
 	
-	/*** DEBUG!!! ***/
 	ArrayList<Player> playerList;
 	HashMap<Integer, Integer> playerRef;
 	
 	/** Android hardware buttons */
-	// Called on android back button pressed
 	@Override 
 	public void onBackPressed() {
 		Log.d("CDA", "onBackPressed Called"); 
@@ -114,7 +112,7 @@ public class LobbyActivity extends Activity {
 				System.out.println("DESTROY ALL THE ROOM!");
 				KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_DESTROY);
 				katanaService.sendPacket(packet);
-				refreshList(null);
+				lobbySendRoomListRequest(null);
 				transitionToLobby();
 				return;
 			} else {
@@ -128,7 +126,6 @@ public class LobbyActivity extends Activity {
 		}
 	}
     
-	// Called when the android menu button is pressed 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -171,7 +168,7 @@ public class LobbyActivity extends Activity {
         }
     }
     
-	/** Called when the activity is first created */
+	/** Activity Lifecycle */
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -235,7 +232,7 @@ public class LobbyActivity extends Activity {
     				Toast.makeText(getApplicationContext(), R.string.b_norealm, Toast.LENGTH_SHORT).show();
     				return;
     			}
-				joinRoom();
+				lobbyJoinRoom();
 			}
         });
         
@@ -246,25 +243,18 @@ public class LobbyActivity extends Activity {
     				Toast.makeText(getApplicationContext(), R.string.b_norealm, Toast.LENGTH_SHORT).show();
     				return;
     			}
-        		createRoom();
+        		lobbyCreateRoom();
         	}
         });
         
         gv_roomsList.setOnItemClickListener(selectRoomListener);
     }
     
-	/** RESET LAYOUT TO BLANK! */
-	protected void restart() {
-		
-	}
-	
-	/** Called when the activity is started */
 	@Override
 	protected void onStart(){
 		super.onStart();
 	}
-	
-	/** Called when the activity is resumed */
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -275,7 +265,6 @@ public class LobbyActivity extends Activity {
     	// Display "Loading" until current location is found by service *or timeout?*
 	}
 	
-	/** Called when the activity is paused */
 	@Override
 	protected void onPause(){
 		super.onPause();
@@ -286,52 +275,42 @@ public class LobbyActivity extends Activity {
 		katanaService.sendPacket(new KatanaPacket(0,Opcode.C_LOGOUT));
 		this.finish();
 	}
-	
-	/** Called when the activity is stopped */
-	@Override
-	protected void onStop(){
-		super.onStop();
+    
+    /** KatanaService binding */
+	private void doBindService(){
+	    Intent intent = new Intent(this,KatanaService.class);
+	    bindService(intent, katanaServiceConn, Context.BIND_AUTO_CREATE);
+	    registerReceiver(katanaReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
+	    registerReceiver(katanaLocReceiver, new IntentFilter(KatanaService.BROADCAST_LOCATION));
 	}
-	    
-	/** Final cleanup when activity is finished */
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    } 
-    
-    /** Connect / Disconnect from Services */
-    private void doBindService(){
-        Intent intent = new Intent(this,KatanaService.class);
-        bindService(intent, katanaServiceConn, Context.BIND_AUTO_CREATE);
-        registerReceiver(katanaReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
-        registerReceiver(katanaLocReceiver, new IntentFilter(KatanaService.BROADCAST_LOCATION));
-    }
-    
-    private void doUnbindService() {
-        if (serviceBound) {
-            // Detach our existing connection and broadcast receiver
-            unbindService(katanaServiceConn);
-            unregisterReceiver(katanaReceiver);
-            unregisterReceiver(katanaLocReceiver);
-            stopService(new Intent(LobbyActivity.this,KatanaService.class));
-            serviceBound = false;
-        }
-    }
-    
-    private void createRoom(){
-    	// Show room options dialog
-    	showCreateRoomDialog();
-    	// Show select class dialog
-    	// Send info to server and wait for response
-    }
-    
-    private void joinRoom() {
-    	// Show select class dialog
-    	showSelectClassDialog(false);
-    	// Send info to server and wait for response
-    }
-    
-    /** Button onClick Functions **/   
+
+	private void doUnbindService() {
+	    if (serviceBound) {
+	        // Detach our existing connection and broadcast receiver
+	        unbindService(katanaServiceConn);
+	        unregisterReceiver(katanaReceiver);
+	        unregisterReceiver(katanaLocReceiver);
+	        stopService(new Intent(LobbyActivity.this,KatanaService.class));
+	        serviceBound = false;
+	    }
+	}
+
+	private ServiceConnection katanaServiceConn = new ServiceConnection() {
+	    @Override
+	    public void onServiceConnected(ComponentName className, IBinder service) {
+	        // We've bound to LocalService, cast the IBinder and get LocalService instance
+	        KatanaSBinder binder = (KatanaSBinder) service;
+	        katanaService = binder.getService();
+	        serviceBound = true;
+	    }
+	
+	    @Override
+	    public void onServiceDisconnected(ComponentName arg0) {
+	        serviceBound = false;
+	    }
+	};
+
+	/** Button onClick Functions **/   
     public void showSelectClassDialog(boolean newRoom){
     	// Load class preference
     	int classChoice = gamePrefs.getInt(KatanaConstants.GAME_CLASS, -1);
@@ -416,14 +395,6 @@ public class LobbyActivity extends Activity {
     	createRoomDialog.show();
     }
     
-    public void refreshList(View view){
-    	// Send server refresh room list packet
-    	KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_LIST);
-    	packet.addData(Double.toString(latitude));
-    	packet.addData(Double.toString(longitude));
-    	katanaService.sendPacket(packet);
-    }
-    
     public void showLeaderboardDialog(String scores){
     	leaderboardDialog = new Dialog(this, R.style.DialogTheme);
     	leaderboardDialog.setContentView(R.layout.leaderboard);
@@ -450,78 +421,86 @@ public class LobbyActivity extends Activity {
     	leaderboardDialog.show();
     }
     
-    public void joinCreatedRoom() {
-    	inRoom = true;
-    	roomLeader = true;
-		this.showRoomPlayers(new ArrayList<String>());
-		String name = gamePrefs.getString(KatanaConstants.GAME_NAME, KatanaConstants.DEF_ROOMNAME);
-		String diff = gamePrefs.getString(KatanaConstants.GAME_DIFF, KatanaConstants.DEF_ROOMDIFF);
-    	l_wroomname.setText(name);
-    	l_wroomdiff.setText(diff);
+    /** Game lobby methods */
+    public void lobbySendRoomListRequest(View view){
+		// Send server refresh room list packet
+		KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_LIST);
+		packet.addData(Double.toString(latitude));
+		packet.addData(Double.toString(longitude));
+		katanaService.sendPacket(packet);
+	}
+
+	public void lobbyShowRooms(String locName, ArrayList<String> al){
+		roomList = new ArrayList<Room>();
 		
-		viewFlipper.setInAnimation(LobbyActivity.this, R.anim.transition_infrom_left);
-		viewFlipper.setOutAnimation(LobbyActivity.this, R.anim.transition_outfrom_left);
-		viewFlipper.showNext();
-    }
-    
-    /** Called when the user confirms their class choice */
-    public void sendJoinRoomRequest(){
-   		// Send a join room packet to server
-    	KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_JOIN);
-    	packet.addData(Integer.toString(selectedRoom.getId()));
-    	packet.addData(Integer.toString(gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1)));
-    	katanaService.sendPacket(packet);
-    }
-    
-    /** Called when the server sends a S_ROOM_JOIN_OK */
-    public void joinRoom(Room selected){
-    	inRoom = true;
-    	l_wroomname.setText(selected.getName());
-    	l_wroomdiff.setText(Integer.toString(selected.getDifficulty()));
-    	
-		viewFlipper.setInAnimation(LobbyActivity.this, R.anim.transition_infrom_left);
-		viewFlipper.setOutAnimation(LobbyActivity.this, R.anim.transition_outfrom_left);
-		viewFlipper.showNext();
-    }
-    
-    /** Called when the user confirms the room preferences */
-    public void makeRoom(){
-    	// Read room name from textfield
-    	String name = et_rmName.getText().toString().trim();
-    	
-    	// Set room name preferences
-    	if(name.length() < KatanaConstants.ROOMNAMEMIN) {
-    		// Room name is left blank
-    		gamePrefs.edit().putString(KatanaConstants.GAME_NAME, KatanaConstants.DEF_ROOMNAME).commit();
-    	} else {
-    		gamePrefs.edit().putString(KatanaConstants.GAME_NAME, name).commit();
-    	}
-    	
-    	// Set game difficulty preferences
-    	int diff = rg_diffSel.getCheckedRadioButtonId();
-    	int difficulty = 1;
-    	switch(diff){
-    		case R.id.diff1: 
-    			gamePrefs.edit().putString(KatanaConstants.GAME_DIFF, "Easy").commit();
-    			break;
-    		case R.id.diff2:
-    			difficulty = 2;
-    			gamePrefs.edit().putString(KatanaConstants.GAME_DIFF, "Standard").commit();
-    			break;
-    		case R.id.diff3: 
-    			difficulty = 3;
-    			gamePrefs.edit().putString(KatanaConstants.GAME_DIFF, "Hard").commit();
-    			break;
-    		default: 
-    			difficulty = 2;
-    			gamePrefs.edit().putString(KatanaConstants.GAME_DIFF, "Standard").commit();
-    			break;
-    	}
-    	
-    	// Set game max player preferences
-    	int plyr = rg_plyrSel.getCheckedRadioButtonId();
-    	int max = 1;
-    	switch(plyr){
+		for (int i = 0; i < al.size(); i++){
+			String[] lines = al.get(i).split(";");
+			if(lines.length < 4)
+				continue;
+			roomList.add(new Room(Integer.parseInt(lines[0]),lines[1],Integer.parseInt(lines[2]),Integer.parseInt(lines[3])));
+		}
+		l_realmname.setText(locName);
+		gv_roomsList.setAdapter(new RoomListAdapter(this,roomList));       
+	}
+
+	private void lobbyJoinRoom() {
+		// Show select class dialog
+		showSelectClassDialog(false);
+		// Send info to server and wait for response
+	}
+
+	public void lobbySendJoinRequest(){
+		// Send a join room packet to server
+		KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_JOIN);
+		packet.addData(Integer.toString(selectedRoom.getId()));
+		packet.addData(Integer.toString(gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1)));
+		katanaService.sendPacket(packet);
+	}
+
+	private void lobbyCreateRoom(){
+		// Show room options dialog
+		showCreateRoomDialog();
+		// Show select class dialog
+		// Send info to server and wait for response
+	}
+
+	public void lobbySendCreateRequest(){
+		// Read room name from textfield
+		String name = et_rmName.getText().toString().trim();
+		
+		// Set room name preferences
+		if(name.length() < KatanaConstants.ROOMNAMEMIN) {
+			// Room name is left blank
+			gamePrefs.edit().putString(KatanaConstants.GAME_NAME, KatanaConstants.DEF_ROOMNAME).commit();
+		} else {
+			gamePrefs.edit().putString(KatanaConstants.GAME_NAME, name).commit();
+		}
+		
+		// Set game difficulty preferences
+		int diff = rg_diffSel.getCheckedRadioButtonId();
+		int difficulty = 1;
+		switch(diff){
+			case R.id.diff1: 
+				gamePrefs.edit().putString(KatanaConstants.GAME_DIFF, "Easy").commit();
+				break;
+			case R.id.diff2:
+				difficulty = 2;
+				gamePrefs.edit().putString(KatanaConstants.GAME_DIFF, "Standard").commit();
+				break;
+			case R.id.diff3: 
+				difficulty = 3;
+				gamePrefs.edit().putString(KatanaConstants.GAME_DIFF, "Hard").commit();
+				break;
+			default: 
+				difficulty = 2;
+				gamePrefs.edit().putString(KatanaConstants.GAME_DIFF, "Standard").commit();
+				break;
+		}
+		
+		// Set game max player preferences
+		int plyr = rg_plyrSel.getCheckedRadioButtonId();
+		int max = 1;
+		switch(plyr){
 			case R.id.plyr1: 
 				gamePrefs.edit().putInt(KatanaConstants.GAME_MAXP, 1).commit();
 				break;
@@ -538,50 +517,77 @@ public class LobbyActivity extends Activity {
 				max = 4;
 				gamePrefs.edit().putInt(KatanaConstants.GAME_MAXP, 4).commit();
 				break;	
-    	}
-    	
-    	selectedRoom = new Room(-1, name, difficulty, max);
-    	KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_CREATE);
-    	packet.addData(name);
-    	packet.addData(difficulty + "");
-    	packet.addData(max + "");
-    	packet.addData(gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1) + "");
-    	katanaService.sendPacket(packet);
-    }
-    
-    private ServiceConnection katanaServiceConn = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            KatanaSBinder binder = (KatanaSBinder) service;
-            katanaService = binder.getService();
-            serviceBound = true;
-        }
+		}
+		
+		selectedRoom = new Room(-1, name, difficulty, max);
+		KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_CREATE);
+		packet.addData(name);
+		packet.addData(difficulty + "");
+		packet.addData(max + "");
+		packet.addData(gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1) + "");
+		katanaService.sendPacket(packet);
+	}
 
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            serviceBound = false;
-        }
-    };
-    
-    public void updatePlayerClass(int playerid, int classid) {
+    public void lobbyJoinCreatedRoom() {
+		inRoom = true;
+		roomLeader = true;
+		this.waitingRoomShowPlayers(new ArrayList<String>());
+		String name = gamePrefs.getString(KatanaConstants.GAME_NAME, KatanaConstants.DEF_ROOMNAME);
+		String diff = gamePrefs.getString(KatanaConstants.GAME_DIFF, KatanaConstants.DEF_ROOMDIFF);
+		l_wroomname.setText(name);
+		l_wroomdiff.setText(diff);
+		transitionToWaitingRoom();
+	}
+
+	public void lobbyTransitionToWaitingRoom(Room selected){
+		inRoom = true;
+		l_wroomname.setText(selected.getName());
+		l_wroomdiff.setText(Integer.toString(selected.getDifficulty()));
+		transitionToWaitingRoom();
+	}
+
+	/** Waiting room methods */
+	public void waitingRoomShowPlayers(ArrayList<String> al) {
+		// Update user interface and bounce user to waiting room
+		playerList = new ArrayList<Player>();
+		playerRef = new HashMap<Integer, Integer>();
+		int position = 0;
+		for(int i = 0; i < al.size(); i++) {
+			System.out.println(al.get(i));
+			String[] lines = al.get(i).split(";");
+			if(lines.length < 3)
+				continue;
+			position = i;
+			playerRef.put(Integer.parseInt(lines[0]), i);
+			playerList.add(new Player(Integer.parseInt(lines[0]),lines[1],Integer.parseInt(lines[2])));
+		}
+		int pid = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getInt(KatanaConstants.PLAYER_ID, 0);
+		if(al.isEmpty()){
+			playerRef.put(pid, 0);
+		} else {
+			playerRef.put(pid, position + 1);
+		}
+		playerList.add(new Player(pid, getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getString(KatanaConstants.LOGIN_USER, ""), gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1)));
+		waitingRoomUpdatePlayers();
+	}
+
+	public void waitingRoomClassUpdate(int playerid, int classid) {
     	System.out.println("Player " + playerid + " is changing class from " + playerList.get(playerRef.get(playerid)).getClassId() + " to " + classid);
     	playerList.get(playerRef.get(playerid)).setClassId(classid);
-    	gv_wroomList.setAdapter(new PlayerListAdapter(this,playerList));
+    	waitingRoomUpdatePlayers();
     }
     
-    public void addPlayer(Intent intent){
+    public void waitingRoomAddPlayer(Intent intent){
     	String s = intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME);
     	int ref = playerList.size();
     	String lines[] = s.split(";");
     	playerRef.put(Integer.parseInt(lines[0]), ref);
     	playerList.add(new Player(Integer.parseInt(lines[0]),lines[1],Integer.parseInt(lines[2])));
-    	gv_wroomList.setAdapter(new PlayerListAdapter(this,playerList));
+    	waitingRoomUpdatePlayers();
     }
     
-    public void removePlayer(int player_id) {
+    public void waitingRoomRemovePlayer(int player_id) {
     	int ref = playerRef.get(player_id);
-    	
     	System.out.println(ref);
     	System.out.println(playerList.size());
     	
@@ -590,61 +596,12 @@ public class LobbyActivity extends Activity {
     			value--;
     		}
     	}
-    	
     	playerList.remove(ref);
     	playerRef.remove(player_id);
-    	gv_wroomList.setAdapter(new PlayerListAdapter(this,playerList));
+    	waitingRoomUpdatePlayers();
     }
     
-    /** Refresh waiting room with players */
-    public void showRoomPlayers(ArrayList<String> al) {
-    	// Update user interface and bounce user to waiting room :D
-    	playerList = new ArrayList<Player>();
-    	playerRef = new HashMap<Integer, Integer>();
-    	
-    	int position = 0;
-    	for(int i = 0; i < al.size(); i++) {
-    		System.out.println(al.get(i));
-    		String[] lines = al.get(i).split(";");
-    		
-    		if(lines.length < 3)
-    			continue;
-    		
-    		position = i;
-    		playerRef.put(Integer.parseInt(lines[0]), i);
-    		playerList.add(new Player(Integer.parseInt(lines[0]),lines[1],Integer.parseInt(lines[2])));
-    	}
-    	
-    	int pid = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getInt(KatanaConstants.PLAYER_ID, 0);
-    	if(al.isEmpty()){
-    		playerRef.put(pid, 0);
-    	} else {
-    		playerRef.put(pid, position + 1);
-    	}
-    	playerList.add(new Player(pid, getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getString(KatanaConstants.LOGIN_USER, ""), gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1)));
-    	// Update user interface
-    	gv_wroomList.setAdapter(new PlayerListAdapter(this, playerList));
-    }
-    
-    /** Refresh room list with server response */
-    public void showRoomList(String locName, ArrayList<String> al){
-    	roomList = new ArrayList<Room>();
-    	
-    	for (int i = 0; i < al.size(); i++){
-    		String[] lines = al.get(i).split(";");
-    		if(lines.length < 4)
-    			continue;
-    		roomList.add(new Room(Integer.parseInt(lines[0]),lines[1],Integer.parseInt(lines[2]),Integer.parseInt(lines[3])));
-    	}
-    	
-    	// Update user interface
-    	l_realmname.setText(locName);
-    	gv_roomsList.setAdapter(new RoomListAdapter(this,roomList));       
-    }
-
-    //
-    
-    private void changeClass(int i){
+    private void waitingRoomRequestClassChange(int i){
 		int pid = getSharedPreferences(KatanaConstants.PREFS_LOGIN,MODE_PRIVATE).getInt(KatanaConstants.PLAYER_ID, 0);
 		System.out.println("my id: " + playerRef.get(pid));
 		System.out.println("playerlist size: " + playerList.size());
@@ -655,148 +612,11 @@ public class LobbyActivity extends Activity {
 		katanaService.sendPacket(packet);
     }
     
-    /** OnClickListeners */
-    private OnClickListener class1Listener = new OnClickListener() {
-		@Override
-		public void onClick(View v) {
-			ImageButton b_class1 = (ImageButton)classDialog.findViewById(R.id.b_class1);
-	    	ImageButton b_class2 = (ImageButton)classDialog.findViewById(R.id.b_class2);
-	    	TextView desc = (TextView)classDialog.findViewById(R.id.l_classdesc);
-	    	
-			if(selection != 0){
-				// A class is already highlighted
-				if(selection == 1){
-					// Go into game with class 1
-					gamePrefs.edit().putInt(KatanaConstants.GAME_CLASS, selection).commit();
-					if(!inRoom) 
-						sendJoinRoomRequest();
-					else {
-						changeClass(1);
-					}
-					classDialog.dismiss();
-				} else {
-					// Highlight class 1
-					selection = 1;
-					b_class1.setImageResource(R.drawable.class1_selected);
-		    		b_class2.setImageResource(R.drawable.class2);
-		    		desc.setText(KatanaConstants.DESC_CLASS1);
-				}
-			} else {
-				// Highlight class 1
-				selection = 1;
-				b_class1.setImageResource(R.drawable.class1_selected);
-	    		b_class2.setImageResource(R.drawable.class2);
-				desc.setText(KatanaConstants.DESC_CLASS1);
-			}
-		}
-	};
-	
-    private OnClickListener class2Listener = new OnClickListener() {
-    	@Override
-		public void onClick(View v) {
-			ImageButton b_class1 = (ImageButton)classDialog.findViewById(R.id.b_class1);
-	    	ImageButton b_class2 = (ImageButton)classDialog.findViewById(R.id.b_class2);
-	    	TextView desc = (TextView)classDialog.findViewById(R.id.l_classdesc);
-	    	
-			if(selection != 0){
-				// A class is already highlighted
-				if(selection == 2){
-					// Go into game with class 2
-					gamePrefs.edit().putInt(KatanaConstants.GAME_CLASS, selection).commit();
-					if(!inRoom)
-						sendJoinRoomRequest();
-					else {
-						changeClass(2);
-					}
-					classDialog.dismiss();
-				} else{
-					// Highlight class 2
-					selection = 2;
-					b_class1.setImageResource(R.drawable.class1);
-		    		b_class2.setImageResource(R.drawable.class2_selected);
-		    		desc.setText(KatanaConstants.DESC_CLASS2);
-				}
-			} else {
-				// Highlight class 2
-				selection = 2;
-				b_class1.setImageResource(R.drawable.class1);
-	    		b_class2.setImageResource(R.drawable.class2_selected);
-	    		desc.setText(KatanaConstants.DESC_CLASS2);
-			}
-		}
-    };
-    
-    private OnClickListener class1newRoomListener = new OnClickListener() {
-		@Override
-		public void onClick(View v) {
-			ImageButton b_class1 = (ImageButton)classDialog.findViewById(R.id.b_class1);
-	    	ImageButton b_class2 = (ImageButton)classDialog.findViewById(R.id.b_class2);
-	    	TextView desc = (TextView)classDialog.findViewById(R.id.l_classdesc);
-	    	
-			if(selection != 0){
-				// A class is already highlighted
-				if(selection == 1){
-					gamePrefs.edit().putInt(KatanaConstants.GAME_CLASS, selection).commit();
-					makeRoom();
-					classDialog.dismiss();
-				} else {
-					// Highlight class 1
-					selection = 1;
-					b_class1.setImageResource(R.drawable.class1_selected);
-		    		b_class2.setImageResource(R.drawable.class2);
-		    		desc.setText(KatanaConstants.DESC_CLASS1);
-				}
-			} else {
-				// Highlight class 1
-				selection = 1;
-				b_class1.setImageResource(R.drawable.class1_selected);
-	    		b_class2.setImageResource(R.drawable.class2);
-				desc.setText(KatanaConstants.DESC_CLASS1);
-			}
-		}
-	};
-	
-    private OnClickListener class2newRoomListener = new OnClickListener() {
-    	@Override
-		public void onClick(View v) {
-			ImageButton b_class1 = (ImageButton)classDialog.findViewById(R.id.b_class1);
-	    	ImageButton b_class2 = (ImageButton)classDialog.findViewById(R.id.b_class2);
-	    	TextView desc = (TextView)classDialog.findViewById(R.id.l_classdesc);
-	    	
-			if(selection != 0){
-				// A class is already highlighted
-				if(selection == 2){
-					gamePrefs.edit().putInt(KatanaConstants.GAME_CLASS, selection).commit();
-					makeRoom();
-					classDialog.dismiss();
-				} else{
-					// Highlight class 2
-					selection = 2;
-					b_class1.setImageResource(R.drawable.class1);
-		    		b_class2.setImageResource(R.drawable.class2_selected);
-		    		desc.setText(KatanaConstants.DESC_CLASS2);
-				}
-			} else {
-				// Highlight class 2
-				selection = 2;
-				b_class1.setImageResource(R.drawable.class1);
-	    		b_class2.setImageResource(R.drawable.class2_selected);
-	    		desc.setText(KatanaConstants.DESC_CLASS2);
-			}
-		}
-    };
+    public void waitingRoomUpdatePlayers() {
+		gv_wroomList.setAdapter(new PlayerListAdapter(this, playerList));
+	}
 
-    private OnItemClickListener selectRoomListener = new OnItemClickListener() {
-    	@Override
-    	public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-    		selectedRoom = (Room) roomList.get(position);
-    		l_roomname.setText(selectedRoom.getName());
-    		l_difficulty.setText(Integer.toString(selectedRoom.getDifficulty()));
-    		l_maxplayers.setText(Integer.toString(selectedRoom.getMaxPlyr()));
-    	}
-    };
-    
-    /** public methods */
+	/** public get/set methods methods */
     public void setLatitude(double d) {
     	latitude = d;
     }
@@ -822,11 +642,159 @@ public class LobbyActivity extends Activity {
 		roomLeader = b;
 		
 	}
-
+	
+	/** Viewflipper transitions */
 	public void transitionToLobby() {
 		viewFlipper.setInAnimation(LobbyActivity.this, R.anim.transition_infrom_right);
 		viewFlipper.setOutAnimation(LobbyActivity.this, R.anim.transition_outfrom_right);
 		viewFlipper.showPrevious();
 	}
+	
+	public void transitionToWaitingRoom() {
+		viewFlipper.setInAnimation(LobbyActivity.this, R.anim.transition_infrom_left);
+		viewFlipper.setOutAnimation(LobbyActivity.this, R.anim.transition_outfrom_left);
+		viewFlipper.showNext();
+	}
+
+	/** OnClickListeners */
+	private OnClickListener class1Listener = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			ImageButton b_class1 = (ImageButton)classDialog.findViewById(R.id.b_class1);
+	    	ImageButton b_class2 = (ImageButton)classDialog.findViewById(R.id.b_class2);
+	    	TextView desc = (TextView)classDialog.findViewById(R.id.l_classdesc);
+	    	
+			if(selection != 0){
+				// A class is already highlighted
+				if(selection == 1){
+					// Go into game with class 1
+					gamePrefs.edit().putInt(KatanaConstants.GAME_CLASS, selection).commit();
+					if(!inRoom) 
+						lobbySendJoinRequest();
+					else {
+						waitingRoomRequestClassChange(1);
+					}
+					classDialog.dismiss();
+				} else {
+					// Highlight class 1
+					selection = 1;
+					b_class1.setImageResource(R.drawable.class1_selected);
+		    		b_class2.setImageResource(R.drawable.class2);
+		    		desc.setText(KatanaConstants.DESC_CLASS1);
+				}
+			} else {
+				// Highlight class 1
+				selection = 1;
+				b_class1.setImageResource(R.drawable.class1_selected);
+	    		b_class2.setImageResource(R.drawable.class2);
+				desc.setText(KatanaConstants.DESC_CLASS1);
+			}
+		}
+	};
+	
+	private OnClickListener class2Listener = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			ImageButton b_class1 = (ImageButton)classDialog.findViewById(R.id.b_class1);
+	    	ImageButton b_class2 = (ImageButton)classDialog.findViewById(R.id.b_class2);
+	    	TextView desc = (TextView)classDialog.findViewById(R.id.l_classdesc);
+	    	
+			if(selection != 0){
+				// A class is already highlighted
+				if(selection == 2){
+					// Go into game with class 2
+					gamePrefs.edit().putInt(KatanaConstants.GAME_CLASS, selection).commit();
+					if(!inRoom)
+						lobbySendJoinRequest();
+					else {
+						waitingRoomRequestClassChange(2);
+					}
+					classDialog.dismiss();
+				} else{
+					// Highlight class 2
+					selection = 2;
+					b_class1.setImageResource(R.drawable.class1);
+		    		b_class2.setImageResource(R.drawable.class2_selected);
+		    		desc.setText(KatanaConstants.DESC_CLASS2);
+				}
+			} else {
+				// Highlight class 2
+				selection = 2;
+				b_class1.setImageResource(R.drawable.class1);
+	    		b_class2.setImageResource(R.drawable.class2_selected);
+	    		desc.setText(KatanaConstants.DESC_CLASS2);
+			}
+		}
+	};
+	
+	private OnClickListener class1newRoomListener = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			ImageButton b_class1 = (ImageButton)classDialog.findViewById(R.id.b_class1);
+	    	ImageButton b_class2 = (ImageButton)classDialog.findViewById(R.id.b_class2);
+	    	TextView desc = (TextView)classDialog.findViewById(R.id.l_classdesc);
+	    	
+			if(selection != 0){
+				// A class is already highlighted
+				if(selection == 1){
+					gamePrefs.edit().putInt(KatanaConstants.GAME_CLASS, selection).commit();
+					lobbySendCreateRequest();
+					classDialog.dismiss();
+				} else {
+					// Highlight class 1
+					selection = 1;
+					b_class1.setImageResource(R.drawable.class1_selected);
+		    		b_class2.setImageResource(R.drawable.class2);
+		    		desc.setText(KatanaConstants.DESC_CLASS1);
+				}
+			} else {
+				// Highlight class 1
+				selection = 1;
+				b_class1.setImageResource(R.drawable.class1_selected);
+	    		b_class2.setImageResource(R.drawable.class2);
+				desc.setText(KatanaConstants.DESC_CLASS1);
+			}
+		}
+	};
+	
+	private OnClickListener class2newRoomListener = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			ImageButton b_class1 = (ImageButton)classDialog.findViewById(R.id.b_class1);
+	    	ImageButton b_class2 = (ImageButton)classDialog.findViewById(R.id.b_class2);
+	    	TextView desc = (TextView)classDialog.findViewById(R.id.l_classdesc);
+	    	
+			if(selection != 0){
+				// A class is already highlighted
+				if(selection == 2){
+					gamePrefs.edit().putInt(KatanaConstants.GAME_CLASS, selection).commit();
+					lobbySendCreateRequest();
+					classDialog.dismiss();
+				} else{
+					// Highlight class 2
+					selection = 2;
+					b_class1.setImageResource(R.drawable.class1);
+		    		b_class2.setImageResource(R.drawable.class2_selected);
+		    		desc.setText(KatanaConstants.DESC_CLASS2);
+				}
+			} else {
+				// Highlight class 2
+				selection = 2;
+				b_class1.setImageResource(R.drawable.class1);
+	    		b_class2.setImageResource(R.drawable.class2_selected);
+	    		desc.setText(KatanaConstants.DESC_CLASS2);
+			}
+		}
+	};
+	
+	private OnItemClickListener selectRoomListener = new OnItemClickListener() {
+		@Override
+		public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+			selectedRoom = (Room) roomList.get(position);
+			l_roomname.setText(selectedRoom.getName());
+			l_difficulty.setText(Integer.toString(selectedRoom.getDifficulty()));
+			l_maxplayers.setText(Integer.toString(selectedRoom.getMaxPlyr()));
+		}
+	};
 }
 

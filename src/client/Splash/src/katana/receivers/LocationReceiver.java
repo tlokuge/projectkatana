@@ -18,6 +18,6 @@ public class LocationReceiver extends BroadcastReceiver {
 		LobbyActivity lobbyActivity = (LobbyActivity) context;
 		lobbyActivity.setLatitude(intent.getDoubleExtra(KatanaService.EXTRAS_LATITUDE, 0.0));
 		lobbyActivity.setLongitude(intent.getDoubleExtra(KatanaService.EXTRAS_LONGITUDE, 0.0));
-		lobbyActivity.refreshList(null);
+		lobbyActivity.lobbySendRoomListRequest(null);
 	}
 }
