@@ -131,9 +131,21 @@ public class AndengineActivity extends BaseGameActivity {
     }
     
     public Scene onLoadScene() {
-
+        //setting up screen here
+    	
     	this.mEngine.registerUpdateHandler(new FPSLogger());        
-        scene.setBackgroundEnabled(true);     	    
+        scene.setBackgroundEnabled(true);
+        
+        //testing method, will be erase when linked with server
+        loadBackground(1);
+        createUserChar(1, 1, 5000, 100, 100);
+        createMonster(1, 1, 9000, 600, 200);
+        loadSpellDisplay();
+        load_HPdisplay();
+       
+        //testing method ends
+        
+        //initialize gesture detector
         mGestureDetector = new GestureDetector(this, new myGestureListener());
         scene.setTouchAreaBindingEnabled(true); 
         return scene;
@@ -562,8 +574,10 @@ public class AndengineActivity extends BaseGameActivity {
 	}
    
 	boolean onSwipeUp() {
+		Toast.makeText(AndengineActivity.this, "onSwipeUp", Toast.LENGTH_SHORT).show();
 		if(bossTouched){
-			//Toast.makeText(AndengineActivity.this, "onSwipeUp", Toast.LENGTH_SHORT).show();
+			//testing animation, will be erase later
+			attackAnimate(user);		
 			for(int i=0;i<EntityList.size();i++){
 	        	if(EntityList.get(i).getSelected()==true){	
 	    			send_spell(userID, EntityList.get(i).getCharID(), 1);
@@ -578,6 +592,8 @@ public class AndengineActivity extends BaseGameActivity {
 	boolean onSwipeRight() {
 		Toast.makeText(AndengineActivity.this, "onSwipeRight", Toast.LENGTH_SHORT).show();	
 		if(bossTouched){
+			//testing animation, will be erase later
+			attackAnimate(user);
 			for(int i=0;i<EntityList.size();i++){
 	        	if(EntityList.get(i).getSelected()==true){	
 	    			send_spell(userID, EntityList.get(i).getCharID(), 2);
@@ -590,6 +606,8 @@ public class AndengineActivity extends BaseGameActivity {
 	boolean onSwipeLeft() {
 		Toast.makeText(AndengineActivity.this, "onSwipeLeft", Toast.LENGTH_SHORT).show();
 		if(bossTouched){
+			//testing animation, will be erase later
+			attackAnimate(user);
 			for(int i=0;i<EntityList.size();i++){
 	        	if(EntityList.get(i).getSelected()==true){	
 	    			send_spell(userID, EntityList.get(i).getCharID(), 3);
@@ -602,6 +620,8 @@ public class AndengineActivity extends BaseGameActivity {
 	boolean onSwipeDown() {
 		Toast.makeText(AndengineActivity.this, "onSwipeDown", Toast.LENGTH_SHORT).show();
 		if(bossTouched){
+			//testing animation, will be erase later
+			attackAnimate(user);
 			for(int i=0;i<EntityList.size();i++){
 	        	if(EntityList.get(i).getSelected()==true){	
 	    			send_spell(userID, EntityList.get(i).getCharID(), 4);
