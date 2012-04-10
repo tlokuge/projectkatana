@@ -318,6 +318,46 @@ public class SQLHandler
         return null;
     }
     
+    public ArrayList<HashMap<String, Object>> runModelQuery()
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.MODEL_QUERY);
+            ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
+            query.close();
+            
+            return results;
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public ArrayList<HashMap<String, Object>> runMapTemplateQuery()
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.MAPTEMPLATE_QUERY);
+            ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
+            query.close();
+            
+            return results;
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
     /*
     public ArrayList<HashMap<String, Object>> execute(String query)
     {   

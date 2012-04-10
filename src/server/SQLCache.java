@@ -7,24 +7,31 @@ public abstract class SQLCache
 {
     private static HashMap<Integer, PlayerClassTemplate> class_map = new HashMap<>();
     private static HashMap<Integer, SpellTemplate> spell_map = new HashMap<>();
-    private static HashMap<Integer, CreatureTemplate> creature_map = new HashMap<>();
     private static HashMap<Integer, String> model_map = new HashMap<>();
+    private static HashMap<Integer, CreatureTemplate> creature_map = new HashMap<>();
+    private static HashMap<Integer, MapTemplate> map_map = new HashMap<>();
     
     public SQLCache() {}
     public static void createCache()
     {
         cacheLocations();
         cacheSpells();
+        cacheModels();
         cacheClasses();
         cacheCreatures();
+        cacheMaps();
     }
     
     public static int getTotalClasses()    { return class_map.size(); }
     public static int getTotalSpells()     { return spell_map.size(); }
+    public static int getTotalModels()     { return model_map.size(); }
     public static int getTotalCreatures()  { return creature_map.size(); }
+    public static int getTotalMaps()       { return map_map.size(); }
     public static PlayerClassTemplate getClass(int id) { return class_map.get(id); }
     public static SpellTemplate getSpell(int id)       { return spell_map.get(id); }
+    public static String getModel(int id)              { return model_map.get(id); }
     public static CreatureTemplate getCreature(int id) { return creature_map.get(id); }
+    public static MapTemplate getMap(int id)           { return map_map.get(id);   }
     
     private static void cacheLocations()
     {
@@ -81,6 +88,32 @@ public abstract class SQLCache
         }
         
         System.out.println("Loaded " + spell_map.size() + " spells");
+    }
+    
+    private static void cacheModels()
+    {
+        System.out.println("Loading models....");
+        model_map.clear();
+        
+        ProgressBar bar = new ProgressBar();
+        ArrayList<HashMap<String, Object>> results = SQLHandler.instance().runModelQuery();
+        if(results == null || results.isEmpty())
+        {
+            System.err.println("ERROR: NO MODELS LOADED");
+            KatanaServer.exit(KatanaError.ERR_SQLCACHE_NO_MODELS);
+        }
+        
+        for(int i = 0; i < results.size(); ++i)
+        {
+            HashMap<String, Object> row = results.get(i);
+            int model_id = (Integer)row.get("model_id");
+            String file = (String)row.get("file");
+            
+            model_map.put(model_id, file);
+            bar.update(i, results.size());
+        }
+        
+        System.out.println("Loaded " + results.size() + " models");
     }
     
     private static void cacheClasses()
@@ -140,5 +173,31 @@ public abstract class SQLCache
         }
         
         System.out.println("Loaded " + results.size() + " creatures");
+    }
+    
+    private static void cacheMaps()
+    {
+        System.out.println("Loading maps....");
+        
+        ProgressBar bar = new ProgressBar();
+        ArrayList<HashMap<String, Object>> results = SQLHandler.instance().runMapTemplateQuery();
+        if(results == null || results.isEmpty())
+        {
+            System.err.println("ERROR: NO MAPS LOADED");
+            KatanaServer.exit(KatanaError.ERR_SQLCACHE_NO_MAPS);
+        }
+        for(int i = 0; i < results.size(); ++i)
+        {
+            HashMap<String, Object> row = results.get(i);
+            int id = (Integer)row.get("map_id");
+            int location = (Integer)row.get("location_id");
+            String name = (String)row.get("map_name");
+            String background = (String)row.get("background");
+            
+            map_map.put(id, new MapTemplate(id, location, name, background));
+            bar.update(i, results.size());
+        }
+        
+        System.out.println("Loaded " + results.size() + " maps");
     }
 }
