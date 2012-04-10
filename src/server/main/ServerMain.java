@@ -52,19 +52,19 @@ public class ServerMain
             KatanaSocket client = new KatanaSocket("projectkatana.no-ip.org", 7777);
             Thread.currentThread().sleep(1000);
             
-            KatanaPacket packet = new KatanaPacket(0, Opcode.C_REGISTER);
+            KatanaPacket packet = new KatanaPacket(Opcode.C_REGISTER);
             packet.addData("t"); // username
             packet.addData("t"); // password
             client.sendPacket(packet);
             Thread.currentThread().sleep(500);
             
-            packet = new KatanaPacket(0, Opcode.C_ROOM_LIST);
+            packet = new KatanaPacket(Opcode.C_ROOM_LIST);
             packet.addData("43");
             packet.addData("-78");
             client.sendPacket(packet);
             Thread.currentThread().sleep(500);
             
-            packet = new KatanaPacket(0, Opcode.C_ROOM_CREATE);
+            packet = new KatanaPacket(Opcode.C_ROOM_CREATE);
             packet.addData("BLARGHSJK");
             packet.addData("4");
             packet.addData("4");
@@ -72,29 +72,29 @@ public class ServerMain
             client.sendPacket(packet);
             Thread.currentThread().sleep(500);
             /*
-            packet = new KatanaPacket(0, Opcode.C_ROOM_JOIN);
+            packet = new KatanaPacket(Opcode.C_ROOM_JOIN);
             packet.addData("1");
             packet.addData("1");
             client.sendPacket(packet);
             Thread.currentThread().sleep(5000);
             
-            packet = new KatanaPacket(0, Opcode.C_CLASS_CHANGE);
+            packet = new KatanaPacket(Opcode.C_CLASS_CHANGE);
             packet.addData("2");
             client.sendPacket(packet);
             Thread.currentThread().sleep(5000);
             
-            packet = new KatanaPacket(0, Opcode.C_CLASS_CHANGE);
+            packet = new KatanaPacket(Opcode.C_CLASS_CHANGE);
             packet.addData("2");
             client.sendPacket(packet);
             Thread.currentThread().sleep(5000);
             
-            packet = new KatanaPacket(0, Opcode.C_ROOM_LEAVE);
+            packet = new KatanaPacket(Opcode.C_ROOM_LEAVE);
             packet.addData("2");
             client.sendPacket(packet);
             Thread.currentThread().sleep(5000);
             */
             Thread.currentThread().sleep(360000);
-            packet = new KatanaPacket(0, Opcode.C_LOGOUT);
+            packet = new KatanaPacket(Opcode.C_LOGOUT);
             client.sendPacket(packet);
         }
         catch(Exception ex)
