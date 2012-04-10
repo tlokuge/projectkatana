@@ -28,7 +28,7 @@
 	    android:layout_alignParentRight="true"
 	    
 	    android:text="@string/b_refresh" 
-	    android:onClick="refreshList" />  
+	    android:onClick="lobbySendRoomListRequest" />  
 	    
 	<GridView android:id="@+id/gv_roomslist"
 	    android:layout_width="330dp"
