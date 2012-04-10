@@ -61,7 +61,7 @@ public class LoginActivity extends Activity {
 	public void onBackPressed() {
     	super.onBackPressed();
     	Log.d("CDA", "onBackPressed Called");
-    	KatanaPacket packet = new KatanaPacket(0, Opcode.C_LOGOUT);
+    	KatanaPacket packet = new KatanaPacket(Opcode.C_LOGOUT);
     	katanaService.sendPacket(packet);
     	doKillService();
     }
@@ -95,7 +95,7 @@ public class LoginActivity extends Activity {
     
     private void sendRegisterRequest(String user, String pass){	
 		// Send username and password to server
-		KatanaPacket packet = new KatanaPacket(0, Opcode.C_REGISTER);
+		KatanaPacket packet = new KatanaPacket(Opcode.C_REGISTER);
 		packet.addData(user);
 		packet.addData(pass);
 		katanaService.sendPacket(packet);	 

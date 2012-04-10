@@ -200,7 +200,7 @@ public class KatanaService extends Service {
 	}
 	
 	private void handlePing() {
-		sendPacket(new KatanaPacket(0, Opcode.C_PONG)); 
+		sendPacket(new KatanaPacket(Opcode.C_PONG)); 
 	}
 	
 	private void handleRegisterOk(KatanaPacket packet) {
