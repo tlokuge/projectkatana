@@ -1,7 +1,8 @@
-package server;
+package server.limbo;
 
 import java.util.ArrayList;
-import shared.Constants;
+import server.game.Player;
+import server.shared.Constants;
 
 public class GameRoom 
 {

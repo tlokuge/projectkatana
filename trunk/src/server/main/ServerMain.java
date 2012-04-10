@@ -1,10 +1,15 @@
-package server;
+package server.main;
 
+import server.handlers.UpdateThread;
+import server.handlers.SQLHandler;
+import server.handlers.PingServer;
+import server.utils.Config;
+import server.communication.KatanaServer;
 import java.net.InetAddress;
-import shared.Constants;
-import shared.KatanaPacket;
-import shared.KatanaSocket;
-import shared.Opcode;
+import server.shared.Constants;
+import server.shared.KatanaPacket;
+import server.shared.KatanaSocket;
+import server.shared.Opcode;
 
 public class ServerMain
 {
@@ -39,15 +44,51 @@ public class ServerMain
             // This is intentional because if we somehow are unable to set up the Server's Singleton thread...
             //and attempt to access it, we should kill everything instead of letting things like SQL or Ping run..
             Thread.currentThread().sleep(1000);
-            KatanaSocket client = new KatanaSocket(InetAddress.getLocalHost().getHostAddress(), KatanaServer.instance().getPort());
-            Thread.currentThread().sleep(10000);
-            KatanaPacket packet = new KatanaPacket(0, Opcode.C_LOGIN);
-            packet.addData("katana"); // username
-            packet.addData("password"); // password
-            packet.addData("321.19, 291.32"); // location
-            client.sendPacket(packet);
+            KatanaSocket client = new KatanaSocket("projectkatana.no-ip.org", 7777);
+            Thread.currentThread().sleep(1000);
             
-            Thread.currentThread().sleep(10000);
+            KatanaPacket packet = new KatanaPacket(0, Opcode.C_REGISTER);
+            packet.addData("t"); // username
+            packet.addData("t"); // password
+            client.sendPacket(packet);
+            Thread.currentThread().sleep(500);
+            
+            packet = new KatanaPacket(0, Opcode.C_ROOM_LIST);
+            packet.addData("43");
+            packet.addData("-78");
+            client.sendPacket(packet);
+            Thread.currentThread().sleep(500);
+            
+            packet = new KatanaPacket(0, Opcode.C_ROOM_CREATE);
+            packet.addData("BLARGHSJK");
+            packet.addData("4");
+            packet.addData("4");
+            packet.addData("2");
+            client.sendPacket(packet);
+            Thread.currentThread().sleep(500);
+            /*
+            packet = new KatanaPacket(0, Opcode.C_ROOM_JOIN);
+            packet.addData("1");
+            packet.addData("1");
+            client.sendPacket(packet);
+            Thread.currentThread().sleep(5000);
+            
+            packet = new KatanaPacket(0, Opcode.C_CLASS_CHANGE);
+            packet.addData("2");
+            client.sendPacket(packet);
+            Thread.currentThread().sleep(5000);
+            
+            packet = new KatanaPacket(0, Opcode.C_CLASS_CHANGE);
+            packet.addData("2");
+            client.sendPacket(packet);
+            Thread.currentThread().sleep(5000);
+            
+            packet = new KatanaPacket(0, Opcode.C_ROOM_LEAVE);
+            packet.addData("2");
+            client.sendPacket(packet);
+            Thread.currentThread().sleep(5000);
+            */
+            Thread.currentThread().sleep(360000);
             packet = new KatanaPacket(0, Opcode.C_LOGOUT);
             client.sendPacket(packet);
         }

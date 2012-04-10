@@ -1,11 +1,13 @@
-package server;
+package server.handlers;
 
+import server.utils.KatanaError;
+import server.communication.KatanaServer;
 import com.mysql.jdbc.ResultSetMetaData;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import shared.Constants;
+import server.shared.Constants;
 
 public class SQLHandler
 {

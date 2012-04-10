@@ -1,9 +1,14 @@
-package server;
+package server.communication;
 
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+import server.utils.KatanaError;
+import server.limbo.Lobby;
+import server.game.Map;
+import server.game.Player;
+import server.utils.SQLCache;
 
 public class KatanaServer implements Runnable
 {

@@ -1,7 +1,16 @@
-package server;
+package server.utils;
 
+import server.utils.KatanaError;
+import server.utils.ProgressBar;
+import server.templates.PlayerClassTemplate;
+import server.templates.SpellTemplate;
+import server.templates.MapTemplate;
+import server.templates.CreatureTemplate;
+import server.communication.KatanaServer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import server.limbo.Lobby;
+import server.handlers.SQLHandler;
 
 public abstract class SQLCache
 {

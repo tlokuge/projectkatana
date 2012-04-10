@@ -1,6 +1,8 @@
-package server;
+package server.handlers;
 
+import server.communication.KatanaServer;
 import java.util.HashMap;
+import server.game.Map;
 
 public class UpdateThread implements Runnable
 {

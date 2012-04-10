@@ -1,4 +1,4 @@
-package server;
+package server.utils;
 
 /**
  * Source: http://masterex.github.com/archive/2011/10/23/java-cli-progress-bar.html
