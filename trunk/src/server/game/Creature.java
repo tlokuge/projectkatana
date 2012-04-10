@@ -1,5 +1,6 @@
 package server.game;
 
+import server.handlers.AIHandler;
 import server.utils.SQLCache;
 import server.templates.CreatureTemplate;
 
@@ -7,6 +8,8 @@ public class Creature extends Unit
 {
     private int guid;
     private int level;
+    
+    private CreatureAI ai;
     
     private static int NEXT_GUID = 0;
     
@@ -24,7 +27,12 @@ public class Creature extends Unit
         this.setAttackDamage(template.getAttackDamage());
         this.setSpeed(template.getMoveSpeed());
         this.setModelId(template.getModelId());
-        // this.loadAI(template.getScript());
+        this.ai = loadAI(template.getScript());
+    }
+    
+    private CreatureAI loadAI(String script_name)
+    {
+        return AIHandler.instance().getAIByName(script_name, this);
     }
     
     public static int getNextGUID() { return NEXT_GUID++; }
@@ -34,6 +42,13 @@ public class Creature extends Unit
     public void setLevel(int level) { this.level = level; }
     public int getLevel()           { return level; }
 
+    @Override
+    public void update(int diff)
+    {
+        super.update(diff);
+        ai.updateAI(diff);
+    }
+    
     @Override
     public int onHealReceived(int heal, Unit healer) 
     {
