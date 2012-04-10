@@ -41,7 +41,7 @@ public abstract class KatanaConstants
     // LobbyActivity Constants
     public static final int ROOMNAMEMIN = 1;
     public static final String DEF_ROOMNAME = "Lets Fun!";
-    public static final String DEF_ROOMDIFF = "Standard";
+    public static final int DEF_ROOMDIFF = 2;
     public static final int DEF_ROOMMAXP = 4;
     public static final String DIFF_EASY = "Easy";
     public static final String DIFF_STD = "Standard";
