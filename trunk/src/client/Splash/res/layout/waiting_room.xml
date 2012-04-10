@@ -10,7 +10,8 @@
         android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:text="@string/b_start" />
+        android:text="@string/b_start" 
+        android:onClick="waitingRoomStartGame"/>
     
     <TextView android:id="@+id/l_wroomname"
         android:layout_width="300dp"
