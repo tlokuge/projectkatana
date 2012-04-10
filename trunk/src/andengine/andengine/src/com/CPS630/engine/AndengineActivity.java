@@ -80,7 +80,6 @@ public class AndengineActivity extends BaseGameActivity {
     
 	GestureDetector mGestureDetector;
 	ChangeableText healthText;
-	ChangeableText coolDownText;
 	
 	AnimatedSprite user;
 	int userID;
@@ -312,17 +311,9 @@ public class AndengineActivity extends BaseGameActivity {
 
      //method to send spell
     public void send_spell(int caster, int targetID, int spellID){
-    	//change the time accordingly
-    	int time = 15;
-    	showCoolDown(spellID,time);
+    	
     }
-    //Shows cooldown.  Needs the cooldown time. 
-	public void showCoolDown(int spellID, int time){
-		coolDownText.setText("Spell:"+spellID + "Cooldown "+time +"seconds");
-	}
-	public void clearCoolDown(){
-		coolDownText.setText("");
-	}
+    
     //destroy character
     public void remove_char(int ID){
     	
@@ -429,15 +420,13 @@ public class AndengineActivity extends BaseGameActivity {
     //load up HP display
     public void load_HPdisplay(){	
     	healthText = new ChangeableText(cameraWidth-75, 30, this.mFont, "5000", "XXXX".length());
-    	coolDownText= new ChangeableText(cameraWidth-300, cameraHeight-50, this.mFont, "", "Spell:X Cooldown XXX seconds".length());
         scene.attachChild(healthText);
-        scene.attachChild(coolDownText);
     	lspell.setScale(2);
         rspell.setScale(2);
         dspell.setScale(2);
         uspell.setScale(2);
     }
-    
+       
     public void onLoadComplete() {
 
     }
@@ -451,6 +440,8 @@ public class AndengineActivity extends BaseGameActivity {
     	
     	float curr_spriteX= sprite.getX();
     	float curr_spriteY= sprite.getY();
+    	
+    	sprite.clearEntityModifiers();
     	
         dest_spriteX-= sprite.getWidth()/2;
         dest_spriteY-= sprite.getHeight()/2;
@@ -518,9 +509,8 @@ public class AndengineActivity extends BaseGameActivity {
 			
 			if(!bossTouched)
 			{
-				user.clearEntityModifiers();
 				move(user,dest_X, dest_Y);
-				runAnimate(user, dest_X, dest_Y);
+				//runAnimate(user, dest_X, dest_Y);
 			}
 			else{
 
