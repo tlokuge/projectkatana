@@ -39,7 +39,7 @@ public class PingServer implements Runnable
             
             for(KatanaClient client : KatanaServer.instance().getWaitingClients())
             {
-                KatanaPacket packet = new KatanaPacket(-1, Opcode.S_PING);
+                KatanaPacket packet = new KatanaPacket(Opcode.S_PING);
                 client.sendPacket(packet);
             }
             
@@ -56,7 +56,7 @@ public class PingServer implements Runnable
                 else
                     player.getClient().sentPing();
                 
-                KatanaPacket packet = new KatanaPacket(-1, Opcode.S_PING);
+                KatanaPacket packet = new KatanaPacket(Opcode.S_PING);
                 player.sendPacket(packet);
             }
         }

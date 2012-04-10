@@ -110,7 +110,7 @@ public abstract class Unit
             dealDamage(damage, target);
         }
         
-        KatanaPacket packet = new KatanaPacket(id, Opcode.S_GAME_SPELL_CAST);
+        KatanaPacket packet = new KatanaPacket(Opcode.S_GAME_SPELL_CAST);
         packet.addData(id + "");
         packet.addData(target.getId() + "");
         packet.addData(spell.getId() + "");

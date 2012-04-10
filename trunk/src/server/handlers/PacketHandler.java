@@ -105,7 +105,7 @@ public abstract class PacketHandler
         {
             System.err.println("handleRegisterPacket: Invalid data in packet (" + packet.getData() + ")");
             // Response
-            KatanaPacket response = new KatanaPacket(-1, Opcode.S_REG_NO);
+            KatanaPacket response = new KatanaPacket(Opcode.S_REG_NO);
             client.sendPacket(response);
             return;
         }
@@ -123,13 +123,13 @@ public abstract class PacketHandler
             {
                 System.err.println("handleRegisterPacket: Username [" + username + "] already exists in database. Prevent registration");
 
-                KatanaPacket response = new KatanaPacket(-1, Opcode.S_REG_NO);
+                KatanaPacket response = new KatanaPacket(Opcode.S_REG_NO);
                 client.sendPacket(response);
                 return;
             }
             else
             {
-                KatanaPacket response = new KatanaPacket(-1, Opcode.S_AUTH_OK);
+                KatanaPacket response = new KatanaPacket(Opcode.S_AUTH_OK);
                 response.addData(player.getId() + "");;
                 player.sendPacket(response);
                 
@@ -142,13 +142,13 @@ public abstract class PacketHandler
         Player player = loginClient(username, password, client);
         if(player == null)
         {
-            KatanaPacket response = new KatanaPacket(-1, Opcode.S_REG_NO); // Somehow something went wrong....
+            KatanaPacket response = new KatanaPacket(Opcode.S_REG_NO); // Somehow something went wrong....
             client.sendPacket(response);
             return;
         }
         
         // Yay! Success!
-        KatanaPacket response = new KatanaPacket(-1, Opcode.S_REG_OK);
+        KatanaPacket response = new KatanaPacket(Opcode.S_REG_OK);
         response.addData(player.getId() + "");
         player.sendPacket(response);
     }
@@ -162,7 +162,7 @@ public abstract class PacketHandler
         {
             System.err.println("handleLoginPacket: Invalid data in packet (" + packet.getData() + ")");
             // Response
-            KatanaPacket response = new KatanaPacket(-1, Opcode.S_AUTH_NO);
+            KatanaPacket response = new KatanaPacket(Opcode.S_AUTH_NO);
             client.sendPacket(response);
             return;
         }
@@ -174,13 +174,13 @@ public abstract class PacketHandler
         Player player = loginClient(username, password, client);
         if(player == null)
         {
-            KatanaPacket response = new KatanaPacket(-1, Opcode.S_AUTH_NO);
+            KatanaPacket response = new KatanaPacket(Opcode.S_AUTH_NO);
             client.sendPacket(response);
             return;
         }
         
         // Login success!
-        KatanaPacket response = new KatanaPacket(-1, Opcode.S_AUTH_OK);
+        KatanaPacket response = new KatanaPacket(Opcode.S_AUTH_OK);
         response.addData(player.getId() + "");
         player.sendPacket(response);
     }
@@ -202,7 +202,7 @@ public abstract class PacketHandler
         {
             System.err.println("handleRoomCreatePacket: " + pl + " not in a lobby");
             // Response
-            KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_NO);
+            KatanaPacket response = new KatanaPacket(Opcode.S_ROOM_CREATE_NO);
             client.sendPacket(response);
             return;
         }
@@ -212,7 +212,7 @@ public abstract class PacketHandler
         {
             System.err.println("handleRoomCreatePacket: Invalid data in packet (" + packet.getData() + ")");
             // Response
-            KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_NO);
+            KatanaPacket response = new KatanaPacket(Opcode.S_ROOM_CREATE_NO);
             client.sendPacket(response);
             return;
         }
@@ -232,7 +232,7 @@ public abstract class PacketHandler
             System.err.println("handleRoomCreatePacket: NumberFormatException (" + ex.getLocalizedMessage() + ") in packet data (" + packet.getData() + ")");
             
             // Response
-            KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_NO);
+            KatanaPacket response = new KatanaPacket(Opcode.S_ROOM_CREATE_NO);
             client.sendPacket(response);
             return;
         }
@@ -241,7 +241,7 @@ public abstract class PacketHandler
         {
             System.err.println("handleRoomCreatePacket: max_players not within 1 and 4 (" + max_players + ")");
             // Response - necessary?
-            KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_NO);
+            KatanaPacket response = new KatanaPacket(Opcode.S_ROOM_CREATE_NO);
             client.sendPacket(response);
             return;
         }
@@ -251,7 +251,7 @@ public abstract class PacketHandler
         {
             System.err.println("handleRoomCreatePacket: location id (" + pl.getLocation() + ") is invalid");
             // Response
-            KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_NO);
+            KatanaPacket response = new KatanaPacket(Opcode.S_ROOM_CREATE_NO);
             client.sendPacket(response);
             return;
         }
@@ -263,7 +263,7 @@ public abstract class PacketHandler
         
         lobby.addRoom(new GameRoom(room_id, name, difficulty, max_players, pl));
         
-        KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_CREATE_OK);
+        KatanaPacket response = new KatanaPacket(Opcode.S_ROOM_CREATE_OK);
         response.addData(room_id + "");
         client.sendPacket(response);
         
@@ -311,7 +311,7 @@ public abstract class PacketHandler
         catch(NumberFormatException ex)
         {
             System.err.println("handleRoomJoinPacket: NumberFormatException in packet data (" + packet.getData() + ")");
-            KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_JOIN_NO);
+            KatanaPacket response = new KatanaPacket(Opcode.S_ROOM_JOIN_NO);
             client.sendPacket(response);
             return;
         }
@@ -323,7 +323,7 @@ public abstract class PacketHandler
         {
             System.err.println("handleRoomJoinPacket: room id (" + room_id + ") is invalid");
             // Response
-            KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_JOIN_NO);
+            KatanaPacket response = new KatanaPacket(Opcode.S_ROOM_JOIN_NO);
             pl.sendPacket(response);
             return;
         }
@@ -332,14 +332,14 @@ public abstract class PacketHandler
         {
             System.err.println("handleRoomJoinPacket: room id (" + room_id + ") is full");
             // Response
-            KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_JOIN_NO);
+            KatanaPacket response = new KatanaPacket(Opcode.S_ROOM_JOIN_NO);
             client.sendPacket(response);
             return;
         }
         
         // Response
-        KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_JOIN_OK);
-        KatanaPacket notify = new KatanaPacket(-1, Opcode.S_ROOM_PLAYER_JOIN);
+        KatanaPacket response = new KatanaPacket(Opcode.S_ROOM_JOIN_OK);
+        KatanaPacket notify = new KatanaPacket(Opcode.S_ROOM_PLAYER_JOIN);
         notify.addData(pl.getId() + ";" + pl.getName() + ";" + class_id);
         for(Integer i : room.getPlayers())
         {
@@ -363,7 +363,7 @@ public abstract class PacketHandler
         }
         
         Player leader = KatanaServer.instance().getPlayer(room.getLeader());
-        KatanaPacket response = new KatanaPacket(-1, Opcode.S_ROOM_DESTROY);
+        KatanaPacket response = new KatanaPacket(Opcode.S_ROOM_DESTROY);
         for(Integer i : room.getPlayers())
         {
             Player p = KatanaServer.instance().getPlayer(i);
@@ -400,7 +400,7 @@ public abstract class PacketHandler
         room.removePlayer(pl);
         pl.removeFromRoom();
 
-        KatanaPacket notify = new KatanaPacket(-1, Opcode.S_ROOM_PLAYER_LEAVE);
+        KatanaPacket notify = new KatanaPacket(Opcode.S_ROOM_PLAYER_LEAVE);
         notify.addData(pl.getId() + "");
         for(Integer i : room.getPlayers())
             KatanaServer.instance().getPlayer(i).sendPacket(notify);
@@ -414,7 +414,7 @@ public abstract class PacketHandler
             return null;
         }
         
-        KatanaPacket packet = new KatanaPacket(-1, Opcode.S_ROOM_LIST);
+        KatanaPacket packet = new KatanaPacket(Opcode.S_ROOM_LIST);
         packet.addData(lobby.getName());
         for(int room_id : lobby.getRoomIds())
         {
@@ -468,7 +468,7 @@ public abstract class PacketHandler
             
             if(loc_id == -1 || name.isEmpty())
             {
-                KatanaPacket response = new KatanaPacket(-1, Opcode.S_BAD_LOCATION);
+                KatanaPacket response = new KatanaPacket(Opcode.S_BAD_LOCATION);
                 client.sendPacket(response);
                 return;
             }
@@ -532,7 +532,7 @@ public abstract class PacketHandler
             System.err.println("handleClassChange: Player " + pl.getName() + " attempted to change class but not in a room!");
             return;
         }
-        KatanaPacket notify = new KatanaPacket(-1, Opcode.S_PLAYER_UPDATE_CLASS);
+        KatanaPacket notify = new KatanaPacket(Opcode.S_PLAYER_UPDATE_CLASS);
         notify.addData(pl.getId() + "");
         notify.addData(class_id + "");
         for(Integer i : room.getPlayers())
@@ -542,7 +542,7 @@ public abstract class PacketHandler
                 p.sendPacket(notify);
         }
         
-        KatanaPacket response = new KatanaPacket(-1, Opcode.S_CLASS_CHANGE_OK);
+        KatanaPacket response = new KatanaPacket(Opcode.S_CLASS_CHANGE_OK);
         client.sendPacket(response);
     }
     
@@ -555,7 +555,7 @@ public abstract class PacketHandler
             System.err.println("Player " + client.getPlayer() + " attempted to get leaderboard but is not in a lobby!");
             return;
         }
-        KatanaPacket response = new KatanaPacket(-1, Opcode.S_LEADERBOARD);
+        KatanaPacket response = new KatanaPacket(Opcode.S_LEADERBOARD);
         ArrayList<HashMap<String, Object>> results = SQLHandler.instance().runLeaderboardQuery(location);
         if(results != null && !results.isEmpty())
             for(HashMap map : results)

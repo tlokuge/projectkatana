@@ -16,10 +16,9 @@ public abstract class Constants
     
     /** KatanaPacket **/
     public final static String PACKET_DATA_SEPERATOR = "\n";
-    public final static String PACKET_FORMATTER = "%d" + PACKET_DATA_SEPERATOR 
-                                                + "%d" + PACKET_DATA_SEPERATOR 
-                                                + "%d" + PACKET_DATA_SEPERATOR 
-                                                + "%s";
+    public final static String PACKET_FORMATTER = "%d" + PACKET_DATA_SEPERATOR  // Packet ID
+                                                + "%d" + PACKET_DATA_SEPERATOR  // Opcode
+                                                + "%s";                         // Data
     
     public static final int MAX_PACKET_BUF = 1024;
     

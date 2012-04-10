@@ -36,7 +36,7 @@ public class KatanaSocket
                 if(packet.getOpcode().ordinal() == Opcode.S_LOGOUT.ordinal())
                     closeListener();
                 if(packet.getOpcode().ordinal() == Opcode.S_PING.ordinal())
-                    sendPacket(new KatanaPacket(0, Opcode.C_PONG));
+                    sendPacket(new KatanaPacket(Opcode.C_PONG));
 
             }
             catch(ConnectException ex)
