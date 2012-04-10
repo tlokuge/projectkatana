@@ -1,4 +1,4 @@
-package server;
+package server.communication;
 
 
 import java.io.IOException;
@@ -6,10 +6,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import server.limbo.Lobby;
+import server.handlers.PacketHandler;
+import server.game.Player;
 
-import shared.Constants;
-import shared.KatanaPacket;
-import shared.Opcode;
+import server.shared.Constants;
+import server.shared.KatanaPacket;
+import server.shared.Opcode;
 
 
 public class KatanaClient implements Runnable

@@ -1,6 +1,8 @@
-package server;
+package server.game;
 
-import shared.KatanaPacket;
+import server.utils.SQLCache;
+import server.communication.KatanaClient;
+import server.shared.KatanaPacket;
 
 public class Player extends Unit
 {

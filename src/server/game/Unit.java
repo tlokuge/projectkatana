@@ -1,7 +1,7 @@
-package server;
+package server.game;
 
-import shared.KatanaPacket;
-import shared.Opcode;
+import server.shared.KatanaPacket;
+import server.shared.Opcode;
 
 public abstract class Unit
 {

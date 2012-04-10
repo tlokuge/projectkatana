@@ -1,4 +1,6 @@
-package server;
+package server.game;
+
+import server.templates.SpellTemplate;
 
 public class Spell
 {

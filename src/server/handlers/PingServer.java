@@ -1,12 +1,15 @@
-package server;
+package server.handlers;
 
+import server.communication.KatanaClient;
+import server.communication.KatanaServer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import shared.Constants;
-import shared.KatanaPacket;
-import shared.Opcode;
+import server.game.Player;
+import server.shared.Constants;
+import server.shared.KatanaPacket;
+import server.shared.Opcode;
 
 
 public class PingServer implements Runnable

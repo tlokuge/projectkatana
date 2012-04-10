@@ -1,11 +1,12 @@
-package server;
+package server.utils;
 
+import server.communication.KatanaServer;
 import java.io.File;
 import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import shared.Constants;
+import server.shared.Constants;
 
 public abstract class Config
 {

@@ -1,4 +1,7 @@
-package server;
+package server.game;
+
+import server.utils.SQLCache;
+import server.templates.PlayerClassTemplate;
 
 public class PlayerClass
 {

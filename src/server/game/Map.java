@@ -1,5 +1,8 @@
-package server;
+package server.game;
 
+import server.utils.SQLCache;
+import server.templates.MapTemplate;
+import server.communication.KatanaServer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
