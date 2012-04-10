@@ -4,12 +4,12 @@ import java.util.ArrayList;
 
 import org.anddev.andengine.engine.Engine;
 import org.anddev.andengine.engine.camera.Camera;
-import org.anddev.andengine.engine.handler.IUpdateHandler;
 import org.anddev.andengine.engine.options.EngineOptions;
 import org.anddev.andengine.engine.options.EngineOptions.ScreenOrientation;
 import org.anddev.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.anddev.andengine.entity.modifier.MoveModifier;
 import org.anddev.andengine.entity.scene.Scene;
+import org.anddev.andengine.entity.scene.Scene.IOnSceneTouchListener;
 import org.anddev.andengine.entity.scene.background.SpriteBackground;
 import org.anddev.andengine.entity.sprite.AnimatedSprite;
 import org.anddev.andengine.entity.sprite.Sprite;
@@ -32,7 +32,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
-public class AndengineActivity extends BaseGameActivity {
+public class AndengineActivity extends BaseGameActivity implements IOnSceneTouchListener {
 
     // ===========================================================
     // Fields
@@ -133,7 +133,8 @@ public class AndengineActivity extends BaseGameActivity {
     public Scene onLoadScene() {
         //setting up screen here
     	
-    	this.mEngine.registerUpdateHandler(new FPSLogger());        
+    	this.mEngine.registerUpdateHandler(new FPSLogger());
+    	scene.setOnSceneTouchListener(this);
         scene.setBackgroundEnabled(true);
         
         //testing method, will be erase when linked with server
@@ -147,7 +148,7 @@ public class AndengineActivity extends BaseGameActivity {
         
         //initialize gesture detector
         mGestureDetector = new GestureDetector(this, new myGestureListener());
-        scene.setTouchAreaBindingEnabled(true); 
+        //scene.setTouchAreaBindingEnabled(true); 
         return scene;
     }
     
@@ -219,6 +220,12 @@ public class AndengineActivity extends BaseGameActivity {
 					final float pTouchAreaLocalY) {
 				if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
 					pEntity.setSelected(true);
+					if(bossTouched){
+						bossTouched = false;
+					}
+					else{
+						bossTouched = true;
+					}
 					return true;
 				}
 				return false;
@@ -232,6 +239,12 @@ public class AndengineActivity extends BaseGameActivity {
 					final float pTouchAreaLocalY) {
 				if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
 					pEntity.setSelected(true);
+					if(bossTouched){
+						bossTouched = false;
+					}
+					else{
+						bossTouched = true;
+					}
 					return true;
 				}
 				return false;
@@ -260,11 +273,16 @@ public class AndengineActivity extends BaseGameActivity {
 						final float pTouchAreaLocalX,
 						final float pTouchAreaLocalY) {
 					if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-						bossTouched = true;
-						mEntity.setSelected(true);
-						return true;
+						if(bossTouched){
+							bossTouched = false;
+						}
+						else{
+							bossTouched = true;
+						}
+						
+						mEntity.setSelected(true);				
 					}
-					return false;
+					return true;
 				}
 			};
 		} else {
@@ -274,11 +292,16 @@ public class AndengineActivity extends BaseGameActivity {
 						final float pTouchAreaLocalX,
 						final float pTouchAreaLocalY) {
 					if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-						bossTouched = true;
+						if(bossTouched){
+							bossTouched = false;
+						}
+						else{
+							bossTouched = true;
+						}
+						
 						mEntity.setSelected(true);
-						return true;
 					}
-					return false;
+					return true;
 				}
 			};
     	}
@@ -461,12 +484,19 @@ public class AndengineActivity extends BaseGameActivity {
   
     }
     //gesture detection
-    public boolean onTouchEvent(MotionEvent event) {
+   /* public boolean onTouchEvent(MotionEvent event) {
     	if (mGestureDetector.onTouchEvent(event))
 			return true;
 		else
 			return false;
     }
+    */
+    public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
+    		
+    	mGestureDetector.onTouchEvent(pSceneTouchEvent.getMotionEvent());
+		return true;
+    }
+
     //Placeholder for animation class
     public void attackAnimate(AnimatedSprite sprite) {
 
@@ -506,17 +536,10 @@ public class AndengineActivity extends BaseGameActivity {
 			
 			float dest_X=ev.getX();
 			float dest_Y=ev.getY();
-			
-			if(!bossTouched)
-			{
-				move(user,dest_X, dest_Y);
-				//runAnimate(user, dest_X, dest_Y);
-			}
-			else{
-
-				bossTouched=false;		
-			}
 		
+			move(user,dest_X, dest_Y);
+			//runAnimate(user, dest_X, dest_Y);
+			
 			return true;
 		}
 		
@@ -527,6 +550,7 @@ public class AndengineActivity extends BaseGameActivity {
 		
 		@Override
 		public void onShowPress(MotionEvent ev) {
+			//Toast.makeText(AndengineActivity.this, "show press.", Toast.LENGTH_SHORT).show();
 		}
 
 		@Override
@@ -544,6 +568,7 @@ public class AndengineActivity extends BaseGameActivity {
 		@Override
 		public boolean onDown(MotionEvent ev) {
 			//Toast.makeText(AndengineActivity.this, "Down.", Toast.LENGTH_SHORT).show();
+	
 			return false;
 		}
 
@@ -554,7 +579,7 @@ public class AndengineActivity extends BaseGameActivity {
 			final float swipeMinDistance = 80;
 
             final boolean isHorizontalFling = Math.abs(velocityX) > Math.abs(velocityY);
-
+            
             if(isHorizontalFling) {
                     if(e1.getX() - e2.getX() > swipeMinDistance) {
                             return AndengineActivity.this.onSwipeLeft();
