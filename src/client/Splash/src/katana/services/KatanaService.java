@@ -64,9 +64,6 @@ public class KatanaService extends Service {
 				KatanaConstants.GPS_MIN_REFRESHDIST, 
 				locList);
 		
-		latitude = 0.0;
-		longitude = 0.0;
-		
 		try {
 			socket = new Socket(KatanaConstants.SERVER_IP, KatanaConstants.SERVER_PORT);
 			socketListener = new KatanaSocketListener(socket);
@@ -86,6 +83,9 @@ public class KatanaService extends Service {
 			return;
 		try	{
 			System.out.println("Sending Packet: " + packet.getOpcode().name());
+			System.out.println("Packet Content: ");
+			System.out.println(packet);
+			System.out.println("** EndPacket **");
 			OutputStream out = socket.getOutputStream();
 			out.write(packet.convertToBytes());
 			out.flush();
@@ -262,6 +262,7 @@ public class KatanaService extends Service {
 	private double latitude;
 	private double longitude;
 	
+	
 	public static final String EXTRAS_LATITUDE = "lat";
 	public static final String EXTRAS_LONGITUDE = "lng";
 	
@@ -292,6 +293,11 @@ public class KatanaService extends Service {
 		intent.putExtra(EXTRAS_LATITUDE, latitude);
 		intent.putExtra(EXTRAS_LONGITUDE, longitude);
 		sendBroadcast(intent);
+	}
+	
+	public Location getLastKnownLocation() {
+		Location lastKnownLocation = locManager.getLastKnownLocation(locManager.GPS_PROVIDER);
+		return lastKnownLocation;
 	}
 	
 	public double getLatitude(){

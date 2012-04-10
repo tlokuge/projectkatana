@@ -55,18 +55,16 @@ public class KatanaReceiver extends BroadcastReceiver {
     			Toast.makeText(lobby, "You cant join this room.", Toast.LENGTH_SHORT).show();
     		} else if (intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_PLAYER_JOIN.name())) {
     			lobby.waitingRoomAddPlayer(intent);
-    			
     		} else if (intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_PLAYER_LEAVE.name())) {
     			lobby.waitingRoomRemovePlayer(Integer.parseInt((intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME))));
     		}
-    		else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_CREATE_OK.name()))
-    		{
+    		else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_CREATE_OK.name()))	{
     			lobby.setCreatedRoomId(Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_ROOMID)));
+    			lobby.setRoomLeader(true);
     			lobby.lobbyJoinCreatedRoom();
     			lobby.lobbySendRoomListRequest(null);
     		}
-    		else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_CREATE_NO.name()))
-    		{
+    		else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_CREATE_NO.name()))	{
     			lobby.setSelectedRoom(null);
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_PLAYER_UPDATE_CLASS.name())) {
     			if(lobby.client_inRoom){
@@ -82,7 +80,8 @@ public class KatanaReceiver extends BroadcastReceiver {
     				lobby.transitionToLobby();
     			}
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_LEADERBOARD.name())) {
-    			lobby.showLeaderboardDialog(intent.getStringExtra(KatanaService.EXTRAS_SCORES));
+    			lobby.setLeaderboardScores(intent.getStringExtra(KatanaService.EXTRAS_SCORES));
+    			lobby.showLeaderboardDialog();
     		}
 		} else if(mode == 3) {
 			// GameActivity
