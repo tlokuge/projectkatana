@@ -35,12 +35,15 @@
         
         <activity android:name=".LobbyActivity"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Black.NoTitleBar" >            
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >            
+        </activity>
+        
+        <activity android:name=".GameActivity"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >            
         </activity>
         
         <service android:enabled="true" android:name="katana.services.KatanaService" />
         <receiver android:enabled="true" android:name=".KatanaReceiver"></receiver>
     </application>
-    
-	
 </manifest>
