@@ -22,7 +22,6 @@ public abstract class Constants
                                                 + "%s";
     
     public static final int MAX_PACKET_BUF = 1024;
-    public static final int PING_INTERVAL_MS = 10000;
     
     /** SQL Queries **/
     public static final String PING_QUERY = "SELECT 1 FROM `users` LIMIT 1";
