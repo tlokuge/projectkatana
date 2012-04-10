@@ -4,14 +4,16 @@
     android:layout_height="fill_parent"
     android:orientation="horizontal" 
     android:padding="20dp"
-    android:background="#FFFFFF" >
+    android:background="@drawable/notebook_bg" >
 	
-    <Button android:id="@+id/b_create"
-		android:layout_width="100dp"
+    <ImageButton android:id="@+id/b_create"
+		android:layout_width="wrap_content"
 	    android:layout_height="wrap_content" 
 	    android:layout_alignParentLeft="true"
-	    
-	    android:text="@string/b_create" />
+	    android:contentDescription="@string/b_create"
+		android:background="@drawable/createbutton"
+		
+	    android:onClick="lobbyCreateButton"/>
     
     <TextView android:id="@+id/l_realmname"
 	    android:layout_width="300dp"
@@ -28,7 +30,7 @@
 	    android:layout_alignParentRight="true"
 	    
 	    android:text="@string/b_refresh" 
-	    android:onClick="lobbySendRoomListRequest" />  
+	    android:onClick="lobbyRefresh" />  
 	    
 	<GridView android:id="@+id/gv_roomslist"
 	    android:layout_width="330dp"
@@ -75,6 +77,8 @@
 	        android:layout_width="fill_parent"
 	        android:layout_height="80dp"
 	        android:layout_alignParentBottom="true"
-	        android:text="@string/b_join" />	     
+	        
+	        android:text="@string/b_join" 
+	        android:onClick="lobbyJoinButton"/>	     
 	</RelativeLayout>
 </RelativeLayout>

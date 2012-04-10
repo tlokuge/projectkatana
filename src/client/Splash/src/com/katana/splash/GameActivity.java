@@ -536,7 +536,9 @@ public class GameActivity extends BaseGameActivity {
 	// This move class is for andengine itselfs, not for server uses
 	private void move(AnimatedSprite sprite, float dest_spriteX,
 			float dest_spriteY) {
-
+		
+        sprite.clearEntityModifiers();
+        
 		float curr_spriteX = sprite.getX();
 		float curr_spriteY = sprite.getY();
 
@@ -613,9 +615,8 @@ public class GameActivity extends BaseGameActivity {
 			float dest_Y = ev.getY();
 
 			if (!bossTouched) {
-				user.clearEntityModifiers();
 				move(user, dest_X, dest_Y);
-				runAnimate(user, dest_X, dest_Y);
+				//runAnimate(user, dest_X, dest_Y);
 			} else {
 
 				bossTouched = false;
