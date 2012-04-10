@@ -61,7 +61,6 @@ public abstract class KatanaConstants
     public final static String PACKET_DATA_SEPERATOR = "\n";
     public final static String PACKET_FORMATTER = "%d" + PACKET_DATA_SEPERATOR 
                                                 + "%d" + PACKET_DATA_SEPERATOR 
-                                                + "%d" + PACKET_DATA_SEPERATOR 
                                                 + "%s";
     
     public static final int MAX_PACKET_BUF = 1024;

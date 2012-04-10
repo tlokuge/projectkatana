@@ -34,7 +34,7 @@ public class SplashActivity extends Activity {
 	public void onBackPressed() {
 		super.onBackPressed();
 		Log.d("CDA", "onBackPressed Called"); 
-		KatanaPacket packet = new KatanaPacket(0, Opcode.C_LOGOUT);
+		KatanaPacket packet = new KatanaPacket(Opcode.C_LOGOUT);
 		katanaService.sendPacket(packet);
 		doKillService();
 	}
@@ -111,7 +111,7 @@ public class SplashActivity extends Activity {
     
     /** Verify user credentials with server */
     private void checkLogin(String user, String pass){
-		KatanaPacket packet = new KatanaPacket(0,Opcode.C_LOGIN);
+		KatanaPacket packet = new KatanaPacket(Opcode.C_LOGIN);
 		packet.addData(user);
 		packet.addData(pass);
 		katanaService.sendPacket(packet);

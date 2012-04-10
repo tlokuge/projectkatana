@@ -105,18 +105,18 @@ public class LobbyActivity extends Activity {
 			client_inRoom = false;
 			if(client_roomLeader) {
 				client_roomLeader = false;
-				KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_DESTROY);
+				KatanaPacket packet = new KatanaPacket(Opcode.C_ROOM_DESTROY);
 				katanaService.sendPacket(packet);
 				lobbyRefresh(null);
 				transitionToLobby();
 			} else {
-				katanaService.sendPacket(new KatanaPacket(0,Opcode.C_ROOM_LEAVE));
+				katanaService.sendPacket(new KatanaPacket(Opcode.C_ROOM_LEAVE));
 				transitionToLobby();
 				return;
 			}
 		} else {
 			super.onBackPressed();
-			katanaService.sendPacket(new KatanaPacket(0,Opcode.C_LOGOUT));
+			katanaService.sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
 			this.finish();
 		}
 	}
@@ -142,7 +142,7 @@ public class LobbyActivity extends Activity {
             case R.id.about:
                 return true;
             case R.id.leaderboards:
-            	katanaService.sendPacket(new KatanaPacket(0, Opcode.C_LEADERBOARD));
+            	katanaService.sendPacket(new KatanaPacket(Opcode.C_LEADERBOARD));
                 return true;
             case R.id.change_class:
             	showSelectClassDialog();
@@ -176,7 +176,7 @@ public class LobbyActivity extends Activity {
     	client_longitude = katanaService.getLastKnownLocation().getLongitude();
     	
     	// Send server packet
-    	KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_LIST);
+    	KatanaPacket packet = new KatanaPacket(Opcode.C_ROOM_LIST);
 		packet.addData(Double.toString(client_latitude));
 		packet.addData(Double.toString(client_longitude));
 		katanaService.sendPacket(packet);
@@ -204,7 +204,7 @@ public class LobbyActivity extends Activity {
     
 	public void lobbySendJoinRequest(){
 		// Send a join room packet to server
-		KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_JOIN);
+		KatanaPacket packet = new KatanaPacket(Opcode.C_ROOM_JOIN);
 		packet.addData(Integer.toString(lobby_selectedRoom.getId()));
 		packet.addData(Integer.toString(client_gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1)));
 		katanaService.sendPacket(packet);
@@ -218,7 +218,7 @@ public class LobbyActivity extends Activity {
 		
 		lobby_selectedRoom = new Room(-1, name, diff, maxp);
 		
-		KatanaPacket packet = new KatanaPacket(0, Opcode.C_ROOM_CREATE);
+		KatanaPacket packet = new KatanaPacket(Opcode.C_ROOM_CREATE);
 		packet.addData(name);
 		packet.addData(diff + "");
 		packet.addData(maxp + "");
@@ -310,7 +310,7 @@ public class LobbyActivity extends Activity {
 		System.out.println("playerlist size: " + room_playerList.size());
 		room_playerList.get(room_playerRef.get(pid)).setClassId(i);
 		
-		KatanaPacket packet = new KatanaPacket(0, Opcode.C_CLASS_CHANGE);
+		KatanaPacket packet = new KatanaPacket(Opcode.C_CLASS_CHANGE);
 		packet.addData(Integer.toString(i));
 		katanaService.sendPacket(packet);
 		
@@ -378,6 +378,7 @@ public class LobbyActivity extends Activity {
         }
     }
     
+	@SuppressWarnings("unused")
 	private void doKillService() {
         unbindService(katanaConnection);
         unregisterReceiver(katanaReceiver);
