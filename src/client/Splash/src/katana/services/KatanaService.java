@@ -83,9 +83,11 @@ public class KatanaService extends Service {
 			return;
 		try	{
 			System.out.println("Sending Packet: " + packet.getOpcode().name());
+			/*
 			System.out.println("Packet Content: ");
 			System.out.println(packet);
 			System.out.println("** EndPacket **");
+			*/
 			OutputStream out = socket.getOutputStream();
 			out.write(packet.convertToBytes());
 			out.flush();
@@ -295,6 +297,7 @@ public class KatanaService extends Service {
 		sendBroadcast(intent);
 	}
 	
+	@SuppressWarnings("static-access")
 	public Location getLastKnownLocation() {
 		Location lastKnownLocation = locManager.getLastKnownLocation(locManager.GPS_PROVIDER);
 		return lastKnownLocation;
