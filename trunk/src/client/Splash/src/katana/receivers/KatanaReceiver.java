@@ -43,14 +43,14 @@ public class KatanaReceiver extends BroadcastReceiver {
 			// LobbyActivity
 			LobbyActivity lobby = (LobbyActivity) context;
 			if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_LIST.name())){
-				lobby.client_inValidLocation = true;
+				lobby.setInValidLocation(true);
     			String locName = intent.getStringExtra(KatanaService.EXTRAS_LOCNAME);
     			ArrayList<String> al = intent.getStringArrayListExtra(KatanaService.EXTRAS_ROOMSLIST);
     			lobby.lobbyShowRooms(locName, al);
     		} else if (intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_JOIN_OK.name())) {
     			ArrayList<String> al = intent.getStringArrayListExtra(KatanaService.EXTRAS_PLAYERLIST);
     			lobby.waitingRoomShowPlayers(al);
-    			lobby.lobbyTransitionToWaitingRoom(lobby.lobby_selectedRoom);
+    			lobby.lobbyTransitionToWaitingRoom(lobby.getSelectedRoom());
     		} else if (intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_JOIN_NO.name())) {
     			Toast.makeText(lobby, "You cant join this room.", Toast.LENGTH_SHORT).show();
     		} else if (intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_PLAYER_JOIN.name())) {
@@ -62,19 +62,19 @@ public class KatanaReceiver extends BroadcastReceiver {
     			lobby.setCreatedRoomId(Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_ROOMID)));
     			lobby.setRoomLeader(true);
     			lobby.lobbyJoinCreatedRoom();
-    			lobby.lobbySendRoomListRequest(null);
+    			lobby.lobbyRefresh(null);
     		}
     		else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_CREATE_NO.name()))	{
     			lobby.setSelectedRoom(null);
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_PLAYER_UPDATE_CLASS.name())) {
-    			if(lobby.client_inRoom){
+    			if(lobby.isInRoom()){
     				int playerid = intent.getIntExtra(KatanaService.EXTRAS_PLAYERID, -1);
     				int playerclass = intent.getIntExtra(KatanaService.EXTRAS_PLAYERCLASS, -1);
     				lobby.waitingRoomClassUpdate(playerid, playerclass);
     			}
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_DESTROY.name())) {
-    			if(lobby.client_inRoom){
-    				lobby.lobbySendRoomListRequest(null);
+    			if(lobby.isInRoom()){
+    				lobby.lobbyRefresh(null);
     				lobby.setInRoom(false);
     				lobby.setRoomLeader(false);
     				lobby.transitionToLobby();
