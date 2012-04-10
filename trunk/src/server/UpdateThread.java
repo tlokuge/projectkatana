@@ -17,9 +17,9 @@ public class UpdateThread implements Runnable
     
     public void updateLoop(int update_diff)
     {
-        HashMap<Integer, Player> players = KatanaServer.instance().getPlayers();
-        for(Integer i : players.keySet())
-            players.get(i).update(update_diff);
+        HashMap<Integer, Map> maps = KatanaServer.instance().getMaps();
+        for(Integer i : maps.keySet())
+            maps.get(i).update(update_diff);
     }
     
     public void run()

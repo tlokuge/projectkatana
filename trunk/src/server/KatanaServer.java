@@ -4,7 +4,6 @@ import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
-import shared.Constants;
 
 public class KatanaServer implements Runnable
 {
@@ -15,6 +14,7 @@ public class KatanaServer implements Runnable
     private ArrayList<KatanaClient> waitingClients;
     private HashMap<Integer, Player> players;
     private HashMap<Integer, Lobby> lobbies;
+    private HashMap<Integer, Map> maps;
     
     private static KatanaServer instance;
     
@@ -26,6 +26,7 @@ public class KatanaServer implements Runnable
         waitingClients = new ArrayList<KatanaClient>();
         players        = new HashMap<Integer, Player>();
         lobbies        = new HashMap<Integer, Lobby>();
+        maps           = new HashMap<Integer, Map>();
         
         thread = new Thread(this, "KatanaServer-Thread");
         thread.start();
@@ -106,6 +107,10 @@ public class KatanaServer implements Runnable
     public Lobby getLobby(int id)               { return lobbies.get(id); }
     public HashMap<Integer, Lobby> getLobbies() { return lobbies; }
     public Set<Integer> getLocationIDs()        { return lobbies.keySet(); }
+    
+    public void addMap(int id, Map map)         { maps.put(id, map); }
+    public Map getMap(int id)                   { return maps.get(id); }
+    public HashMap<Integer, Map> getMaps()      { return maps; }
     
     public int getPort() { return port; }
 }
