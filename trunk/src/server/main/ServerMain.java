@@ -6,6 +6,7 @@ import server.handlers.PingServer;
 import server.utils.Config;
 import server.communication.KatanaServer;
 import java.net.InetAddress;
+import server.handlers.AIHandler;
 import server.shared.Constants;
 import server.shared.KatanaPacket;
 import server.shared.KatanaSocket;
@@ -26,11 +27,15 @@ public class ServerMain
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_SERVER_PORT)));
         KatanaServer.instance().loadCache();
         
+        // Load AI
+        AIHandler.instance();
+        
         PingServer ping = new PingServer(
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_PING_INTERVAL)),
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_MAX_PINGS)));
         UpdateThread update = new UpdateThread(
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_UPDATE_DIFF)));
+        
     }
     
     // Remove this method, just for testing
