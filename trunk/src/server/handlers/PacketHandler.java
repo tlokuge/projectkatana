@@ -347,6 +347,7 @@ public abstract class PacketHandler
             response.addData(p.getId() + ";" + p.getName() + ";" + p.getClassId() + ";");
             p.sendPacket(notify);
         }
+        lobby.removePlayer(pl);
         room.addPlayer(pl);
         pl.addToRoom(room_id);
         pl.setClass(class_id);
