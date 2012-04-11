@@ -48,6 +48,7 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
     private TiledTextureRegion mDevilTextureRegion;
 
     private TiledTextureRegion mPlayerTextureRegion;
+    private TiledTextureRegion mPlayer2TextureRegion;
     
     //for custom background
     private BitmapTextureAtlas mBgRegion;
@@ -114,7 +115,7 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
     public void loadBitmaps(){
         BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
         
-    	this.mBitmapTextureAtlas = new BitmapTextureAtlas(512, 1024, TextureOptions.BILINEAR_PREMULTIPLYALPHA );
+    	this.mBitmapTextureAtlas = new BitmapTextureAtlas(2048, 1024, TextureOptions.BILINEAR_PREMULTIPLYALPHA );
     	
     	//create background bitmap texture
     	this.mBgRegion = new BitmapTextureAtlas(1024, 512, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
@@ -125,7 +126,8 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
         this.lSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, lSpellfile, 400, 100, 1, 1);
         this.rSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, rSpellfile, 400, 150, 1, 1);
         
-        this.mPlayerTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "player.png",170 , 0, 3, 4);
+        this.mPlayerTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "attack.png",600 , 0, 5, 1);
+        this.mPlayer2TextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "healer.png", 1000, 0, 5, 1);
 
         this.mDevilTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "download.jpeg", 0, 0, 1, 1);
     }
@@ -139,7 +141,8 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
         
         //testing method, will be erase when linked with server
         loadBackground(1);
-        createUserChar(1, 1, 5000, 100, 100);
+        createUserChar(1, 2, 5000, 100, 100);
+       
         createMonster(1, 1, 9000, 600, 200);
         loadSpellDisplay();
         load_HPdisplay();
@@ -176,19 +179,31 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
 					final float pTouchAreaLocalY) {
 				if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
 					pEntity.setSelected(true);
+					if(bossTouched){
+						bossTouched = false;
+					}
+					else{
+						bossTouched = true;
+					}
 					return true;
 				}
 				return false;
 			}
 		};
     	else
-    		user = new AnimatedSprite(pX, pY, this.mPlayerTextureRegion){
+    		user = new AnimatedSprite(pX, pY, this.mPlayer2TextureRegion){
 			@Override
 			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,
 					final float pTouchAreaLocalX,
 					final float pTouchAreaLocalY) {
 				if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
 					pEntity.setSelected(true);
+					if(bossTouched){
+						bossTouched = false;
+					}
+					else{
+						bossTouched = true;
+					}
 					return true;
 				}
 				return false;
@@ -202,7 +217,7 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
         pHP.setHP(playerHP);
         pEntity.setHPBar(pHP);
         EntityList.add(pEntity);
-        user.setScale(2);
+        user.setScale(1);
         scene.attachChild(user);
         scene.registerTouchArea(user);
     }
@@ -232,7 +247,7 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
 			}
 		};
     	else
-    		players = new AnimatedSprite(pX, pY, this.mPlayerTextureRegion){
+    		players = new AnimatedSprite(pX, pY, this.mPlayer2TextureRegion){
 			@Override
 			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,
 					final float pTouchAreaLocalX,
@@ -333,7 +348,7 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
     }
 
      //method to send spell
-    public void send_spell(int caster, int targetID, int spellID){
+    public void send_spell(int casterID, int targetID, int spellID){
     	
     }
     
@@ -370,15 +385,19 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
         		else{
         			if(spellID==1){
 	        			//do player spell1 atk animation
+        				spell1_Animate(EntityList.get(i).getCharSprite());
 	        		}	
 	        	    if(spellID==2){
 	        	    	//do player spell2 atk animation
+	        	    	spell2_Animate(EntityList.get(i).getCharSprite());
 	        	    }
 	        	    if(spellID==3){
 	        			//do player spell3 atk animation
+	        	    	spell3_Animate(EntityList.get(i).getCharSprite());
 	        		}	
 	        	    if(spellID==4){
 	        	    	//do player spell4 atk animation
+	        	    	spell4_Animate(EntityList.get(i).getCharSprite());
 	        	    }
         		}
         	}
@@ -464,6 +483,7 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
     	float curr_spriteX= sprite.getX();
     	float curr_spriteY= sprite.getY();
     	
+    	sprite.setCurrentTileIndex(0);
     	sprite.clearEntityModifiers();
     	
         dest_spriteX-= sprite.getWidth()/2;
@@ -483,14 +503,8 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
 	    }
   
     }
+    
     //gesture detection
-   /* public boolean onTouchEvent(MotionEvent event) {
-    	if (mGestureDetector.onTouchEvent(event))
-			return true;
-		else
-			return false;
-    }
-    */
     public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
     		
     	mGestureDetector.onTouchEvent(pSceneTouchEvent.getMotionEvent());
@@ -498,10 +512,23 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
     }
 
     //Placeholder for animation class
-    public void attackAnimate(AnimatedSprite sprite) {
-
-    	sprite.animate(new long[] { 10, 20, 50, 20 }, new int[] { 1, 3, 6 , 5 },  10);
+    public void spell1_Animate(AnimatedSprite sprite) {
+    	sprite.animate(new long[] {100,100,100}, new int[] {0,1,0} ,10);
+    	//sprite.setRotation(90);
 	}
+    
+    public void spell2_Animate(AnimatedSprite sprite) {
+    	sprite.animate(new long[] {100,100,100}, new int[] {0,2,0} ,10);
+	}
+    
+    public void spell3_Animate(AnimatedSprite sprite) {
+    	sprite.animate(new long[] {100,100,100}, new int[] {0,3,0} ,10);
+	}
+    
+    public void spell4_Animate(AnimatedSprite sprite) {
+    	sprite.animate(new long[] {100,100,100}, new int[] {0,4,0} ,10);
+	}
+    
   //Placeholder for animation class
 	public void runAnimate(AnimatedSprite sprite, float destX, float destY) {
 
@@ -538,8 +565,6 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
 			float dest_Y=ev.getY();
 		
 			move(user,dest_X, dest_Y);
-			//runAnimate(user, dest_X, dest_Y);
-			
 			return true;
 		}
 		
@@ -602,8 +627,7 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
 	boolean onSwipeUp() {
 		Toast.makeText(AndengineActivity.this, "onSwipeUp", Toast.LENGTH_SHORT).show();
 		if(bossTouched){
-			//testing animation, will be erase later
-			attackAnimate(user);		
+			spell1_Animate(user);		
 			for(int i=0;i<EntityList.size();i++){
 	        	if(EntityList.get(i).getSelected()==true){	
 	    			send_spell(userID, EntityList.get(i).getCharID(), 1);
@@ -618,8 +642,7 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
 	boolean onSwipeRight() {
 		Toast.makeText(AndengineActivity.this, "onSwipeRight", Toast.LENGTH_SHORT).show();	
 		if(bossTouched){
-			//testing animation, will be erase later
-			attackAnimate(user);
+			spell2_Animate(user);
 			for(int i=0;i<EntityList.size();i++){
 	        	if(EntityList.get(i).getSelected()==true){	
 	    			send_spell(userID, EntityList.get(i).getCharID(), 2);
@@ -632,8 +655,7 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
 	boolean onSwipeLeft() {
 		Toast.makeText(AndengineActivity.this, "onSwipeLeft", Toast.LENGTH_SHORT).show();
 		if(bossTouched){
-			//testing animation, will be erase later
-			attackAnimate(user);
+			spell3_Animate(user);
 			for(int i=0;i<EntityList.size();i++){
 	        	if(EntityList.get(i).getSelected()==true){	
 	    			send_spell(userID, EntityList.get(i).getCharID(), 3);
@@ -646,8 +668,7 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
 	boolean onSwipeDown() {
 		Toast.makeText(AndengineActivity.this, "onSwipeDown", Toast.LENGTH_SHORT).show();
 		if(bossTouched){
-			//testing animation, will be erase later
-			attackAnimate(user);
+			spell4_Animate(user);
 			for(int i=0;i<EntityList.size();i++){
 	        	if(EntityList.get(i).getSelected()==true){	
 	    			send_spell(userID, EntityList.get(i).getCharID(), 4);
