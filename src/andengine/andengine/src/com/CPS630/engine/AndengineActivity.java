@@ -45,7 +45,9 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
     private TiledTextureRegion lSpellTextureRegion;
     private TiledTextureRegion rSpellTextureRegion;
  
-    private TiledTextureRegion mDevilTextureRegion;
+    private TiledTextureRegion mMonster1TextureRegion;
+    private TiledTextureRegion mMonster2TextureRegion;
+    private TiledTextureRegion mMonster3TextureRegion;
 
     private TiledTextureRegion mPlayerTextureRegion;
     private TiledTextureRegion mPlayer2TextureRegion;
@@ -56,10 +58,10 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
     
     float realMoveDuration;
     //sprite files
-    String uSpellfile = "face_box.png";
-    String dSpellfile = "face_box.png";
-    String lSpellfile = "face_box.png";
-    String rSpellfile = "face_box.png";
+    String uSpellfile = "uspell.png";
+    String dSpellfile = "dspell.png";
+    String lSpellfile = "lspell.png";
+    String rSpellfile = "rspell.png";
     String background = "Background.png";
     
     AnimatedSprite face;
@@ -115,11 +117,11 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
     public void loadBitmaps(){
         BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
         
-    	this.mBitmapTextureAtlas = new BitmapTextureAtlas(2048, 1024, TextureOptions.BILINEAR_PREMULTIPLYALPHA );
+    	this.mBitmapTextureAtlas = new BitmapTextureAtlas(2048, 2048, TextureOptions.BILINEAR_PREMULTIPLYALPHA );
     	
     	//create background bitmap texture
-    	this.mBgRegion = new BitmapTextureAtlas(1024, 512, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-        this.mBackground = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBgRegion, this,"Background.png", 0, 0);
+    	this.mBgRegion = new BitmapTextureAtlas(2048, 2048, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+        this.mBackground = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBgRegion, this,"background3.png", 0, 0);
         
         this.uSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, uSpellfile, 400, 0, 1, 1);
         this.dSpellTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, dSpellfile, 400, 50, 1, 1);
@@ -129,7 +131,9 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
         this.mPlayerTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "attack.png",600 , 0, 5, 1);
         this.mPlayer2TextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "healer.png", 1000, 0, 5, 1);
 
-        this.mDevilTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "download.jpeg", 0, 0, 1, 1);
+        this.mMonster1TextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "monster1.png", 0, 0, 1, 1);
+        this.mMonster2TextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "monster2.png", 0, 600, 1, 1);
+        this.mMonster3TextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "monster3.png", 0, 1000, 1, 1);
     }
     
     public Scene onLoadScene() {
@@ -141,12 +145,15 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
         
         //testing method, will be erase when linked with server
         loadBackground(1);
-        createUserChar(1, 2, 5000, 100, 100);
-       
-        createMonster(1, 1, 9000, 600, 200);
+        createUserChar(1, 1, 5000, 100, 100);
+        createTeammate(2, 2, 5000, 100, 400);
+    
+        createMonster(3, 1, 9000, 600, 200);
+        createMonster(4, 2, 2000, 500, 200);
         loadSpellDisplay();
         load_HPdisplay();
-       
+        
+        move_Entity(2, 400, 200);
         //testing method ends
         
         //initialize gesture detector
@@ -201,9 +208,6 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
 					if(bossTouched){
 						bossTouched = false;
 					}
-					else{
-						bossTouched = true;
-					}
 					return true;
 				}
 				return false;
@@ -257,9 +261,7 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
 					if(bossTouched){
 						bossTouched = false;
 					}
-					else{
-						bossTouched = true;
-					}
+					
 					return true;
 				}
 				return false;
@@ -282,7 +284,7 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
     	final MonsterEntity mEntity = new MonsterEntity(monsterID, monsterType, monsterHP);
     	
 		if (monsterType == 1) {
-			monster = new AnimatedSprite(mX, mY, this.mDevilTextureRegion) {
+			monster = new AnimatedSprite(mX, mY, this.mMonster1TextureRegion) {
 				@Override
 				public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,
 						final float pTouchAreaLocalX,
@@ -301,7 +303,7 @@ public class AndengineActivity extends BaseGameActivity implements IOnSceneTouch
 				}
 			};
 		} else {
-			monster = new AnimatedSprite(mX, mY, this.mDevilTextureRegion) {
+			monster = new AnimatedSprite(mX, mY, this.mMonster2TextureRegion) {
 				@Override
 				public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,
 						final float pTouchAreaLocalX,
