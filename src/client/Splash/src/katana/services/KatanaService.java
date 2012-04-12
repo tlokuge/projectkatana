@@ -186,7 +186,8 @@ public class KatanaService extends Service {
     		case S_PLAYER_UPDATE_CLASS: handleClassChange(packet, intent); break;
     		case S_ROOM_DESTROY:
     		case S_ROOM_JOIN_NO:
-    		case S_ROOM_CREATE_NO:
+    		case S_ROOM_CREATE_NO: break;
+    		case S_GAME_START: break;
     		default: break;
     	}
     	sendBroadcast(intent);
@@ -258,6 +259,11 @@ public class KatanaService extends Service {
 		intent.putExtra(EXTRAS_PLAYERID, Integer.parseInt(lines[0]));
 		intent.putExtra(EXTRAS_PLAYERCLASS, Integer.parseInt(lines[1]));
 	}
+	
+	private void handleGameStart(KatanaPacket packet, Intent intent) {
+		String[] lines = packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR);
+		ArrayList<String> unitList = new ArrayList<String>();
+	}
 
 	/** For Location Manager */
 	private LocationManager locManager;
@@ -300,6 +306,8 @@ public class KatanaService extends Service {
 	@SuppressWarnings("static-access")
 	public Location getLastKnownLocation() {
 		Location lastKnownLocation = locManager.getLastKnownLocation(locManager.GPS_PROVIDER);
+		if(lastKnownLocation == null)
+			lastKnownLocation = locManager.getLastKnownLocation(locManager.NETWORK_PROVIDER);
 		return lastKnownLocation;
 	}
 	
