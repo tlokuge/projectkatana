@@ -11,7 +11,7 @@ public abstract class KatanaConstants
 	public static final String DESC_CLASS2 = "You made the right choice.";
 	
 	/** Server Info **/
-	public static final String SERVER_IP = "projectkatana.no-ip.org";
+	public static final String SERVER_IP = "10.100.2.6";
 	public static final int SERVER_PORT = 7777;
 	
 	/** Application Preferences **/

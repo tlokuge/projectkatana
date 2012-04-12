@@ -103,8 +103,10 @@ public class KatanaServer implements Runnable
     public void removeWaitingClient(KatanaClient client)    { waitingClients.remove(client); }
     public ArrayList<KatanaClient> getWaitingClients() { return waitingClients; }
     
-    public void addPlayer(int id, Player player){ players.put(id, player); }
+    public void addPlayer(int id, Player player){ if(!containsPlayer(id)) players.put(id, player); }
     public Player getPlayer(int id)             { return players.get(id); }
+    public boolean containsPlayer(Player p)     { return containsPlayer(p.getId()); }
+    public boolean containsPlayer(int id)       { return players.containsKey(id); }
     public void removePlayer(int id)            { players.remove(id); }
     public HashMap<Integer, Player> getPlayers(){ return players; }
     
