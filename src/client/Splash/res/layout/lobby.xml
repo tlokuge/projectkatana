@@ -7,8 +7,9 @@
     android:background="@drawable/notebook_bg" >
 	
     <ImageButton android:id="@+id/b_create"
-		android:layout_width="wrap_content"
-	    android:layout_height="wrap_content" 
+		android:layout_width="162dp"
+	    android:layout_height="59dp" 
+	    android:layout_marginTop="10dp"
 	    android:layout_alignParentLeft="true"
 	    android:contentDescription="@string/b_create"
 		android:background="@drawable/createbutton"
@@ -16,21 +17,14 @@
 	    android:onClick="lobbyCreateButton"/>
     
     <TextView android:id="@+id/l_realmname"
-	    android:layout_width="300dp"
+	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
+	    android:layout_marginTop="10dp"
     	android:layout_toRightOf="@id/b_create"
 		android:gravity="center"
 		
 	    android:textSize="35dp"
 	    android:text="@string/l_realmname" />
-    
-	<Button android:id="@+id/b_refresh"
-	    android:layout_width="100dp"
-	    android:layout_height="wrap_content" 
-	    android:layout_alignParentRight="true"
-	    
-	    android:text="@string/b_refresh" 
-	    android:onClick="lobbyRefresh" />  
 	    
 	<GridView android:id="@+id/gv_roomslist"
 	    android:layout_width="330dp"
@@ -73,12 +67,14 @@
 		    android:layout_height="wrap_content" 
 		    android:layout_below="@id/l_difficulty"/>
 	        
-	    <Button android:id="@+id/b_join"
-	        android:layout_width="fill_parent"
-	        android:layout_height="80dp"
+	    <ImageButton android:id="@+id/b_join"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
 	        android:layout_alignParentBottom="true"
+	        android:layout_alignParentRight="true"
+	        android:contentDescription="@string/b_join"
+	        android:background="@drawable/joinbutton"
 	        
-	        android:text="@string/b_join" 
 	        android:onClick="lobbyJoinButton"/>	     
 	</RelativeLayout>
 </RelativeLayout>

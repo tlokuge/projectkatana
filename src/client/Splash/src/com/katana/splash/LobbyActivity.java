@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -72,6 +73,10 @@ public class LobbyActivity extends Activity {
 		
 		GridView lobby_roomGridView = (GridView) findViewById(R.id.gv_roomslist);
 		lobby_roomGridView.setOnItemClickListener(selectRoomListener);
+		
+		TextView realmName = (TextView) findViewById(R.id.l_realmname);
+		Typeface font = Typeface.createFromAsset(getAssets(), "fonts/mvboli.ttf");
+		realmName.setTypeface(font);
 	}
 	
 	@Override
@@ -125,6 +130,7 @@ public class LobbyActivity extends Activity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
     	menu.clear();
+    	
     	MenuInflater inflater = getMenuInflater();
         if(!client_inRoom) {
         	inflater.inflate(R.menu.lobby_menu, menu);
@@ -144,6 +150,9 @@ public class LobbyActivity extends Activity {
             case R.id.leaderboards:
             	katanaService.sendPacket(new KatanaPacket(Opcode.C_LEADERBOARD));
                 return true;
+            case R.id.refresh:
+            	lobbyRefresh(null);
+            	return true;
             case R.id.change_class:
             	showSelectClassDialog();
             	return true;
@@ -183,7 +192,6 @@ public class LobbyActivity extends Activity {
     }
     
     public void waitingRoomStartGame(View view) {
-    	
     	KatanaPacket packet = new KatanaPacket(Opcode.C_GAME_START);
     	katanaService.sendPacket(packet);
     	katanaReceiver.startMyActivity(this, GameActivity.class);
