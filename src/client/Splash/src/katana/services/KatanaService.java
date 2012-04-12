@@ -33,6 +33,8 @@ public class KatanaService extends Service {
 	public static final String EXTRAS_PLAYERID = "playerId";
 	public static final String EXTRAS_ROOMID = "roomId";
 	public static final String EXTRAS_SCORES = "scores";
+	public static final String EXTRAS_GAMEBG = "gameBackground";
+	public static final String EXTRAS_GAMESTART = "gameStart";
 	
 	private final IBinder mBinder = new KatanaSBinder();
 	
@@ -187,7 +189,7 @@ public class KatanaService extends Service {
     		case S_ROOM_DESTROY:
     		case S_ROOM_JOIN_NO:
     		case S_ROOM_CREATE_NO: break;
-    		case S_GAME_START: break;
+    		case S_GAME_START: 	handleGameStart(packet, intent); break;
     		default: break;
     	}
     	sendBroadcast(intent);
@@ -263,6 +265,11 @@ public class KatanaService extends Service {
 	private void handleGameStart(KatanaPacket packet, Intent intent) {
 		String[] lines = packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR);
 		ArrayList<String> unitList = new ArrayList<String>();
+		for(int i = 1; i < lines.length; ++i)
+			unitList.add(lines[i]);
+		
+		intent.putExtra(EXTRAS_GAMEBG, lines[0]);
+		intent.putStringArrayListExtra(EXTRAS_GAMESTART, unitList);
 	}
 
 	/** For Location Manager */

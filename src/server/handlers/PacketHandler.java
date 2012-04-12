@@ -6,13 +6,16 @@ import server.communication.KatanaClient;
 import server.communication.KatanaServer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.Set;
+import server.game.Map;
 import server.limbo.GameRoom;
 import server.limbo.Lobby;
 import server.game.Player;
 import server.shared.Constants;
 import server.shared.KatanaPacket;
 import server.shared.Opcode;
+import server.templates.MapTemplate;
 
 public abstract class PacketHandler
 {
@@ -35,8 +38,7 @@ public abstract class PacketHandler
             case C_CLASS_CHANGE:handleClassChangePacket(client, packet);break;
             case C_LEADERBOARD: handleLeaderboardPacket(client, packet);break;
                 
-            case C_GAME_START:
-                break;
+            case C_GAME_START:  handleGameStartPacket(client, packet);  break;
                 
             case C_MOVE:
                 break;
@@ -562,5 +564,44 @@ public abstract class PacketHandler
             for(HashMap map : results)
                 response.addData(map.get("username") + ";" + map.get("points") + ";");
         client.sendPacket(response);
+    }
+    
+    public static void handleGameStartPacket(KatanaClient client, KatanaPacket packet)
+    {
+        Player pl = client.getPlayer();
+        if(!client.getPlayer().isRoomLeader())
+        {
+            System.err.println("Player " + client.getPlayer() + " attempted to start game but is not room leader!");
+            client.sendPacket(new KatanaPacket(Opcode.S_LOGOUT)); // Mwahaha
+            return;
+        }
+        
+        Lobby lobby = KatanaServer.instance().getLobby(pl.getLocation());
+        GameRoom room = lobby.getRoom(pl.getRoom());
+        
+        
+        ArrayList<MapTemplate> templates = SQLCache.getMapsByLocation(pl.getLocation());
+        // Pick a random template
+        MapTemplate template = templates.get(new Random(System.currentTimeMillis()).nextInt(templates.size()));
+        Map instance = new Map(template.getId(), room.getDifficulty());
+        
+        KatanaPacket response = new KatanaPacket(Opcode.S_GAME_START);
+        response.addData(instance.getBackground());
+        for(int i : room.getPlayers())
+        {
+            Player p = KatanaServer.instance().getPlayer(i);
+            instance.addPlayer(p);
+            p.removeFromRoom();
+            p.setRoomLeader(false);
+            // TODO: Spawn in specific locations
+            String data = p.getId() + ";" + p.getMaxHealth() + ";" + SQLCache.getModel(p.getModelId()) + ";";
+            response.addData(data);
+        }
+        
+        room.clearPlayers();
+        lobby.removeRoom(room.getId());
+        
+        for(int i : room.getPlayers())
+            KatanaServer.instance().getPlayer(i).sendPacket(response);
     }
 }

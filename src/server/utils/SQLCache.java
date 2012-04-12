@@ -42,6 +42,20 @@ public abstract class SQLCache
     public static CreatureTemplate getCreature(int id) { return creature_map.get(id); }
     public static MapTemplate getMap(int id)           { return map_map.get(id);   }
     
+    public static ArrayList<MapTemplate> getMapsByLocation(int location)
+    {
+        ArrayList<MapTemplate> templates = new ArrayList<>();
+        
+        for(int i : map_map.keySet())
+        {
+            MapTemplate temp = getMap(i);
+            if(temp.getLocation() == location)
+                templates.add(temp);
+        }
+        
+        return templates;
+    }
+    
     private static void cacheLocations()
     {
         System.out.println("Loading Locations....");
