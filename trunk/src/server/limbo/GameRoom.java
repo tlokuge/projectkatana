@@ -65,6 +65,7 @@ public class GameRoom
         return true;
     }
     public void removePlayer(Player pl) { players.remove((Object)pl.getId()); }
+    public void clearPlayers()  { players.clear(); }
     
     public ArrayList<Integer> getPlayers() { return players; }
     

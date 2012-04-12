@@ -1,6 +1,7 @@
 package com.katana.splash;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import katana.game.CharacterEntity;
 import katana.game.HPBar;
@@ -101,12 +102,17 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	ChangeableText healthText;
 	
 	Unit player;
+	private HashMap<Integer, Unit> unit_map = new HashMap<Integer, Unit>();
+	
 	AnimatedSprite user;
 	int userID;
 	boolean playerSelected;
 	private int health=5000;
         
 	public Engine onLoadEngine() {
+		
+		doBindService();
+		
 		final Display display = getWindowManager().getDefaultDisplay();
 		cameraWidth = display.getWidth();
 		cameraHeight = display.getHeight();
@@ -177,6 +183,13 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
         mGestureDetector = new GestureDetector(this, new myGestureListener());
         //scene.setTouchAreaBindingEnabled(true); 
         return scene;
+    }
+    
+    public void setBackground(String background)
+    {
+    	mBackground = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBgRegion, this,background, 0, 0);
+    	bg = new Sprite(0, 0, mBackground);
+    	scene.setBackground(new SpriteBackground(bg));
     }
     
     //setup background of the game base on location

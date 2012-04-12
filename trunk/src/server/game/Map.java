@@ -11,6 +11,7 @@ public class Map
     private int id;
     private int guid;
     private int location_id;
+    private int difficulty;
     
     private String name;
     private String background;
@@ -20,13 +21,14 @@ public class Map
     
     private static int NEXT_MAP_GUID = 0;
     
-    public Map(int id)
+    public Map(int id, int difficulty)
     {
         MapTemplate template = SQLCache.getMap(id);
         
         this.id          = template.getId();
         this.guid        = getNextMapGUID();
         this.location_id = template.getLocation();
+        this.difficulty  = difficulty;
         this.name        = template.getName();
         this.background  = template.getBackground();
         
@@ -39,6 +41,7 @@ public class Map
     public int getMapId()           { return id; }
     public int getGUID()            { return guid; }
     public int getLocationId()      { return location_id; }
+    public int getDifficulty()      { return difficulty; }
     public String getName()         { return name; }
     public String getBackground()   { return background; }
     

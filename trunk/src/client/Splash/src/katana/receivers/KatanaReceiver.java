@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.widget.Toast;
 
+import com.katana.splash.GameActivity;
 import com.katana.splash.LobbyActivity;
 import com.katana.splash.LoginActivity;
 
@@ -85,10 +86,14 @@ public class KatanaReceiver extends BroadcastReceiver {
     		}
 		} else if(mode == 3) {
 			// GameActivity
+			GameActivity game = (GameActivity) context;
 			// Instantiate in onEngineStart() using 
 			//		private KatanaReceiver katanaReceiver = new KatanaReceiver(3);
-			if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_CREATE_NO.name())) { 
-				// TODO Handle operations here
+			if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_START.name())) { 
+				String background = intent.getStringExtra(KatanaService.EXTRAS_GAMEBG);
+				ArrayList<String> unitList = intent.getStringArrayListExtra(KatanaService.EXTRAS_GAMESTART);
+				
+				game.setBackground(background);
 			}
 		}
 	}
