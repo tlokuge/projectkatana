@@ -4,6 +4,10 @@
           android:icon="@drawable/ic_launcher"
           android:title="Area Leaders"/>
     
+    <item android:id="@+id/refresh"
+          android:icon="@drawable/ic_launcher"
+          android:title="Refresh" />
+    
     <item android:id="@+id/about"
           android:icon="@drawable/ic_launcher"
           android:title="About" />
