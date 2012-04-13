@@ -303,7 +303,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 		Log.d("TEXTURE:", "bitmap y done: " + bitmap_y);
     }
     
-    public void createUnits(ArrayList<String> unitList)
+    public void updateUnits(ArrayList<String> unitList)
     {
     	// id, health, model
     	for(String unit_str : unitList)
@@ -317,10 +317,33 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
     		
     		try
     		{
-    			System.err.println("Spawning Unit: " + data[0] + " - " + data[1] + " - " + data[2]);
-    			Unit u = spawnUnit(Integer.parseInt(data[0].trim()), Integer.parseInt(data[1].trim()), data[2], 0, 0);
+    			Integer id = Integer.parseInt(data[0].trim());
+    			int cur_health = Integer.parseInt(data[1].trim());
+    			int max_health = Integer.parseInt(data[2].trim());
+    			float x = Float.parseFloat(data[3].trim());
+    			float y = Float.parseFloat(data[4].trim());
+    			String model_name = data[5].trim();
+    			Unit u = unit_map.remove(id);
+    			if(u != null)
+    			{
+    				u.setHealth(cur_health);
+    				u.setMaxHealth(max_health);
+    				u.moveTo(x, y);
+    				if(!u.getModelName().equalsIgnoreCase(model_name))
+    				{
+    					TiledTextureRegion texture = createTexture(model_name, NUM_ANIMS);
+    					AnimatedSprite model = createSprite(x, y, texture, u);
+    					u.setModel(model, model_name);
+    				}
+    				unit_map.put(id, u);
+    			}
+    			else
+    			{
+	    			System.err.println("Spawning Unit: " + id + " - " + max_health + " - " + model_name + " - [" + x + "," + y + "]");
+	    			u = spawnUnit(id, max_health, model_name, x, y);
     			
-    			System.out.println("GameActivity: Created unit[" + u + "]");
+	    			System.out.println("GameActivity: Created unit[" + u + "]");
+    			}
     		}
     		catch(NumberFormatException ex)
     		{
@@ -329,11 +352,24 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
     	}
     }
     
-    public Unit spawnUnit(int id, int health, String model_name, int pos_x, int pos_y)
+    public Unit spawnUnit(int id, int health, String model_name, float pos_x, float pos_y)
     {
     	TiledTextureRegion texture = createTexture(model_name, NUM_ANIMS);
-    	final Unit unit = new Unit(id, health);
-    	AnimatedSprite model = new AnimatedSprite((float)pos_x, (float)pos_y, texture)
+    	final Unit unit = new Unit(id, health, pos_x, pos_y);
+		AnimatedSprite model = createSprite(pos_x, pos_y, texture, unit);
+		unit.setModel(model, model_name);
+		model.setScale(1);
+		scene.attachChild(model);
+		scene.registerTouchArea(model);
+		
+		unit_map.put(id, unit);
+		
+    	return unit;
+    }
+    
+    private AnimatedSprite createSprite(float pos_x, float pos_y, TiledTextureRegion texture, final Unit unit)
+    {
+    	return new AnimatedSprite(pos_x, pos_y, texture)
     	{
     		@Override
 			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,	final float local_x, final float local_y) 
@@ -346,15 +382,6 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 				return false;
 			}
 		};
-		
-		unit.setModel(model);
-		model.setScale(1);
-		scene.attachChild(model);
-		scene.registerTouchArea(model);
-		
-		unit_map.put(id, unit);
-		
-    	return unit;
     }
     
     //creating player himself

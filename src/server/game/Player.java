@@ -15,7 +15,6 @@ public class Player extends Unit
     private int location;
     
     private int room_id;
-    private int map_id;
     
     private boolean is_room_leader;
     
@@ -31,7 +30,7 @@ public class Player extends Unit
         location = -1;
     
         room_id = -1;
-        map_id = -1;
+        
         is_room_leader = false;
     }
     
@@ -61,9 +60,6 @@ public class Player extends Unit
     public int getRoom()               { return room_id; }
     public void setRoomLeader(boolean leader) { this.is_room_leader = leader; }
     public boolean isRoomLeader()             { return is_room_leader; }
-    
-    public void addToMap(int map) { this.map_id = map; }
-    public int getMap() { return map_id; }
     
     @Override
     public void update(int diff)

@@ -622,7 +622,10 @@ public abstract class PacketHandler
         for(int i : instance.getPlayers())
         {
             Player p = KatanaServer.instance().getPlayer(i);
-            response.addData(p.getId() + ";" + p.getMaxHealth() + ";" + SQLCache.getModel(p.getModelId()) + ";");
+            response.addData(p.getId() + ";" + 
+                        p.getHealth() + ";" + p.getMaxHealth() + ";" + 
+                        p.getX() + ";" + p.getY() + ";" + 
+                        SQLCache.getModel(p.getModelId()) + ";");
         }
         
         pl.sendPacket(response);
@@ -652,9 +655,6 @@ public abstract class PacketHandler
         response.addData(pl.getId() + "");
         response.addData(data[0]);
         response.addData(data[1]);
-        
-        for(int i : instance.getPlayers())
-            if(i != pl.getId())
-                KatanaServer.instance().getPlayer(i).sendPacket(response);
+        instance.broadcastPacketToAll(packet, pl.getId());
     }
 }
