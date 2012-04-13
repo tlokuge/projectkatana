@@ -46,6 +46,7 @@ public class Map
     public String getBackground()   { return background; }
     
     public void addPlayer(Player pl) { player_list.add(pl.getId()); }
+    public ArrayList<Integer> getPlayers() { return player_list; }
     
     public Creature spawnCreature(int id)
     {
@@ -57,7 +58,11 @@ public class Map
     public void update(int diff)
     {
         for(int id : player_list)
-            KatanaServer.instance().getPlayer(id).update(diff);
+        {
+            Player p = KatanaServer.instance().getPlayer(id);
+            if(p != null)
+                p.update(diff);
+        }
         
         for(int id : creature_map.keySet())
             creature_map.get(id).update(diff);

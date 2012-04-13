@@ -3,6 +3,7 @@ package server.game;
 import server.utils.SQLCache;
 import server.communication.KatanaClient;
 import server.shared.KatanaPacket;
+import server.templates.PlayerClassTemplate;
 
 public class Player extends Unit
 {
@@ -14,6 +15,8 @@ public class Player extends Unit
     private int location;
     
     private int room_id;
+    private int map_id;
+    
     private boolean is_room_leader;
     
     public Player(int id, String name, int max_health, int atk_speed, int atk_damage, float move_speed, int model_id, KatanaClient client)
@@ -28,6 +31,7 @@ public class Player extends Unit
         location = -1;
     
         room_id = -1;
+        map_id = -1;
         is_room_leader = false;
     }
     
@@ -41,7 +45,9 @@ public class Player extends Unit
     public void setClass(int class_id) 
     {
         this.class_id = class_id;
-        m_class = new PlayerClass(SQLCache.getClass(class_id));
+        PlayerClassTemplate template = SQLCache.getClass(class_id);
+        m_class = new PlayerClass(template);
+        setModelId(template.getModelId());
     }
     public int getClassId()                { return class_id; }
     public int getSpellCooldown(int spell) { return m_class.getSpellById(spell).getCooldown(); }
@@ -55,6 +61,9 @@ public class Player extends Unit
     public int getRoom()               { return room_id; }
     public void setRoomLeader(boolean leader) { this.is_room_leader = leader; }
     public boolean isRoomLeader()             { return is_room_leader; }
+    
+    public void addToMap(int map) { this.map_id = map; }
+    public int getMap() { return map_id; }
     
     @Override
     public void update(int diff)

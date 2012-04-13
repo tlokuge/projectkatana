@@ -15,6 +15,7 @@ public enum Opcode
     C_CLASS_CHANGE,
     C_LEADERBOARD,
     C_GAME_START,
+    C_GAME_READY,
     C_MOVE,
     C_SPELL,
     
@@ -38,6 +39,7 @@ public enum Opcode
     S_CLASS_CHANGE_OK,
     S_LEADERBOARD,
     S_GAME_START,
+    S_GAME_POPULATE,
     S_GAME_UPDATE_SYNC,
     S_GAME_SPELL_CAST,
     S_GAME_UPDATE_MOVE,
