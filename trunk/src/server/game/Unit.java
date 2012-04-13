@@ -1,5 +1,6 @@
 package server.game;
 
+import server.communication.KatanaServer;
 import server.shared.KatanaPacket;
 import server.shared.Opcode;
 
@@ -17,6 +18,7 @@ public abstract class Unit
     
     private float move_speed;
     
+    private int map_id;
     private float pos_x;
     private float pos_y;
     
@@ -42,8 +44,11 @@ public abstract class Unit
         
         this.current_target = null;
         
-        System.out.println("USER [" + id + ", " + name + "]");
+        this.map_id = -1;
+        this.pos_x  = 0.0f;
+        this.pos_y  = 0.0f;
         
+        System.out.println("USER [" + id + ", " + name + "]");
     }
     
     public void setId(int id)        { this.id = id; }
@@ -67,6 +72,8 @@ public abstract class Unit
     public void moveTo(float x, float y) { this.pos_x = x; this.pos_y = y; }
     public float getX()                  { return pos_x; }
     public float getY()                  { return pos_y; }
+    public void addToMap(int map)        { this.map_id = map_id; }
+    public int getMap()                  { return map_id; }
     
     public void setModelId(int model) { this.model_id = model; }
     public int getModelId()           { return model_id;   }

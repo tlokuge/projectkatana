@@ -5,6 +5,8 @@ import server.templates.MapTemplate;
 import server.communication.KatanaServer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import server.shared.KatanaPacket;
+import server.shared.Opcode;
 
 public class Map
 {
@@ -18,6 +20,9 @@ public class Map
     
     private ArrayList<Integer> player_list;
     private HashMap<Integer, Creature> creature_map;
+    
+    private int interval;
+    private final int UPDATE_INTERVAL = 2500;
     
     private static int NEXT_MAP_GUID = 0;
     
@@ -34,6 +39,8 @@ public class Map
         
         this.player_list  = new ArrayList<>();
         this.creature_map = new HashMap<>();
+        
+        interval = UPDATE_INTERVAL;
     }
     
     public static int getNextMapGUID() { return NEXT_MAP_GUID++; }
@@ -64,7 +71,56 @@ public class Map
                 p.update(diff);
         }
         
+        if(interval < UPDATE_INTERVAL)
+        {
+            sendSyncPacket();
+            interval = UPDATE_INTERVAL;
+        }else interval -= diff;
+        
         for(int id : creature_map.keySet())
             creature_map.get(id).update(diff);
+    }
+    
+    public void broadcastPacketToAll(KatanaPacket packet, int ignore_player_id)
+    {
+        if(packet == null)
+        {
+            System.err.println("Attempted to broadcast NULL packet");
+            return;
+        }
+        
+        for(int pid : player_list)
+        {
+            Player p = KatanaServer.instance().getPlayer(pid);
+            if(p != null && pid != ignore_player_id)
+                p.sendPacket(packet);
+        }
+    }
+    
+    private void sendSyncPacket()
+    {
+        KatanaPacket packet = new KatanaPacket(Opcode.S_GAME_UPDATE_SYNC);
+        
+        for(int pid : player_list)
+        {
+            Player p = KatanaServer.instance().getPlayer(pid);
+            if(p != null)
+                packet.addData(p.getId() + ";" + 
+                        p.getHealth() + ";" + p.getMaxHealth() + ";" + 
+                        p.getX() + ";" + p.getY() + ";" + 
+                        SQLCache.getModel(p.getModelId()) + ";");
+        }
+        
+        for(int c_guid : creature_map.keySet())
+        {
+            Creature c = creature_map.get(c_guid);
+            if(c != null)
+                packet.addData(c.getId() + ";" + 
+                        c.getHealth() + ";" + c.getMaxHealth() + ";" +
+                        c.getX() + ";" + c.getY() + ";" +
+                        SQLCache.getModel(c.getModelId()) + ";");
+        }
+        
+        broadcastPacketToAll(packet, -1);
     }
 }
