@@ -54,7 +54,7 @@ public class SplashActivity extends Activity {
         		Looper.myLooper().prepare();
         		try {
     				doBindService();
-        			sleep(10000);
+        			sleep(2000);
         			
         			// Check preferences file for stored user/pass
         			client_prefs = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE);

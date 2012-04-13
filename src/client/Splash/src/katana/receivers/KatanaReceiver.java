@@ -27,7 +27,6 @@ public class KatanaReceiver extends BroadcastReceiver {
 			// SplashActivity
     		if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_AUTH_OK.name())){
     			startMyActivity(context, LobbyActivity.class);
-    			System.err.println("S_AUTH_OK from SPLASH");
     			context.getSharedPreferences(KatanaConstants.PREFS_LOGIN, Context.MODE_PRIVATE).edit().putInt(
     					KatanaConstants.PLAYER_ID, 
     					Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID))
@@ -43,7 +42,6 @@ public class KatanaReceiver extends BroadcastReceiver {
 			if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_REG_OK.name())){
     			// Registered new user on server    			
     			loginActivity.setUserLoginPrefs(true);
-    			System.err.println("S_REG_OK");
     			context.getSharedPreferences(KatanaConstants.PREFS_LOGIN, Context.MODE_PRIVATE).edit().putInt(
     					KatanaConstants.PLAYER_ID, 
     					Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID))
@@ -52,13 +50,11 @@ public class KatanaReceiver extends BroadcastReceiver {
     			KatanaService.player_id = Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID));
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_AUTH_OK.name())){
     			loginActivity.setUserLoginPrefs(false);
-    			System.err.println("S_AUTH_OK");
     			context.getSharedPreferences(KatanaConstants.PREFS_LOGIN, Context.MODE_PRIVATE).edit().putInt(
     					KatanaConstants.PLAYER_ID, 
     					Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID))
     					);
     			KatanaService.player_id = Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID));
-    			System.err.println(KatanaService.player_id);
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_REG_NO.name())){
     			Toast.makeText(loginActivity, "Username already exists or wrong password!", Toast.LENGTH_SHORT).show();
     		}
@@ -120,6 +116,13 @@ public class KatanaReceiver extends BroadcastReceiver {
 
 				game.setBackground(background);
 				game.createUnits(unitList);
+			}
+			else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_UPDATE_MOVE.name())) {
+				int id = intent.getIntExtra(KatanaService.EXTRAS_UNITMOVE, 0);
+				float x = intent.getFloatExtra(KatanaService.EXTRAS_UNITMOVE_X, 0.0f);
+				float y = intent.getFloatExtra(KatanaService.EXTRAS_UNITMOVE_Y, 0.0f);
+				
+				game.moveUnit(id, x, y);
 			}
 		}
 	}
