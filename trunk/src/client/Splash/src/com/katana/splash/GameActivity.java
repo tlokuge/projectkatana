@@ -113,7 +113,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private final String RSPELL_FILE = "rspell.png";
 	
 	private final int BITMAP_SQUARE = 2048;
-	private final int BITMAP_STEP = 350;
+	private final int BITMAP_STEP = 512;
 	private final int NUM_ANIMS = 5;
 
 	private Unit player;
@@ -137,9 +137,20 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	{
 		super.onBackPressed();
 		Log.d("CDA", "onBackPressed");
+		System.err.println("onBackPressed");
 		katanaService.sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
-		doUnbindService();
+		doKillService();
 		finish();
+	}
+	
+	public void onPause()
+	{
+		super.onPause();
+		Log.d("CDA", "onPause");
+		System.err.println("onPause");
+		//katanaService.sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
+		//doUnbindService();
+		//finish();
 	}
 	
 	public Engine onLoadEngine() {
@@ -264,22 +275,32 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
     {
     	int bx = bitmap_x;
     	int by = bitmap_y;
-    	System.out.println("file: " + file + " - bx: " + bx + " by: " + by);
+    	Log.d("TEXTURE: ", "file: " + file + " - bx: " + bx + " by: " + by);
     	stepBitmapCoordinates();
-    	System.out.println("bitx: " + bitmap_x + " bity: " + bitmap_y);
+    	Log.d("TEXTURE:", "bitx: " + bitmap_x + " bity: " + bitmap_y);
     	
+    	System.err.println("CREATING TEXTURE: " + file);
     	return BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(mBitmapTextureAtlas, this, file, bx, by, animations, 1);
     }
     
     private void stepBitmapCoordinates()
     {
-    	if((bitmap_x + BITMAP_STEP) > BITMAP_SQUARE)
+    	Log.d("TEXTURE:", "bitmap x: " + bitmap_x);
+    	Log.d("TEXTURE:", "bitmap y: " + bitmap_y);
+    	if((bitmap_x) >= (BITMAP_SQUARE - BITMAP_STEP))
     	{
+    		Log.d("TEXTURE:", "greaterequal");
     		bitmap_x = 0;
     		bitmap_y += BITMAP_STEP;
     	}
     	else
+    	{
     		bitmap_x += BITMAP_STEP;
+    		Log.d("TEXTURE:", "gredsadasda");
+    	}
+
+		Log.d("TEXTURE:", "bitmap x done: " + bitmap_x);
+		Log.d("TEXTURE:", "bitmap y done: " + bitmap_y);
     }
     
     public void createUnits(ArrayList<String> unitList)
@@ -296,6 +317,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
     		
     		try
     		{
+    			System.err.println("Spawning Unit: " + data[0] + " - " + data[1] + " - " + data[2]);
     			Unit u = spawnUnit(Integer.parseInt(data[0].trim()), Integer.parseInt(data[1].trim()), data[2], 0, 0);
     			
     			System.out.println("GameActivity: Created unit[" + u + "]");
