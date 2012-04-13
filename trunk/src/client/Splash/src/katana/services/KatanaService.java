@@ -35,6 +35,10 @@ public class KatanaService extends Service {
 	public static final String EXTRAS_SCORES = "scores";
 	public static final String EXTRAS_GAMEBG = "gameBackground";
 	public static final String EXTRAS_GAMESTART = "gameStart";
+	public static final String EXTRAS_UNITMOVE = "unitMove";
+	public static final String EXTRAS_UNITMOVE_X = "unitMove_x";
+	public static final String EXTRAS_UNITMOVE_Y = "unitMove_y";
+	
 	
 	public static int player_id = 0;
 	
@@ -196,6 +200,7 @@ public class KatanaService extends Service {
     		case S_ROOM_CREATE_NO: break;
     		case S_GAME_START: 	break;
     		case S_GAME_POPULATE: handleGamePopulate(packet, intent); break;
+    		case S_UPDATE_MOVE: handleUpdateMove(packet, intent); break;
     		default: break;
     	}
     	sendBroadcast(intent);
@@ -269,6 +274,15 @@ public class KatanaService extends Service {
 		
 		intent.putExtra(EXTRAS_GAMEBG, lines[0]);
 		intent.putStringArrayListExtra(EXTRAS_GAMESTART, unitList);
+	}
+	
+	private void handleUpdateMove(KatanaPacket packet, Intent intent)
+	{
+		String[] lines = packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR);
+		
+		intent.putExtra(EXTRAS_UNITMOVE, Integer.parseInt(lines[0]));
+		intent.putExtra(EXTRAS_UNITMOVE_X, Float.parseFloat(lines[1]));
+		intent.putExtra(EXTRAS_UNITMOVE_Y, Float.parseFloat(lines[2]));
 	}
 
 	/** For Location Manager */

@@ -48,6 +48,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -130,6 +131,15 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	/**       DO NOT REMOVE        **/
 	protected void onStart() {
 		super.onStart();
+	}
+	
+	public void onBackPressed()
+	{
+		super.onBackPressed();
+		Log.d("CDA", "onBackPressed");
+		katanaService.sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
+		doUnbindService();
+		finish();
 	}
 	
 	public Engine onLoadEngine() {
@@ -222,17 +232,17 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 		
 		userID = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getInt(KatanaService.EXTRAS_PLAYERID, 0);
 		if(userID == 0)
-		{
 			userID = KatanaService.player_id;
-			System.err.println("YAY HACKY");
-		}
-		System.err.println(userID + " USERID");
+		
 		katanaService.sendPacket(new KatanaPacket(Opcode.C_GAME_READY));
         return scene;
     }
     
     public void setBackground(String background)
     {
+    	System.out.println("mBgRegion: " + mBgRegion + " - background: " + background);
+    	if(mBgRegion == null)
+        	mBgRegion = new BitmapTextureAtlas(BITMAP_SQUARE, BITMAP_SQUARE, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
     	mBackground = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBgRegion, this, background, 0, 0);
     	bg = new Sprite(0, 0, mBackground);
     	scene.setBackground(new SpriteBackground(bg));
@@ -620,6 +630,24 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
         	return this.mEngine.getFontManager();
     }
     
+    public void moveUnit(int unit_id, float x, float y)
+    {
+    	if(unit_id <= 0)
+    	{
+    		System.err.println("INVALID ID");
+    		return;
+    	}
+    	
+    	Unit unit = unit_map.get(unit_id);
+    	if(unit == null)
+    	{
+    		System.err.println("INVALID UNIT");
+    		return;
+    	}
+    	
+    	move(unit.getSprite(), x, y);
+    }
+    
     //This move class is for andengine itselfs, not for server uses
     private void move(AnimatedSprite sprite, float dest_spriteX, float dest_spriteY ) {
     	
@@ -704,12 +732,17 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 		@Override
 		public boolean onSingleTapUp(MotionEvent ev) 
 		{
+			float x = ev.getX();
+			float y = ev.getY();
 			Unit user = unit_map.get(userID);
-			System.out.println("userID: " + userID + " - " + user);
 			AnimatedSprite sprite = user.getSprite();
-			System.out.println("Sprite: " + sprite);
 			move(sprite, ev.getX(), ev.getY());
 		
+			KatanaPacket packet = new KatanaPacket(Opcode.C_MOVE);
+			packet.addData(x + "");
+			packet.addData(y + "");
+			katanaService.sendPacket(packet);
+			
 			return true;
 		}
 		

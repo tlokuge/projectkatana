@@ -40,9 +40,7 @@ public abstract class PacketHandler
                 
             case C_GAME_START:  handleGameStartPacket(client, packet);  break;
             case C_GAME_READY:  handleGameReadyPacket(client, packet);  break;
-                
-            case C_MOVE:
-                break;
+            case C_MOVE:        handleGameMovePacket(client, packet);   break;
                 
             case C_SPELL:
                 break;
@@ -630,4 +628,33 @@ public abstract class PacketHandler
         pl.sendPacket(response);
     }
     
+    // x, y
+    public static void handleGameMovePacket(KatanaClient client, KatanaPacket packet)
+    {
+        String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
+        if(data.length < 2)
+        {
+            System.err.println("handleGameMovePacket: Invalid data [" + packet.getData() + "]");
+            return;
+        }
+        
+        Player pl = client.getPlayer();
+        Map instance = KatanaServer.instance().getMap(pl.getMap());
+        if(instance == null)
+        {
+            System.err.println("handleGameMovePacket: Player " + pl + " not in instance");
+            return;
+        }
+        
+        pl.moveTo(Float.parseFloat(data[0]), Float.parseFloat(data[1]));
+        
+        KatanaPacket response = new KatanaPacket(Opcode.S_GAME_UPDATE_MOVE);
+        response.addData(pl.getId() + "");
+        response.addData(data[0]);
+        response.addData(data[1]);
+        
+        for(int i : instance.getPlayers())
+            if(i != pl.getId())
+                KatanaServer.instance().getPlayer(i).sendPacket(response);
+    }
 }
