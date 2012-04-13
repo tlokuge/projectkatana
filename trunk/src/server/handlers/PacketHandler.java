@@ -39,6 +39,7 @@ public abstract class PacketHandler
             case C_LEADERBOARD: handleLeaderboardPacket(client, packet);break;
                 
             case C_GAME_START:  handleGameStartPacket(client, packet);  break;
+            case C_GAME_READY:  handleGameReadyPacket(client, packet);  break;
                 
             case C_MOVE:
                 break;
@@ -265,6 +266,7 @@ public abstract class PacketHandler
         
         lobby.addRoom(new GameRoom(room_id, name, difficulty, max_players, pl));
         
+        System.err.println("Created new room : " + room_id + " - " + name + " - " + difficulty + " - max:" + max_players);
         KatanaPacket response = new KatanaPacket(Opcode.S_ROOM_CREATE_OK);
         response.addData(room_id + "");
         client.sendPacket(response);
@@ -321,6 +323,8 @@ public abstract class PacketHandler
         Player pl = client.getPlayer();
         Lobby lobby = KatanaServer.instance().getLobby(pl.getLocation());
         GameRoom room = lobby.getRoom(room_id);
+        
+        System.err.println("Player " + pl + " attempting to join room " + room);
         if(room == null)
         {
             System.err.println("handleRoomJoinPacket: room id (" + room_id + ") is invalid");
@@ -569,12 +573,6 @@ public abstract class PacketHandler
     public static void handleGameStartPacket(KatanaClient client, KatanaPacket packet)
     {
         Player pl = client.getPlayer();
-        if(!client.getPlayer().isRoomLeader())
-        {
-            System.err.println("Player " + client.getPlayer() + " attempted to start game but is not room leader!");
-            client.sendPacket(new KatanaPacket(Opcode.S_LOGOUT)); // Mwahaha
-            return;
-        }
         
         Lobby lobby = KatanaServer.instance().getLobby(pl.getLocation());
         GameRoom room = lobby.getRoom(pl.getRoom());
@@ -586,22 +584,50 @@ public abstract class PacketHandler
         Map instance = new Map(template.getId(), room.getDifficulty());
         
         KatanaPacket response = new KatanaPacket(Opcode.S_GAME_START);
-        response.addData(instance.getBackground());
         for(int i : room.getPlayers())
         {
             Player p = KatanaServer.instance().getPlayer(i);
             instance.addPlayer(p);
             p.removeFromRoom();
             p.setRoomLeader(false);
-            // TODO: Spawn in specific locations
-            String data = p.getId() + ";" + p.getMaxHealth() + ";" + SQLCache.getModel(p.getModelId()) + ";";
-            response.addData(data);
+            p.addToMap(instance.getGUID());
+            p.sendPacket(response);
         }
-        
+
+        KatanaServer.instance().addMap(instance.getGUID(), instance);
+       
         room.clearPlayers();
         lobby.removeRoom(room.getId());
-        
-        for(int i : room.getPlayers())
-            KatanaServer.instance().getPlayer(i).sendPacket(response);
     }
+    
+    
+    public static void handleGameReadyPacket(KatanaClient client, KatanaPacket packet)
+    {
+        Player pl = client.getPlayer();
+        
+        if(pl.getMap() == -1)
+        {
+            System.err.println("Player " + client.getPlayer() + " sent game ready packet but is not in map!");
+            return;
+        }
+        
+        // map set width/height from camera size
+        Map instance = KatanaServer.instance().getMap(pl.getMap());
+        if(instance == null)
+        {
+            System.err.println("INVALID MAP");
+            return;
+        }
+        
+        KatanaPacket response = new KatanaPacket(Opcode.S_GAME_POPULATE);
+        response.addData(instance.getBackground());
+        for(int i : instance.getPlayers())
+        {
+            Player p = KatanaServer.instance().getPlayer(i);
+            response.addData(p.getId() + ";" + p.getMaxHealth() + ";" + SQLCache.getModel(p.getModelId()) + ";");
+        }
+        
+        pl.sendPacket(response);
+    }
+    
 }
