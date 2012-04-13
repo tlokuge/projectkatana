@@ -191,12 +191,6 @@ public class LobbyActivity extends Activity {
 		katanaService.sendPacket(packet);
     }
     
-    public void waitingRoomStartGame(View view) {
-    	KatanaPacket packet = new KatanaPacket(Opcode.C_GAME_START);
-    	katanaService.sendPacket(packet);
-    	katanaReceiver.startMyActivity(this, GameActivity.class);
-    }
-    
     /** Lobby Methods */
 	public void lobbyShowRooms(String locName, ArrayList<String> al){
 		lobby_roomList = new ArrayList<Room>();
@@ -224,7 +218,7 @@ public class LobbyActivity extends Activity {
 	public void lobbySendCreateRequest(){
 		String name = client_gamePrefs.getString(KatanaConstants.GAME_NAME, KatanaConstants.DEF_ROOMNAME);
 		int diff = client_gamePrefs.getInt(KatanaConstants.GAME_DIFF, KatanaConstants.DEF_ROOMDIFF);
-		int maxp = client_gamePrefs.getInt(KatanaConstants.GAME_DIFF, KatanaConstants.DEF_ROOMMAXP);
+		int maxp = client_gamePrefs.getInt(KatanaConstants.GAME_MAXP, KatanaConstants.DEF_ROOMMAXP);
 		int classid = client_gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1);
 		
 		lobby_selectedRoom = new Room(-1, name, diff, maxp);
@@ -333,7 +327,13 @@ public class LobbyActivity extends Activity {
 		room_playerGridView.setAdapter(new PlayerListAdapter(this, room_playerList));
 	}
 	
-    /** Show Dialog Methods */
+    public void waitingRoomStartGame(View view) {
+		KatanaPacket packet = new KatanaPacket(Opcode.C_GAME_START);
+		katanaService.sendPacket(packet);
+		katanaReceiver.startMyActivity(this, GameActivity.class);
+	}
+
+	/** Show Dialog Methods */
     public void showSelectClassDialog() {
     	SelectClassDialog dialog = new SelectClassDialog(this, R.style.DialogTheme);
     	dialog.show();

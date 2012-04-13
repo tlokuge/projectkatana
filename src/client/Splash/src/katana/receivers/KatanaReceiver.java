@@ -3,6 +3,7 @@ package katana.receivers;
 import java.util.ArrayList;
 
 import katana.services.KatanaService;
+import katana.shared.KatanaConstants;
 import katana.shared.Opcode;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -26,6 +27,13 @@ public class KatanaReceiver extends BroadcastReceiver {
 			// SplashActivity
     		if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_AUTH_OK.name())){
     			startMyActivity(context, LobbyActivity.class);
+    			System.err.println("S_AUTH_OK from SPLASH");
+    			context.getSharedPreferences(KatanaConstants.PREFS_LOGIN, Context.MODE_PRIVATE).edit().putInt(
+    					KatanaConstants.PLAYER_ID, 
+    					Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID))
+    					);
+    			
+    			KatanaService.player_id = Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID));
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_AUTH_NO.name())){
     			startMyActivity(context, LoginActivity.class);
     		} 
@@ -35,11 +43,25 @@ public class KatanaReceiver extends BroadcastReceiver {
 			if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_REG_OK.name())){
     			// Registered new user on server    			
     			loginActivity.setUserLoginPrefs(true);
+    			System.err.println("S_REG_OK");
+    			context.getSharedPreferences(KatanaConstants.PREFS_LOGIN, Context.MODE_PRIVATE).edit().putInt(
+    					KatanaConstants.PLAYER_ID, 
+    					Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID))
+    					);
+    			
+    			KatanaService.player_id = Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID));
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_AUTH_OK.name())){
     			loginActivity.setUserLoginPrefs(false);
+    			System.err.println("S_AUTH_OK");
+    			context.getSharedPreferences(KatanaConstants.PREFS_LOGIN, Context.MODE_PRIVATE).edit().putInt(
+    					KatanaConstants.PLAYER_ID, 
+    					Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID))
+    					);
+    			KatanaService.player_id = Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID));
+    			System.err.println(KatanaService.player_id);
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_REG_NO.name())){
     			Toast.makeText(loginActivity, "Username already exists or wrong password!", Toast.LENGTH_SHORT).show();
-    		} 
+    		}
 		} else if(mode == 2) {
 			// LobbyActivity
 			LobbyActivity lobby = (LobbyActivity) context;
@@ -84,16 +106,20 @@ public class KatanaReceiver extends BroadcastReceiver {
     			lobby.setLeaderboardScores(intent.getStringExtra(KatanaService.EXTRAS_SCORES));
     			lobby.showLeaderboardDialog();
     		}
+    		else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_START.name())) {
+    			startMyActivity(context, GameActivity.class);
+    		}
 		} else if(mode == 3) {
 			// GameActivity
 			GameActivity game = (GameActivity) context;
 			// Instantiate in onEngineStart() using 
 			//		private KatanaReceiver katanaReceiver = new KatanaReceiver(3);
-			if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_START.name())) { 
+			if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_POPULATE.name())) { 
 				String background = intent.getStringExtra(KatanaService.EXTRAS_GAMEBG);
 				ArrayList<String> unitList = intent.getStringArrayListExtra(KatanaService.EXTRAS_GAMESTART);
-				
+
 				game.setBackground(background);
+				game.createUnits(unitList);
 			}
 		}
 	}

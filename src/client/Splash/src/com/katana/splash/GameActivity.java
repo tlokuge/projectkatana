@@ -12,6 +12,9 @@ import katana.receivers.KatanaReceiver;
 import katana.receivers.LocationReceiver;
 import katana.services.KatanaService;
 import katana.services.KatanaService.KatanaSBinder;
+import katana.shared.KatanaConstants;
+import katana.shared.KatanaPacket;
+import katana.shared.Opcode;
 
 import org.anddev.andengine.engine.Engine;
 import org.anddev.andengine.engine.camera.Camera;
@@ -41,6 +44,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.IBinder;
@@ -101,17 +105,37 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	GestureDetector mGestureDetector;
 	ChangeableText healthText;
 	
-	Unit player;
+	private final String BASE_PATH = "gfx/";
+	private final String USPELL_FILE = "uspell.png";
+	private final String DSPELL_FILE = "dspell.png";
+	private final String LSPELL_FILE = "lspell.png";
+	private final String RSPELL_FILE = "rspell.png";
+	
+	private final int BITMAP_SQUARE = 2048;
+	private final int BITMAP_STEP = 350;
+	private final int NUM_ANIMS = 5;
+
+	private Unit player;
+	private Unit selected;
 	private HashMap<Integer, Unit> unit_map = new HashMap<Integer, Unit>();
+	private int bitmap_x = 0;
+	private int bitmap_y = 0;
 	
 	AnimatedSprite user;
 	int userID;
 	boolean playerSelected;
 	private int health=5000;
-        
+       
+	/** ANDROID ACTIVITY LIFECYCLE **/
+	/**       DO NOT REMOVE        **/
+	protected void onStart() {
+		super.onStart();
+	}
+	
 	public Engine onLoadEngine() {
 		
 		doBindService();
+		System.out.println("onLoadEngine: " + katanaService);
 		
 		final Display display = getWindowManager().getDefaultDisplay();
 		cameraWidth = display.getWidth();
@@ -131,13 +155,26 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
         this.mEngine.getTextureManager().loadTexture(this.mFontTexture);
         this.getFontManager().loadFont(this.mFont);
         
-        loadBitmaps();
+        loadStaticBitmaps();
         
         this.mEngine.getTextureManager().loadTexture(this.mBgRegion);
         this.mEngine.getTextureManager().loadTexture(this.mBitmapTextureAtlas);
     }
     
-    public void loadBitmaps(){
+    public void loadStaticBitmaps()
+    {
+    	BitmapTextureAtlasTextureRegionFactory.setAssetBasePath(BASE_PATH);
+    	
+    	mBitmapTextureAtlas = new BitmapTextureAtlas(BITMAP_SQUARE, BITMAP_SQUARE, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+    	mBgRegion = new BitmapTextureAtlas(BITMAP_SQUARE, BITMAP_SQUARE, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+    	
+    	uSpellTextureRegion = createTexture(USPELL_FILE, 1);
+    	dSpellTextureRegion = createTexture(DSPELL_FILE, 1);
+    	lSpellTextureRegion = createTexture(LSPELL_FILE, 1);
+    	rSpellTextureRegion = createTexture(RSPELL_FILE, 1);
+    }
+    
+  /*  public void loadBitmaps(){
         BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
         
     	this.mBitmapTextureAtlas = new BitmapTextureAtlas(2048, 2048, TextureOptions.BILINEAR_PREMULTIPLYALPHA );
@@ -157,7 +194,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
         this.mMonster1TextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "monster1.png", 0, 0, 1, 1);
         this.mMonster2TextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "monster2.png", 0, 600, 1, 1);
         this.mMonster3TextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "monster3.png", 0, 1000, 1, 1);
-    }
+    }*/
     
     public Scene onLoadScene() {
         //setting up screen here
@@ -167,29 +204,40 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
         scene.setBackgroundEnabled(true);
         
         //testing method, will be erase when linked with server
-        loadBackground(1);
+        /*loadBackground(1);
         createUserChar(1, 1, 5000, 100, 100);
         createTeammate(2, 2, 5000, 100, 400);
     
         createMonster(3, 1, 9000, 600, 200);
-        createMonster(4, 2, 2000, 500, 200);
+        createMonster(4, 2, 2000, 500, 200);*/
         loadSpellDisplay();
         load_HPdisplay();
         
-        move_Entity(2, 400, 200);
         //testing method ends
         
         //initialize gesture detector
         mGestureDetector = new GestureDetector(this, new myGestureListener());
         //scene.setTouchAreaBindingEnabled(true); 
+
+		
+		userID = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getInt(KatanaService.EXTRAS_PLAYERID, 0);
+		if(userID == 0)
+		{
+			userID = KatanaService.player_id;
+			System.err.println("YAY HACKY");
+		}
+		System.err.println(userID + " USERID");
+		katanaService.sendPacket(new KatanaPacket(Opcode.C_GAME_READY));
         return scene;
     }
     
     public void setBackground(String background)
     {
-    	mBackground = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBgRegion, this,background, 0, 0);
+    	mBackground = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBgRegion, this, background, 0, 0);
     	bg = new Sprite(0, 0, mBackground);
     	scene.setBackground(new SpriteBackground(bg));
+    	
+    	System.out.println("Setting background to " + background);
     }
     
     //setup background of the game base on location
@@ -202,16 +250,79 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
         scene.setBackground(new SpriteBackground(bg));
     }
     
-    private TiledTextureRegion createTexture(final String file, final int pos_x, final int pos_y, final int cols, final int rows)
+    private TiledTextureRegion createTexture(final String file, int animations)
     {
-    	return BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(mBitmapTextureAtlas, this, file, pos_x, pos_y, cols, rows);
+    	int bx = bitmap_x;
+    	int by = bitmap_y;
+    	System.out.println("file: " + file + " - bx: " + bx + " by: " + by);
+    	stepBitmapCoordinates();
+    	System.out.println("bitx: " + bitmap_x + " bity: " + bitmap_y);
+    	
+    	return BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(mBitmapTextureAtlas, this, file, bx, by, animations, 1);
+    }
+    
+    private void stepBitmapCoordinates()
+    {
+    	if((bitmap_x + BITMAP_STEP) > BITMAP_SQUARE)
+    	{
+    		bitmap_x = 0;
+    		bitmap_y += BITMAP_STEP;
+    	}
+    	else
+    		bitmap_x += BITMAP_STEP;
+    }
+    
+    public void createUnits(ArrayList<String> unitList)
+    {
+    	// id, health, model
+    	for(String unit_str : unitList)
+    	{
+    		String[] data = unit_str.split(";");
+    		if(data.length < 3)
+    		{
+    			System.err.println("GameActivity: Received invalid unit data string: '" + unit_str + "'");
+    			continue;
+    		}
+    		
+    		try
+    		{
+    			Unit u = spawnUnit(Integer.parseInt(data[0].trim()), Integer.parseInt(data[1].trim()), data[2], 0, 0);
+    			
+    			System.out.println("GameActivity: Created unit[" + u + "]");
+    		}
+    		catch(NumberFormatException ex)
+    		{
+    			System.err.println("GameActivity: " + ex.getLocalizedMessage());
+    		}
+    	}
     }
     
     public Unit spawnUnit(int id, int health, String model_name, int pos_x, int pos_y)
     {
-    	TiledTextureRegion texture = createTexture(model_name, pos_x, pos_y, 5, 1);
-    	AnimatedSprite model = new AnimatedSprite((float)pos_x, (float)pos_y, texture);
-    	return new Unit(id, health, model, new HPBar(0, 0, model.getWidth(), 2, model));
+    	TiledTextureRegion texture = createTexture(model_name, NUM_ANIMS);
+    	final Unit unit = new Unit(id, health);
+    	AnimatedSprite model = new AnimatedSprite((float)pos_x, (float)pos_y, texture)
+    	{
+    		@Override
+			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,	final float local_x, final float local_y) 
+    		{
+				if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN)
+				{
+					selected = unit;
+					return true;
+				}
+				return false;
+			}
+		};
+		
+		unit.setModel(model);
+		model.setScale(1);
+		scene.attachChild(model);
+		scene.registerTouchArea(model);
+		
+		unit_map.put(id, unit);
+		
+    	return unit;
     }
     
     //creating player himself
@@ -478,31 +589,19 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
         }
     }
     //load up spell display
-    public void loadSpellDisplay(){
-    	for(int i=0;i<EntityList.size();i++){
-        	if(EntityList.get(i).getCharID()==userID){
-        		if(((PlayerEntity) EntityList.get(i)).getPlayerClass()==1){
-        			lspell = new AnimatedSprite(cameraWidth-50, 100, this.lSpellTextureRegion);
-        	        dspell = new AnimatedSprite(cameraWidth-50, 175, this.dSpellTextureRegion);
-        	        uspell = new AnimatedSprite(cameraWidth-50, 250, this.uSpellTextureRegion);
-        	        rspell = new AnimatedSprite(cameraWidth-50, 325, this.rSpellTextureRegion);
-        		}
-        		else{
-        			lspell = new AnimatedSprite(cameraWidth-50, 100, this.lSpellTextureRegion);
-        	        dspell = new AnimatedSprite(cameraWidth-50, 175, this.dSpellTextureRegion);
-        	        uspell = new AnimatedSprite(cameraWidth-50, 250, this.uSpellTextureRegion);
-        	        rspell = new AnimatedSprite(cameraWidth-50, 325, this.rSpellTextureRegion);
-        		}
-        		scene.attachChild(lspell);
-                scene.attachChild(rspell);
-                scene.attachChild(uspell);
-                scene.attachChild(dspell);
-                break;
-        			
-        	}		
-        }
+    public void loadSpellDisplay()
+	{
+    	uspell = new AnimatedSprite(cameraWidth - 50, 250, uSpellTextureRegion);
+    	dspell = new AnimatedSprite(cameraWidth - 50, 175, dSpellTextureRegion);
+    	lspell = new AnimatedSprite(cameraWidth - 50, 100, lSpellTextureRegion);
+    	rspell = new AnimatedSprite(cameraWidth - 50, 325, rSpellTextureRegion);
     	
+		scene.attachChild(lspell);
+	    scene.attachChild(rspell);
+	    scene.attachChild(uspell);
+	    scene.attachChild(dspell);    	
     }
+    
     //load up HP display
     public void load_HPdisplay(){	
     	healthText = new ChangeableText(cameraWidth-75, 30, this.mFont, "5000", "XXXX".length());
@@ -603,12 +702,14 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	//Gesture class
 	class myGestureListener extends GestureDetector.SimpleOnGestureListener {
 		@Override
-		public boolean onSingleTapUp(MotionEvent ev) {
-			
-			float dest_X=ev.getX();
-			float dest_Y=ev.getY();
+		public boolean onSingleTapUp(MotionEvent ev) 
+		{
+			Unit user = unit_map.get(userID);
+			System.out.println("userID: " + userID + " - " + user);
+			AnimatedSprite sprite = user.getSprite();
+			System.out.println("Sprite: " + sprite);
+			move(sprite, ev.getX(), ev.getY());
 		
-			move(user,dest_X, dest_Y);
 			return true;
 		}
 		
@@ -727,16 +828,14 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
     // --------------------------------------------------- //
     private KatanaService katanaService;
     private KatanaReceiver katanaReceiver;
-    private LocationReceiver katanaLocReceiver;
     private boolean serviceBound;
     
 	private void doBindService() {
+		System.err.println("doBindService");
 	    katanaReceiver = new KatanaReceiver(3);
-	    katanaLocReceiver = new LocationReceiver();
 	    Intent intent = new Intent(this,KatanaService.class);
 	    bindService(intent, katanaConnection, Context.BIND_AUTO_CREATE);
 	    registerReceiver(katanaReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
-	    registerReceiver(katanaLocReceiver, new IntentFilter(KatanaService.BROADCAST_LOCATION));
 	}
 	
 	private void doUnbindService() {
@@ -744,7 +843,6 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	        // Detach our existing connection and broadcast receiver
 	        unbindService(katanaConnection);
 	        unregisterReceiver(katanaReceiver);
-	        unregisterReceiver(katanaLocReceiver);
 	        serviceBound = false;
 	    }
 	}
@@ -753,7 +851,6 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	    private void doKillService() {
 	    unbindService(katanaConnection);
 	    unregisterReceiver(katanaReceiver);
-	    unregisterReceiver(katanaLocReceiver);
 	    stopService(new Intent(this, KatanaService.class));
 	    serviceBound = false;
 	}
@@ -764,6 +861,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	        KatanaSBinder binder = (KatanaSBinder) service;
 	        katanaService = binder.getService();
 	        serviceBound = true;
+	        System.err.println("onServiceConnected: " + katanaService);
 	    }
 	
 	    @Override

@@ -36,6 +36,8 @@ public class KatanaService extends Service {
 	public static final String EXTRAS_GAMEBG = "gameBackground";
 	public static final String EXTRAS_GAMESTART = "gameStart";
 	
+	public static int player_id = 0;
+	
 	private final IBinder mBinder = new KatanaSBinder();
 	
 	private Socket socket;
@@ -85,11 +87,11 @@ public class KatanaService extends Service {
 			return;
 		try	{
 			System.out.println("Sending Packet: " + packet.getOpcode().name());
-			/*
+			
 			System.out.println("Packet Content: ");
 			System.out.println(packet);
 			System.out.println("** EndPacket **");
-			*/
+			
 			OutputStream out = socket.getOutputStream();
 			out.write(packet.convertToBytes());
 			out.flush();
@@ -171,12 +173,15 @@ public class KatanaService extends Service {
     	Intent intent = new Intent(BROADCAST_ACTION);
     	intent.putExtra(OPCODE, packet.getOpcode().name());
     	System.out.println("Received packet: " + packet.getOpcode().name());
+    	System.out.println("Packet Content: ");
+		System.out.println(packet);
+		System.out.println("** EndPacket **");
     	
     	switch(packet.getOpcode()) {
     		case S_LOGOUT: 		handleLogout(); break;
     		case S_PING: 		handlePing(); break;
     		case S_REG_NO: 
-    		case S_REG_OK: 		handleRegisterOk(packet);
+    		case S_REG_OK:
     		case S_AUTH_NO: 
     		case S_AUTH_OK: 	handleRegisterLoginReply(packet, intent); break;
     		case S_LEADERBOARD: handleLeaderboardReply(packet, intent); break;
@@ -189,7 +194,8 @@ public class KatanaService extends Service {
     		case S_ROOM_DESTROY:
     		case S_ROOM_JOIN_NO:
     		case S_ROOM_CREATE_NO: break;
-    		case S_GAME_START: 	handleGameStart(packet, intent); break;
+    		case S_GAME_START: 	break;
+    		case S_GAME_POPULATE: handleGamePopulate(packet, intent); break;
     		default: break;
     	}
     	sendBroadcast(intent);
@@ -204,13 +210,6 @@ public class KatanaService extends Service {
 	
 	private void handlePing() {
 		sendPacket(new KatanaPacket(Opcode.C_PONG)); 
-	}
-	
-	private void handleRegisterOk(KatanaPacket packet) {
-		getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).edit().putInt(
-				KatanaConstants.PLAYER_ID, 
-				Integer.parseInt(packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR)[0])
-				);
 	}
 	
 	private void handleRegisterLoginReply(KatanaPacket packet, Intent intent){
@@ -262,7 +261,7 @@ public class KatanaService extends Service {
 		intent.putExtra(EXTRAS_PLAYERCLASS, Integer.parseInt(lines[1]));
 	}
 	
-	private void handleGameStart(KatanaPacket packet, Intent intent) {
+	private void handleGamePopulate(KatanaPacket packet, Intent intent) {
 		String[] lines = packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR);
 		ArrayList<String> unitList = new ArrayList<String>();
 		for(int i = 1; i < lines.length; ++i)

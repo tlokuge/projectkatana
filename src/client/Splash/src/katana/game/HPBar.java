@@ -34,6 +34,16 @@ public class HPBar extends HUD {
 
 		this.mPixelsPerPercentRatio = pWidth / 5000;
 	}
+	
+	public static HPBar createDefaultHPBar(AnimatedSprite sprite, int health)
+	{
+		HPBar pHP = new HPBar(0, 0, sprite.getWidth(), 2, sprite);
+    	pHP.setBackColor(0, 0, 0, 1f);
+        pHP.setHPColor(0, 1f, 0, 1f);
+        pHP.setHP(health);
+        
+        return pHP;
+	}
 
 	// ===========================================================
 	// Getter & Setter
