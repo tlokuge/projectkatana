@@ -28,8 +28,8 @@ public class Lobby
         
         this.nextRoomId = 0;
         
-        players = new ArrayList<>();
-        rooms   = new HashMap<>();
+        players = new ArrayList<Integer>();
+        rooms   = new HashMap<Integer, GameRoom>();
     }
     
     public int getLocationId()    { return id; }

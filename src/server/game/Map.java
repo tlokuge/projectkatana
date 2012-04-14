@@ -1,12 +1,13 @@
 package server.game;
 
-import server.utils.SQLCache;
-import server.templates.MapTemplate;
-import server.communication.KatanaServer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
+import server.handlers.GameHandler;
 import server.shared.KatanaPacket;
 import server.shared.Opcode;
+import server.templates.MapTemplate;
+import server.utils.SQLCache;
 
 public class Map
 {
@@ -39,12 +40,37 @@ public class Map
         this.name        = template.getName();
         this.background  = template.getBackground();
         
-        this.player_list  = new ArrayList<>();
-        this.creature_map = new HashMap<>();
+        this.player_list  = new ArrayList<Integer>();
+        this.creature_map = new HashMap<Integer, Creature>();
         
         this.ready = false;
         
-        interval = UPDATE_INTERVAL*5;
+        interval = UPDATE_INTERVAL*2;
+        
+        spawnRandomCreatureFromTemplate(template);
+    }
+    
+    public void spawnRandomCreatureFromTemplate(MapTemplate template)
+    {
+        if(template == null)
+            return;
+        
+        ArrayList<Integer> entries = template.getCreatureEntries();
+        if(entries == null || entries.isEmpty())
+            return;
+        
+        int creature_id = entries.get(new Random(System.currentTimeMillis()).nextInt(entries.size()));
+        
+        Creature creature = new Creature(creature_id);
+        if(creature != null)
+        {
+            System.err.println("Spawned creature: " + creature);
+            creature_map.put(creature.getGUID(), creature);
+            creature.moveTo(50, 50);
+            creature.addToMap(guid);
+        }
+        
+        System.err.println("dshjadsk");
     }
     
     public static int getNextMapGUID() { return NEXT_MAP_GUID++; }
@@ -58,12 +84,23 @@ public class Map
     public void ready()             { this.ready = true; }
     
     public void addPlayer(Player pl) { player_list.add(pl.getId()); }
+    public void removePlayer(int pid)
+    {
+        player_list.remove(pid);
+        if(player_list.isEmpty())
+        {
+            creature_map.clear();
+            GameHandler.instance().removeMap(guid);
+        }
+    }
+    
     public ArrayList<Integer> getPlayers() { return player_list; }
     
-    public Creature spawnCreature(int id)
+    public Creature spawnCreature(int cid)
     {
-        Creature creature = new Creature(id);
+        Creature creature = new Creature(cid);
         creature_map.put(creature.getGUID(), creature);
+        creature.addToMap(guid);
         return creature;
     }
     
@@ -72,9 +109,9 @@ public class Map
         if(!ready)
             return;
         
-        for(int id : player_list)
+        for(int pid : player_list)
         {
-            Player p = KatanaServer.instance().getPlayer(id);
+            Player p = GameHandler.instance().getPlayer(pid);
             if(p != null)
                 p.update(diff);
         }
@@ -83,11 +120,10 @@ public class Map
         {
             sendSyncPacket();
             interval = UPDATE_INTERVAL;
-            System.err.println("Interval: " + interval + " diff: " + diff);
         }else interval -= diff;
         
-        for(int id : creature_map.keySet())
-            creature_map.get(id).update(diff);
+        for(int cid : creature_map.keySet())
+            creature_map.get(cid).update(diff);
     }
     
     public void broadcastPacketToAll(KatanaPacket packet, int ignore_player_id)
@@ -100,7 +136,7 @@ public class Map
         
         for(int pid : player_list)
         {
-            Player p = KatanaServer.instance().getPlayer(pid);
+            Player p = GameHandler.instance().getPlayer(pid);
             if(p != null && pid != ignore_player_id)
                 p.sendPacket(packet);
         }
@@ -112,7 +148,7 @@ public class Map
         
         for(int pid : player_list)
         {
-            Player p = KatanaServer.instance().getPlayer(pid);
+            Player p = GameHandler.instance().getPlayer(pid);
             if(p != null)
                 packet.addData(p.getId() + ";" + 
                         p.getHealth() + ";" + p.getMaxHealth() + ";" + 

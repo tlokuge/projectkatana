@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import server.game.Player;
+import server.handlers.GameHandler;
 import server.handlers.PacketHandler;
 import server.limbo.Lobby;
 import server.shared.Constants;
@@ -72,13 +73,13 @@ public class KatanaClient implements Runnable
                 {
                     if(player.isRoomLeader())
                     {
-                        Lobby lobby = KatanaServer.instance().getLobby(player.getLocation());
+                        Lobby lobby = GameHandler.instance().getLobby(player.getLocation());
                         PacketHandler.destroyRoom(lobby, lobby.getRoom(player.getRoom()));
                     }
                     else
                         PacketHandler.handleRoomLeavePacket(this);
                 }
-                KatanaServer.instance().removePlayer(id);
+                GameHandler.instance().removePlayer(id);
             }
             
             client.close();
@@ -137,6 +138,7 @@ public class KatanaClient implements Runnable
         {
             remove(true);
             System.err.println("KatanaClient " + id + " - received " + ex.getLocalizedMessage() + ". Disconnecting");
+            ex.printStackTrace();
         }
     }
     

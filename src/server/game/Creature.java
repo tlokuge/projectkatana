@@ -1,8 +1,8 @@
 package server.game;
 
 import server.handlers.AIHandler;
-import server.utils.SQLCache;
 import server.templates.CreatureTemplate;
+import server.utils.SQLCache;
 
 public class Creature extends Unit
 {

@@ -2,13 +2,7 @@ package server.communication;
 
 import java.net.ServerSocket;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
 import server.utils.KatanaError;
-import server.limbo.Lobby;
-import server.game.Map;
-import server.game.Player;
-import server.utils.SQLCache;
 
 public class KatanaServer implements Runnable
 {
@@ -17,10 +11,6 @@ public class KatanaServer implements Runnable
     private Thread thread;
     
     private ArrayList<KatanaClient> waitingClients;
-    private HashMap<Integer, Player> players;
-    private HashMap<Integer, Lobby> lobbies;
-    private HashMap<Integer, Map> maps;
-    
     private static KatanaServer instance;
     
     private KatanaServer(int port)
@@ -29,15 +19,10 @@ public class KatanaServer implements Runnable
         this.port = port;
         
         waitingClients = new ArrayList<KatanaClient>();
-        players        = new HashMap<Integer, Player>();
-        lobbies        = new HashMap<Integer, Lobby>();
-        maps           = new HashMap<Integer, Map>();
         
         thread = new Thread(this, "KatanaServer-Thread");
         thread.start();
     }
-    
-    public void loadCache()    { SQLCache.createCache(); }
     
     public void listenLoop()
     {
@@ -101,23 +86,7 @@ public class KatanaServer implements Runnable
     
     public void addWaitingClient(KatanaClient client)       { waitingClients.add(client); }
     public void removeWaitingClient(KatanaClient client)    { waitingClients.remove(client); }
-    public ArrayList<KatanaClient> getWaitingClients() { return waitingClients; }
-    
-    public void addPlayer(int id, Player player){ if(!containsPlayer(id)) players.put(id, player); }
-    public Player getPlayer(int id)             { return players.get(id); }
-    public boolean containsPlayer(Player p)     { return containsPlayer(p.getId()); }
-    public boolean containsPlayer(int id)       { return players.containsKey(id); }
-    public void removePlayer(int id)            { players.remove(id); }
-    public HashMap<Integer, Player> getPlayers(){ return players; }
-    
-    public void addLobby(int id, Lobby lobby)   { lobbies.put(id, lobby); }
-    public Lobby getLobby(int id)               { return lobbies.get(id); }
-    public HashMap<Integer, Lobby> getLobbies() { return lobbies; }
-    public Set<Integer> getLocationIDs()        { return lobbies.keySet(); }
-    
-    public void addMap(int id, Map map)         { maps.put(id, map); }
-    public Map getMap(int id)                   { return maps.get(id); }
-    public HashMap<Integer, Map> getMaps()      { return maps; }
+    public ArrayList<KatanaClient> getWaitingClients()      { return waitingClients; }
     
     public int getPort() { return port; }
 }

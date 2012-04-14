@@ -13,7 +13,7 @@ public class AIHandler
     
     private AIHandler()
     {
-        ai_map = new HashMap<>();
+        ai_map = new HashMap<String, CreatureAI>();
         loadAI();
     }
     
