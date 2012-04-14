@@ -376,7 +376,7 @@ public class LobbyActivity extends Activity {
 				lobby_selectedRoom = (Room) lobby_roomList.get(position);
 				if(lastSelected.getId() == lobby_selectedRoom.getId()) {
 					// Try to join the room
-					lobbySendJoinRequest();
+					showSelectClassDialog();
 				} 
 			}
 		}

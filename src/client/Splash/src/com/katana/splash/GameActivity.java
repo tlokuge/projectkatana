@@ -280,6 +280,11 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
     	Log.d("TEXTURE:", "bitx: " + bitmap_x + " bity: " + bitmap_y);
     	
     	System.err.println("CREATING TEXTURE: " + file);
+    	
+    	if(file.equalsIgnoreCase("attack.png") || file.equalsIgnoreCase("healer.png") || file.equalsIgnoreCase("eggy.png"))
+    		animations = NUM_ANIMS;
+    	else
+    		animations = 1;
     	return BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(mBitmapTextureAtlas, this, file, bx, by, animations, 1);
     }
     
@@ -309,7 +314,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
     	for(String unit_str : unitList)
     	{
     		String[] data = unit_str.split(";");
-    		if(data.length < 3)
+    		if(data.length < 6)
     		{
     			System.err.println("GameActivity: Received invalid unit data string: '" + unit_str + "'");
     			continue;
@@ -328,12 +333,18 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
     			{
     				u.setHealth(cur_health);
     				u.setMaxHealth(max_health);
-    				u.moveTo(x, y);
     				if(!u.getModelName().equalsIgnoreCase(model_name))
     				{
     					TiledTextureRegion texture = createTexture(model_name, NUM_ANIMS);
     					AnimatedSprite model = createSprite(x, y, texture, u);
     					u.setModel(model, model_name);
+    				}
+    				float oldx = u.getX();
+    				float oldy = u.getY();
+    				if(oldx != x && oldy != y)
+    				{
+    					u.moveTo(x, y);
+    					u.getSprite().setPosition(x,  y);
     				}
     				unit_map.put(id, u);
     			}
@@ -694,6 +705,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
     		return;
     	}
     	
+    	unit.moveTo(x, y);
     	move(unit.getSprite(), x, y);
     }
     

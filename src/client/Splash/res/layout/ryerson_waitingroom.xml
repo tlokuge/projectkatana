@@ -21,7 +21,7 @@
 	    android:layout_alignParentTop="true"
 	    android:layout_alignParentRight="true"
 	    android:contentDescription="@string/b_create"
-		android:background="@drawable/ryerson_cr"
+		android:background="@drawable/ryerson_st"
 		
 	    android:onClick="waitingRoomStartGame"/>
     
