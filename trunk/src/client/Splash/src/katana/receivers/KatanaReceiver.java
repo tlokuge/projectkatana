@@ -113,13 +113,7 @@ public class KatanaReceiver extends BroadcastReceiver {
 		} else if(mode == 3) {
 			// GameActivity
 			GameActivity game = (GameActivity) context;
-			// Instantiate in onEngineStart() using 
-			//		private KatanaReceiver katanaReceiver = new KatanaReceiver(3);
-			if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_POPULATE.name())) {
-				//game.setBackground(intent.getStringExtra(KatanaService.EXTRAS_GAMEBG));
-				//game.updateUnits(intent.getStringArrayListExtra(KatanaService.EXTRAS_GAMESTART));
-			}
-			else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_UPDATE_MOVE.name())) {
+			if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_UPDATE_MOVE.name())) {
 				int id = intent.getIntExtra(KatanaService.EXTRAS_UNITMOVE, 0);
 				float x = intent.getFloatExtra(KatanaService.EXTRAS_UNITMOVE_X, 0.0f);
 				float y = intent.getFloatExtra(KatanaService.EXTRAS_UNITMOVE_Y, 0.0f);
@@ -135,7 +129,6 @@ public class KatanaReceiver extends BroadcastReceiver {
 		intent.setClass(context, myClass);
 		if(myBundle != null)
 			intent.putExtras(myBundle);
-		System.out.println("Class: " + myClass + " Bundle: " + myBundle);
 		context.startActivity(intent);
 	}
 }
