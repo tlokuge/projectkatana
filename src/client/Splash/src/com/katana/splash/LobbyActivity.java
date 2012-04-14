@@ -234,30 +234,23 @@ public class LobbyActivity extends Activity {
 		packet.addData(classid + "");
 		katanaService.sendPacket(packet);
 	}
-	
-	// TODO: Condense these two functions into one!
-	public void lobbyJoinCreatedRoom() {
+
+	public void lobbyTransitionToWaitingRoom(Room selected){
 		client_inRoom = true;
-		client_roomLeader = true;
-		waitingRoomShowPlayers(new ArrayList<String>());
-		String name = client_gamePrefs.getString(KatanaConstants.GAME_NAME, KatanaConstants.DEF_ROOMNAME);
+		String name;
+		if(client_roomLeader) {
+			waitingRoomShowPlayers(new ArrayList<String>());
+			name = client_gamePrefs.getString(KatanaConstants.GAME_NAME, KatanaConstants.DEF_ROOMNAME);
+		} else {
+			name = selected.getName();
+		}
 		
 		TextView room_gameName = (TextView)findViewById(R.id.l_wroomname);
 		room_gameName.setTypeface(font);
 		room_gameName.setText(name);
 		transitionToWaitingRoom();
-	}
-	
-	public void lobbyTransitionToWaitingRoom(Room selected){
-		client_inRoom = true;
-		
-		TextView room_gameName = (TextView)findViewById(R.id.l_wroomname);
-		room_gameName.setTypeface(font);
-		room_gameName.setText(selected.getName());
-		transitionToWaitingRoom();
 		lobby_selectedRoom = null;
 	}
-	// END TODO
 	
 	/** Waiting room methods */
 	public void waitingRoomShowPlayers(ArrayList<String> al) {
@@ -290,10 +283,8 @@ public class LobbyActivity extends Activity {
     	waitingRoomUpdatePlayers();
     }
     
-    public void waitingRoomAddPlayer(Intent intent){
-    	String s = intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME);
+    public void waitingRoomAddPlayer(String lines[]){
     	int ref = room_playerList.size();
-    	String lines[] = s.split(";");
     	room_playerRef.put(Integer.parseInt(lines[0]), ref);
     	room_playerList.add(new Player(Integer.parseInt(lines[0]),lines[1],Integer.parseInt(lines[2])));
     	waitingRoomUpdatePlayers();

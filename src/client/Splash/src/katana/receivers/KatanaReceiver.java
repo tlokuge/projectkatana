@@ -74,14 +74,16 @@ public class KatanaReceiver extends BroadcastReceiver {
     		} else if (intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_JOIN_NO.name())) {
     			Toast.makeText(lobby, "You cant join this room.", Toast.LENGTH_SHORT).show();
     		} else if (intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_PLAYER_JOIN.name())) {
-    			lobby.waitingRoomAddPlayer(intent);
+    			String s = intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME);
+    	    	String lines[] = s.split(";");
+    			lobby.waitingRoomAddPlayer(lines);
     		} else if (intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_PLAYER_LEAVE.name())) {
     			lobby.waitingRoomRemovePlayer(Integer.parseInt((intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME))));
     		}
     		else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_CREATE_OK.name()))	{
     			lobby.setCreatedRoomId(Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_ROOMID)));
     			lobby.setRoomLeader(true);
-    			lobby.lobbyJoinCreatedRoom();
+    			lobby.lobbyTransitionToWaitingRoom(null);
     			lobby.lobbyRefresh(null);
     		}
     		else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_CREATE_NO.name()))	{
