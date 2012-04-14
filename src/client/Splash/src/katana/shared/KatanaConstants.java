@@ -78,4 +78,7 @@ public abstract class KatanaConstants
     // Server
     public static final int ERR_SERVER_LISTEN_FAIL = 5;
     public static final int ERR_SERVER_SINGLETON_LOST = 6;
+    
+    /** GameActivity **/
+    public static final String DEFAULT_BG = "Background.jpg";
 }
