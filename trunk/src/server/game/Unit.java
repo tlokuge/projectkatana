@@ -1,5 +1,6 @@
 package server.game;
 
+import server.handlers.GameHandler;
 import server.shared.KatanaPacket;
 import server.shared.Opcode;
 
@@ -68,7 +69,19 @@ public abstract class Unit
     public void setSpeed(float speed) { this.move_speed = speed; }
     public float getMoveSpeed()       { return move_speed; }
     
-    public void moveTo(float x, float y) { this.pos_x = x; this.pos_y = y; }
+    public void moveTo(float x, float y) 
+    {
+        this.pos_x = x; 
+        this.pos_y = y;
+        
+        KatanaPacket packet = new KatanaPacket(Opcode.S_GAME_UPDATE_MOVE);
+        packet.addData(id + "");
+        packet.addData(pos_x + "");
+        packet.addData(pos_y + "");
+        Map map = GameHandler.instance().getMap(map_id);
+        if(map != null)
+            map.broadcastPacketToAll(packet, id);
+    }
     public float getX()                  { return pos_x; }
     public float getY()                  { return pos_y; }
     public void addToMap(int map)        { this.map_id = map; }

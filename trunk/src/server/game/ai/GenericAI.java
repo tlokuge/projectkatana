@@ -19,9 +19,9 @@ public class GenericAI extends CreatureAI
         if(moveTimer < diff)
         {
             Random rand = new Random(System.currentTimeMillis());
-            int x = rand.nextInt(480);
-            int y = rand.nextInt(800);
-            moveTo(x, y);
+            int x = rand.nextInt(800);
+            int y = rand.nextInt(480);
+            m_creature.moveTo(x, y);
             moveTimer = 500 + rand.nextInt(1000);
         }else moveTimer -= diff;
     }
