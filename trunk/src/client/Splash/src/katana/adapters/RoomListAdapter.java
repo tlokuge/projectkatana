@@ -47,7 +47,7 @@ public class RoomListAdapter extends BaseAdapter {
 		if(gridView == null) {
 			// Get a new instance of the grid layout view
 			LayoutInflater inflater = activity.getLayoutInflater();
-			gridView = inflater.inflate(R.layout.lobby_item,null);
+			gridView = inflater.inflate(R.layout.gvitem_lobby, null);
 			
 			// Hold the view objects in an object so they don't need to be re-fetched
 			roomView = new RoomView();
@@ -66,8 +66,16 @@ public class RoomListAdapter extends BaseAdapter {
 		roomView.name.setText(currentRoom.getName());
 		//roomView.diff.setText(currentRoom.getDifficulty());
 		//roomView.maxp.setText(Integer.toString(currentRoom.getMaxPlyr()));
-		roomView.icon.setImageResource(R.drawable.qr);
-		
+		switch(currentRoom.getDifficulty()) {
+			/*
+			case 1:roomView.icon.setImageResource(R.drawable.notebook_ic_e); break;
+			case 2:roomView.icon.setImageResource(R.drawable.notebook_ic_m); break;
+			case 3:roomView.icon.setImageResource(R.drawable.notebook_ic_h); break;
+			*/
+			case 1:roomView.icon.setImageResource(R.drawable.ryerson_ic_e); break;
+			case 2:roomView.icon.setImageResource(R.drawable.ryerson_ic_m); break;
+			case 3:roomView.icon.setImageResource(R.drawable.ryerson_ic_h); break;
+		}
 		return gridView;
 	}
 	

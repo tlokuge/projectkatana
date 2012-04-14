@@ -46,7 +46,7 @@ public class PlayerListAdapter extends BaseAdapter {
 		if(gridView == null) {
 			// Get a new instance of the grid layout view
 			LayoutInflater inflater = activity.getLayoutInflater();
-			gridView = inflater.inflate(R.layout.wroom_item,null);
+			gridView = inflater.inflate(R.layout.gvitem_wroom, null);
 			
 			// Hold the view objects in an object so they don't need to be re-fetched
 			playerView = new PlayerView();
@@ -62,8 +62,8 @@ public class PlayerListAdapter extends BaseAdapter {
 		Player currentPlayer = (Player) players.get(position);
 		playerView.username.setText(currentPlayer.getUsername());
 		switch(currentPlayer.getClassId()) {
-			case 1: playerView.icon.setImageResource(R.drawable.class1); break;
-			case 2: playerView.icon.setImageResource(R.drawable.class2); break;
+			case 1: playerView.icon.setImageResource(R.drawable.ic_class1_a); break;
+			case 2: playerView.icon.setImageResource(R.drawable.ic_class2_a); break;
 			default: break;
 		}
 		return gridView;
