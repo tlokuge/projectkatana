@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/leaderboards"
-          android:icon="@drawable/ic_launcher"
+          android:icon="@drawable/menu_ic_leader"
           android:title="Area Leaders"/>
     
     <item android:id="@+id/refresh"
-          android:icon="@drawable/ic_launcher"
+          android:icon="@drawable/menu_ic_refresh"
           android:title="Refresh" />
     
     <item android:id="@+id/about"
-          android:icon="@drawable/ic_launcher"
+          android:icon="@drawable/menu_ic_about"
           android:title="About" />
 </menu>

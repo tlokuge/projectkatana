@@ -43,7 +43,7 @@ public class SplashActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.splash);
+        setContentView(R.layout.layout_splash);
         
         Intent intent = new Intent(this,KatanaService.class);
         startService(intent);
@@ -54,7 +54,7 @@ public class SplashActivity extends Activity {
         		Looper.myLooper().prepare();
         		try {
     				doBindService();
-        			sleep(2000);
+        			sleep(5000);
         			
         			// Check preferences file for stored user/pass
         			client_prefs = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE);

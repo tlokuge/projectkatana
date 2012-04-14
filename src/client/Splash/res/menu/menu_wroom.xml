@@ -5,6 +5,6 @@
           android:title="Change Class"/>
     
     <item android:id="@+id/about"
-          android:icon="@drawable/ic_launcher"
+          android:icon="@drawable/menu_ic_about"
           android:title="About" />
 </menu>
