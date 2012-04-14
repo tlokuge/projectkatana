@@ -8,6 +8,7 @@ import katana.shared.Opcode;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.widget.Toast;
 
 import com.katana.splash.GameActivity;
@@ -26,7 +27,7 @@ public class KatanaReceiver extends BroadcastReceiver {
 		if(mode == 0) {
 			// SplashActivity
     		if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_AUTH_OK.name())){
-    			startMyActivity(context, LobbyActivity.class);
+    			startMyActivity(context, LobbyActivity.class, null);
     			context.getSharedPreferences(KatanaConstants.PREFS_LOGIN, Context.MODE_PRIVATE).edit().putInt(
     					KatanaConstants.PLAYER_ID, 
     					Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID))
@@ -34,7 +35,7 @@ public class KatanaReceiver extends BroadcastReceiver {
     			
     			KatanaService.player_id = Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID));
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_AUTH_NO.name())){
-    			startMyActivity(context, LoginActivity.class);
+    			startMyActivity(context, LoginActivity.class, null);
     		} 
 		} else if(mode == 1) {
 			// LoginActivity
@@ -103,21 +104,22 @@ public class KatanaReceiver extends BroadcastReceiver {
     			lobby.showLeaderboardDialog();
     		}
     		else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_START.name())) {
-    			startMyActivity(context, GameActivity.class);
+    			Bundle gBundle = new Bundle();
+    			gBundle.putString(KatanaService.EXTRAS_GAMEBG, intent.getStringExtra(KatanaService.EXTRAS_GAMEBG));
+    			gBundle.putStringArrayList(KatanaService.EXTRAS_GAMESTART, intent.getStringArrayListExtra(KatanaService.EXTRAS_GAMESTART));
+    			System.out.println("gBundle: " + gBundle);
+    			startMyActivity(context, GameActivity.class, gBundle);
     		}
 		} else if(mode == 3) {
 			// GameActivity
 			GameActivity game = (GameActivity) context;
 			// Instantiate in onEngineStart() using 
 			//		private KatanaReceiver katanaReceiver = new KatanaReceiver(3);
-			if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_POPULATE.name())) { 
-				String background = intent.getStringExtra(KatanaService.EXTRAS_GAMEBG);
-				ArrayList<String> unitList = intent.getStringArrayListExtra(KatanaService.EXTRAS_GAMESTART);
-
-				game.setBackground(background);
-				game.updateUnits(unitList);
+			if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_POPULATE.name())) {
+				//game.setBackground(intent.getStringExtra(KatanaService.EXTRAS_GAMEBG));
+				//game.updateUnits(intent.getStringArrayListExtra(KatanaService.EXTRAS_GAMESTART));
 			}
-			else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_UPDATE_MOVE.name())) {
+			else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_UPDATE_MOVE.name())) {
 				int id = intent.getIntExtra(KatanaService.EXTRAS_UNITMOVE, 0);
 				float x = intent.getFloatExtra(KatanaService.EXTRAS_UNITMOVE_X, 0.0f);
 				float y = intent.getFloatExtra(KatanaService.EXTRAS_UNITMOVE_Y, 0.0f);
@@ -128,9 +130,12 @@ public class KatanaReceiver extends BroadcastReceiver {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void startMyActivity(Context context, Class myClass) {
+	public void startMyActivity(Context context, Class myClass, Bundle myBundle) {
 		Intent intent = new Intent();
 		intent.setClass(context, myClass);
+		if(myBundle != null)
+			intent.putExtras(myBundle);
+		System.out.println("Class: " + myClass + " Bundle: " + myBundle);
 		context.startActivity(intent);
 	}
 }

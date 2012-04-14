@@ -113,7 +113,7 @@ public class LoginActivity extends Activity {
 	    	String message = "Welcome back " + user + "!";
 			Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
 	    }
-	    katanaReceiver.startMyActivity(this, LobbyActivity.class);
+	    katanaReceiver.startMyActivity(this, LobbyActivity.class, null);
 	}
 
     private void doBindService() {

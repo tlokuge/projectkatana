@@ -198,9 +198,9 @@ public class KatanaService extends Service {
     		case S_ROOM_DESTROY:
     		case S_ROOM_JOIN_NO:
     		case S_ROOM_CREATE_NO: break;
-    		case S_GAME_START: 	break;
-    		case S_GAME_POPULATE: handleGamePopulate(packet, intent); break;
-    		case S_UPDATE_MOVE: handleUpdateMove(packet, intent); break;
+    		case S_GAME_START: 		 handleGamePopulate(packet, intent); break;
+    		case S_GAME_POPULATE: 	 handleGamePopulate(packet, intent); break;
+    		case S_GAME_UPDATE_MOVE: handleUpdateMove(packet, intent); break;
     		default: break;
     	}
     	sendBroadcast(intent);
