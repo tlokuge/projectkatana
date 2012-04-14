@@ -1,13 +1,10 @@
 package server.handlers;
 
+import java.util.HashMap;
+import java.util.Set;
 import server.communication.KatanaClient;
 import server.communication.KatanaServer;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 import server.game.Player;
-import server.shared.Constants;
 import server.shared.KatanaPacket;
 import server.shared.Opcode;
 
@@ -43,7 +40,7 @@ public class PingServer implements Runnable
                 client.sendPacket(packet);
             }
             
-            HashMap<Integer, Player> map = KatanaServer.instance().getPlayers();
+            HashMap<Integer, Player> map = GameHandler.instance().getPlayers();
             Set<Integer> keys = map.keySet();
             for(Integer key : keys)
             {

@@ -1,6 +1,5 @@
 package server.game;
 
-import server.communication.KatanaServer;
 import server.shared.KatanaPacket;
 import server.shared.Opcode;
 

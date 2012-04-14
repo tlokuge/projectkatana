@@ -1,6 +1,5 @@
 package server.handlers;
 
-import server.communication.KatanaServer;
 import java.util.HashMap;
 import server.game.Map;
 
@@ -19,7 +18,7 @@ public class UpdateThread implements Runnable
     
     public void updateLoop(int update_diff)
     {
-        HashMap<Integer, Map> maps = KatanaServer.instance().getMaps();
+        HashMap<Integer, Map> maps = GameHandler.instance().getMaps();
         for(Integer i : maps.keySet())
             maps.get(i).update(update_diff);
     }
@@ -39,6 +38,7 @@ public class UpdateThread implements Runnable
         catch(Exception ex)
         {
             System.err.println("Exception in UpdateThread: " + ex.getLocalizedMessage());
+            ex.printStackTrace();
             System.exit(1); // System.exit(Constants.UPDATE_THREAD_FAIL);
         }
     }

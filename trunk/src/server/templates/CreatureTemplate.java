@@ -1,6 +1,5 @@
 package server.templates;
 
-
 public class CreatureTemplate 
 {
     private int creature_id;

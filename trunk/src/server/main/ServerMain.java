@@ -1,16 +1,16 @@
 package server.main;
 
-import server.handlers.UpdateThread;
-import server.handlers.SQLHandler;
-import server.handlers.PingServer;
-import server.utils.Config;
 import server.communication.KatanaServer;
-import java.net.InetAddress;
 import server.handlers.AIHandler;
+import server.handlers.PingServer;
+import server.handlers.SQLHandler;
+import server.handlers.UpdateThread;
 import server.shared.Constants;
 import server.shared.KatanaPacket;
 import server.shared.KatanaSocket;
 import server.shared.Opcode;
+import server.utils.Config;
+import server.utils.SQLCache;
 
 public class ServerMain
 {
@@ -25,7 +25,7 @@ public class ServerMain
         
         KatanaServer.initSingleton(
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_SERVER_PORT)));
-        KatanaServer.instance().loadCache();
+        SQLCache.createCache();
         
         // Load AI
         AIHandler.instance();

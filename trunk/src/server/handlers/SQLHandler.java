@@ -1,13 +1,15 @@
 package server.handlers;
 
-import server.utils.KatanaError;
-import server.communication.KatanaServer;
 import com.mysql.jdbc.ResultSetMetaData;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
-
+import server.communication.KatanaServer;
 import server.shared.Constants;
+import server.utils.KatanaError;
 
 public class SQLHandler
 {
@@ -347,6 +349,27 @@ public class SQLHandler
         try
         {
             PreparedStatement query = connection.prepareStatement(Constants.MAPTEMPLATE_QUERY);
+            ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
+            query.close();
+            
+            return results;
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public ArrayList<HashMap<String, Object>> runCreatureInstanceQuery(int map_id)
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.CREATUREINSTANCE_QUERY);
+            query.setInt(1, map_id);
             ArrayList<HashMap<String, Object>> results = convertResultSetToArrayList(query.executeQuery());
             query.close();
             

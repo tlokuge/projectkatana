@@ -1,7 +1,7 @@
 package server.game;
 
-import server.utils.SQLCache;
 import server.templates.PlayerClassTemplate;
+import server.utils.SQLCache;
 
 public class PlayerClass
 {

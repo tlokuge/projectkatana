@@ -34,6 +34,7 @@ public abstract class Constants
     public static final String MODEL_QUERY = "SELECT `model_id`, `file` FROM `models`;";
     public static final String CREATURE_QUERY = "SELECT `creature_id`, `creature_name`, `health`, `level`, `attack_speed`, `attack_damage`, `move_speed`, `model_id`, `script` FROM `creatures`;";
     public static final String MAPTEMPLATE_QUERY = "SELECT `map_id`, `location_id`, `map_name`, `background` FROM `map_template`;";
+    public static final String CREATUREINSTANCE_QUERY = "SELECT `creature_id` FROM `creature_instance` WHERE `map_id` = ?;";
     
     // Default player stats
     public static final int DEFAULT_PLAYER_HEALTH  = 5000;

@@ -1,24 +1,23 @@
 package server.utils;
 
-import server.utils.KatanaError;
-import server.utils.ProgressBar;
-import server.templates.PlayerClassTemplate;
-import server.templates.SpellTemplate;
-import server.templates.MapTemplate;
-import server.templates.CreatureTemplate;
-import server.communication.KatanaServer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import server.limbo.Lobby;
+import server.communication.KatanaServer;
+import server.handlers.GameHandler;
 import server.handlers.SQLHandler;
+import server.limbo.Lobby;
+import server.templates.CreatureTemplate;
+import server.templates.MapTemplate;
+import server.templates.PlayerClassTemplate;
+import server.templates.SpellTemplate;
 
 public abstract class SQLCache
 {
-    private static HashMap<Integer, PlayerClassTemplate> class_map = new HashMap<>();
-    private static HashMap<Integer, SpellTemplate> spell_map = new HashMap<>();
-    private static HashMap<Integer, String> model_map = new HashMap<>();
-    private static HashMap<Integer, CreatureTemplate> creature_map = new HashMap<>();
-    private static HashMap<Integer, MapTemplate> map_map = new HashMap<>();
+    private static HashMap<Integer, PlayerClassTemplate> class_map = new HashMap<Integer, PlayerClassTemplate>();
+    private static HashMap<Integer, SpellTemplate> spell_map = new HashMap<Integer, SpellTemplate>();
+    private static HashMap<Integer, String> model_map = new HashMap<Integer, String>();
+    private static HashMap<Integer, CreatureTemplate> creature_map = new HashMap<Integer, CreatureTemplate>();
+    private static HashMap<Integer, MapTemplate> map_map = new HashMap<Integer, MapTemplate>();
     
     public SQLCache() {}
     public static void createCache()
@@ -44,7 +43,7 @@ public abstract class SQLCache
     
     public static ArrayList<MapTemplate> getMapsByLocation(int location)
     {
-        ArrayList<MapTemplate> templates = new ArrayList<>();
+        ArrayList<MapTemplate> templates = new ArrayList<MapTemplate>();
         
         for(int i : map_map.keySet())
         {
@@ -77,7 +76,7 @@ public abstract class SQLCache
             double longitude = (Double)map.get("longitude");
             double radius = (Double)map.get("radius");
             
-            KatanaServer.instance().addLobby(id, new Lobby(id, name,latitude, longitude, radius));
+            GameHandler.instance().addLobby(id, new Lobby(id, name,latitude, longitude, radius));
             bar.update(i, results.size());
         }
         
@@ -217,7 +216,12 @@ public abstract class SQLCache
             String name = (String)row.get("map_name");
             String background = (String)row.get("background");
             
-            map_map.put(id, new MapTemplate(id, location, name, background));
+            MapTemplate template = new MapTemplate(id, location, name, background);
+            ArrayList<HashMap<String, Object>> creature_instances = SQLHandler.instance().runCreatureInstanceQuery(id);
+            if(creature_instances != null && !creature_instances.isEmpty())
+                for(int j = 0; j != creature_instances.size(); ++j)
+                    template.addCreature((Integer)creature_instances.get(j).get("creature_id"));
+            map_map.put(id, template);
             bar.update(i, results.size());
         }
         
