@@ -64,8 +64,12 @@ public class KatanaClient implements Runnable
         System.out.println("Removing client " + id);
         try
         {
+            if(player != null)
+                player.logout();
+            
             if(logout)
                 sendPacket(new KatanaPacket(Opcode.S_LOGOUT));
+            player = null;
             
             client.close();
             thread.interrupt();
@@ -92,13 +96,17 @@ public class KatanaClient implements Runnable
         }
         catch(SocketException ex)
         {
-            System.out.println("KatanaClient: Received SocketException - " + ex.getLocalizedMessage() + " - Removing client: " + id);
+            System.err.println("KatanaClient: Received SocketException - " + ex.getLocalizedMessage() + " - Removing client: " + id);
             remove(false);
+        }
+        catch(IOException ex)
+        {
+            System.err.println("KatanaClient: Received IOException - " + ex.getLocalizedMessage() + "!");
         }
         catch(Exception ex)
         {
             ex.printStackTrace();
-            remove(false);
+            //remove(false);
         }
     }
     
@@ -119,10 +127,16 @@ public class KatanaClient implements Runnable
                 PacketHandler.handlePacket(this, packet);
             }
         }
+        catch(IOException ex)
+        {
+            System.err.println("KatanaClient " + id + " - received IOEXception " + ex.getLocalizedMessage() + "!");
+            remove(false);
+        }
+        catch(NullPointerException ex) {}
         catch(Exception ex)
         {
-            remove(true);
-            System.err.println("KatanaClient " + id + " - received " + ex.getLocalizedMessage() + ". Disconnecting");
+            //remove(true);
+            System.err.println("KatanaClient " + id + " - received " + ex.getLocalizedMessage() + ".");
             ex.printStackTrace();
         }
     }
@@ -140,7 +154,7 @@ public class KatanaClient implements Runnable
         try
         {
             super.finalize();
-            System.out.println("ClientWorker: Closing socket: " + client);
+            System.out.println("KatanaClient: Closing socket: " + client);
             remove(true);
         }
         catch(Exception ex)

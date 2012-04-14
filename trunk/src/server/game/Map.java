@@ -25,7 +25,14 @@ public class Map
     private boolean ready;
     
     private int interval;
+    
+    private int max_x;
+    private int max_y;
+    private Random rand;
+    
     private final int UPDATE_INTERVAL = 2500;
+    private final int DEFAULT_MAX_X = 800;
+    private final int DEFAULT_MAX_Y = 480;
     
     private static int NEXT_MAP_GUID = 0;
     
@@ -46,6 +53,10 @@ public class Map
         this.ready = false;
         
         interval = UPDATE_INTERVAL*2;
+        
+        this.max_x = DEFAULT_MAX_X;
+        this.max_y = DEFAULT_MAX_Y;
+        this.rand = new Random(System.currentTimeMillis());
         
         spawnRandomCreatureFromTemplate(template);
     }
@@ -82,6 +93,12 @@ public class Map
     public String getName()         { return name; }
     public String getBackground()   { return background; }
     public void ready()             { this.ready = true; }
+    
+    public void setMaxCoords(int mx, int my) { this.max_x = mx; this.max_y = my; }
+    public float getMaxX()                   { return max_x; }
+    public float getMaxY()                   { return max_y; }
+    public float getRandX()                  { return rand.nextInt(max_x); }
+    public float getRandY()                  { return rand.nextInt(max_y); }
     
     public void addPlayer(Player pl) { player_list.add(pl.getId()); }
     public void removePlayer(int pid)
@@ -142,30 +159,36 @@ public class Map
         }
     }
     
-    private void sendSyncPacket()
+    public String getPopulateData()
     {
-        KatanaPacket packet = new KatanaPacket(Opcode.S_GAME_UPDATE_SYNC);
-        
+        String data = "";
         for(int pid : player_list)
         {
             Player p = GameHandler.instance().getPlayer(pid);
             if(p != null)
-                packet.addData(p.getId() + ";" + 
+                data += (p.getId() + ";" + 
                         p.getHealth() + ";" + p.getMaxHealth() + ";" + 
                         p.getX() + ";" + p.getY() + ";" + 
-                        SQLCache.getModel(p.getModelId()) + ";");
+                        SQLCache.getModel(p.getModelId()) + ";\n");
         }
         
         for(int c_guid : creature_map.keySet())
         {
             Creature c = creature_map.get(c_guid);
             if(c != null)
-                packet.addData(c.getId() + ";" + 
+                data += (c.getId() + ";" + 
                         c.getHealth() + ";" + c.getMaxHealth() + ";" +
                         c.getX() + ";" + c.getY() + ";" +
-                        SQLCache.getModel(c.getModelId()) + ";");
+                        SQLCache.getModel(c.getModelId()) + ";\n");
         }
         
+        return data;
+    }
+    
+    private void sendSyncPacket()
+    {
+        KatanaPacket packet = new KatanaPacket(Opcode.S_GAME_UPDATE_SYNC);
+        packet.addData(getPopulateData());
         broadcastPacketToAll(packet, -1);
     }
 }

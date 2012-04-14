@@ -20,7 +20,11 @@ public class UpdateThread implements Runnable
     {
         HashMap<Integer, Map> maps = GameHandler.instance().getMaps();
         for(Integer i : maps.keySet())
-            maps.get(i).update(update_diff);
+        {
+            Map map = maps.get(i);
+            if(map != null)
+                map.update(update_diff);
+        }
     }
     
     public void run()

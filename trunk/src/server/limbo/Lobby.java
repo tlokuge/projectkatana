@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import server.game.Player;
+import server.handlers.GameHandler;
+import server.shared.KatanaPacket;
 
 public class Lobby 
 {
@@ -57,6 +59,19 @@ public class Lobby
     public double getRadius()    { return radius; }
     public String getName()      { return name; }
     public int getNextRoomId()   { return ++nextRoomId; }
+    
+    public void broadcastToLobby(KatanaPacket packet)
+    {
+        if(packet == null)
+            return;
+        
+        for(int pid : players)
+        {
+            Player p = GameHandler.instance().getPlayer(pid);
+            if(p != null)
+                p.sendPacket(packet);
+        }
+    }
     
     public String toString()
     {
