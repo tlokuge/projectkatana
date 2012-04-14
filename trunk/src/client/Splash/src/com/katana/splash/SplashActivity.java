@@ -63,7 +63,7 @@ public class SplashActivity extends Activity {
         			
         			if (user == null || pass == null){
         				// No user login stored
-        				katanaReceiver.startMyActivity(myContext, LoginActivity.class);
+        				katanaReceiver.startMyActivity(myContext, LoginActivity.class, null);
         			} else {
         				// User login found, send to server
         				checkLogin(user,pass);

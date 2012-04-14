@@ -345,7 +345,6 @@ public class LobbyActivity extends Activity {
     public void waitingRoomStartGame(View view) {
 		KatanaPacket packet = new KatanaPacket(Opcode.C_GAME_START);
 		katanaService.sendPacket(packet);
-		katanaReceiver.startMyActivity(this, GameActivity.class);
 	}
 
 	/** Show Dialog Methods */
