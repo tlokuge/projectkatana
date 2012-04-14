@@ -82,8 +82,6 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 
 	private int userID;
 
-
-	
 	/** ANDROID ACTIVITY LIFECYCLE **/
 	/** DO NOT REMOVE **/
 	protected void onStart() {
@@ -101,20 +99,24 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 
 	public void onBackPressed() {
 		super.onBackPressed();
+		
 		Log.d("CDA", "onBackPressed");
 		System.err.println("onBackPressed");
 		katanaService.sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
 		doKillService();
-		finish();
+		this.finish();
+		// TODO: Add logic for "do you want to quit"
 	}
 
 	public void onPause() {
 		super.onPause();
+		
 		Log.d("CDA", "onPause");
 		System.err.println("onPause");
 		katanaService.sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
 		doUnbindService();
-		finish();
+		doKillService();
+		this.finish();
 	}
 
 	public Engine onLoadEngine() {
@@ -161,9 +163,8 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 				true, 
 				Color.WHITE);
 		
-		
 		fontManager.loadFont(gameFont);
-		
+
 		textureManager.loadTexture(fontTextureAtlas);
 		textureManager.loadTexture(bgTextureAtlas);
 		textureManager.loadTexture(spriteTextureAtlas);
@@ -172,7 +173,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	}
 
 	public Scene onLoadScene() {
-		this.mEngine.registerUpdateHandler(new FPSLogger());
+		mEngine.registerUpdateHandler(new FPSLogger());
 		katanaScene.setOnSceneTouchListener(this);
 		katanaScene.setBackgroundEnabled(true);
 	
@@ -200,21 +201,17 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private TiledTextureRegion createTexture(final String file, int animations) {
 		int bx = bitmap_x;
 		int by = bitmap_y;
-		Log.d("TEXTURE: ", "file: " + file + " - bx: " + bx + " by: " + by);
 		stepBitmapCoordinates();
-		Log.d("TEXTURE:", "bitx: " + bitmap_x + " bity: " + bitmap_y);
 
-		System.err.println("CREATING TEXTURE: " + file);
-
-		if (file.equalsIgnoreCase("attack.png")
-				|| file.equalsIgnoreCase("healer.png")
-				|| file.equalsIgnoreCase("eggy.png"))
+		if (file.equalsIgnoreCase("attack.png") || 
+			file.equalsIgnoreCase("healer.png") || 
+			file.equalsIgnoreCase("eggy.png"))
 			animations = NUM_ANIMS;
 		else
 			animations = 1;
 		
 		if (spriteTextureAtlas == null)
-			new BitmapTextureAtlas(
+			spriteTextureAtlas = new BitmapTextureAtlas(
 					BITMAP_SQUARE, 
 					BITMAP_SQUARE, 
 					TextureOptions.BILINEAR_PREMULTIPLYALPHA);
@@ -241,9 +238,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 		return new AnimatedSprite(pos_x, pos_y, texture);
 	}
 
-	// This move class is for andengine itselfs, not for server uses
 	private void move(AnimatedSprite sprite, float dest_spriteX, float dest_spriteY) {
-
 		float curr_spriteX = sprite.getX();
 		float curr_spriteY = sprite.getY();
 
@@ -268,16 +263,12 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 					dest_spriteY);
 			sprite.registerEntityModifier(mod.deepCopy());
 		}
-
 	}
 
-	// remove method for andengine uses
-	public void removeSprite(final AnimatedSprite _sprite) {
-		runOnUpdateThread(new Runnable() {
-			public void run() {
-				katanaScene.detachChild(_sprite);
-			}
-		});
+	public void removeSprite(int sprite_id) {
+		Unit removedUnit = unit_map.get(sprite_id);
+		unit_map.remove(sprite_id);
+		katanaScene.detachChild(removedUnit.getSprite());
 	}
 	
 	
@@ -289,7 +280,6 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 		for (String unit_str : unitList) {
 			String[] data = unit_str.split(";");
 			if (data.length < 6) {
-				System.err.println("GameActivity: Received invalid unit data string: '"	+ unit_str + "'");
 				continue;
 			}
 	
@@ -317,12 +307,8 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 					}
 					unit_map.put(id, u);
 				} else {
-					System.err.println("Spawning Unit: " + id + " - "
-							+ max_health + " - " + model_name + " - [" + x
-							+ "," + y + "]");
 					u = spawnUnit(id, max_health, model_name, x, y);
-	
-					System.out.println("GameActivity: Created unit[" + u + "]");
+
 				}
 			} catch (NumberFormatException ex) {
 				System.err.println("GameActivity: " + ex.getLocalizedMessage());
@@ -331,8 +317,8 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	}
 
 	public Unit spawnUnit(int id, int health, String model_name, float pos_x, float pos_y) {
-		TiledTextureRegion texture = createTexture(model_name, NUM_ANIMS);
 		final Unit unit = new Unit(id, health, pos_x, pos_y);
+		TiledTextureRegion texture = createTexture(model_name, NUM_ANIMS);
 		AnimatedSprite model = createSprite(pos_x, pos_y, texture, unit);
 		unit.setModel(model, model_name);
 		model.setScale(1);
@@ -341,16 +327,14 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 		unit_map.put(id, unit);
 		return unit;
 	}
-
+	
 	public void moveUnit(int unit_id, float x, float y) {
 		if (unit_id <= 0) {
-			System.err.println("INVALID ID");
 			return;
 		}
 	
 		Unit unit = unit_map.get(unit_id);
 		if (unit == null) {
-			System.err.println("INVALID UNIT");
 			return;
 		}
 	
@@ -376,6 +360,10 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 		katanaScene.setBackground(new SpriteBackground(bg));
 	}
 
+	// ----------------------------------------- //
+	//    END Methods called by KatanaReceiver   //
+	// ----------------------------------------- //
+	
 	class KatanaGestureListener extends GestureDetector.SimpleOnGestureListener {
 		@Override
 		public boolean onSingleTapUp(MotionEvent ev) {
