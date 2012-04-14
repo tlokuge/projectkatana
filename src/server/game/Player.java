@@ -50,11 +50,14 @@ public class Player extends Unit
         if(room_id > 0)
         {
             Lobby lobby = GameHandler.instance().getLobby(getLocation());
-            GameRoom room = lobby.getRoom(room_id);
-            if(is_room_leader)
-                PacketHandler.destroyRoom(lobby, room);
-            else
-                PacketHandler.handleRoomLeavePacket(client);
+            GameRoom room = lobby == null ? null : lobby.getRoom(room_id);
+            if(room != null)
+            {
+                if(is_room_leader)
+                    PacketHandler.destroyRoom(lobby, room);
+                else
+                    PacketHandler.handleRoomLeavePacket(client);
+            }
         }
         
         Map map = GameHandler.instance().getMap(getMap());
@@ -62,7 +65,6 @@ public class Player extends Unit
             map.removePlayer(getId());
         
         GameHandler.instance().removePlayer(getId());
-        client.remove(true);
     }
     
     public void setClass(int class_id) 

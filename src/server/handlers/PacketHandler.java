@@ -1,21 +1,21 @@
 
 package server.handlers;
 
-import server.utils.SQLCache;
-import server.communication.KatanaClient;
-import server.communication.KatanaServer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
+import server.communication.KatanaClient;
+import server.communication.KatanaServer;
 import server.game.Map;
+import server.game.Player;
 import server.limbo.GameRoom;
 import server.limbo.Lobby;
-import server.game.Player;
 import server.shared.Constants;
 import server.shared.KatanaPacket;
 import server.shared.Opcode;
 import server.templates.MapTemplate;
+import server.utils.SQLCache;
 
 public abstract class PacketHandler
 {
@@ -83,15 +83,12 @@ public abstract class PacketHandler
     // No data
     private static void handleLogoutPacket(KatanaClient client, KatanaPacket packet)
     {
-        System.out.println("handleLogoutPacket: INCOMPLETE");
-        // Database stuff?
-        client.getPlayer().logout();
+        client.remove(true);
     }
     
     // Packet data format expected to be username / password
     private static void handleRegisterPacket(KatanaClient client, KatanaPacket packet)
     {
-        System.out.println("handleRegisterPacket: INCOMPLETE");
         String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
         if(data.length < 2)
         {
@@ -148,7 +145,6 @@ public abstract class PacketHandler
     // Data format: username, password
     private static void handleLoginPacket(KatanaClient client, KatanaPacket packet)
     {
-        System.out.println("handleLoginPacket: INCOMPLETE");
         String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
         if(data.length < 2)
         {
@@ -187,9 +183,13 @@ public abstract class PacketHandler
     // Data format: name, difficulty, max_players
     private static void handleRoomCreatePacket(KatanaClient client, KatanaPacket packet)
     {
-        System.out.println("handleRoomCreatePacket: INCOMPLETE");
         // Make sure player is in a valid lobby
         Player pl = client.getPlayer();
+        if(pl == null)
+        {
+            System.err.println("roomCreate: NULL PLAYER");
+            return;
+        }
         if(pl.getLocation() < 0)
         {
             System.err.println("handleRoomCreatePacket: " + pl + " not in a lobby");
@@ -261,15 +261,12 @@ public abstract class PacketHandler
         client.sendPacket(response);
         
         KatanaPacket notify = createRoomListPacket(lobby);
-        for(Integer i : lobby.getPlayers())
-            GameHandler.instance().getPlayer(i).sendPacket(notify);
+        lobby.broadcastToLobby(notify);
     }
     
     // Room ID? Is it necessary? Room ID should be stored inside player.
     public static void handleRoomDestroyPacket(KatanaClient client, KatanaPacket packet)
     {
-        System.out.println("handleRoomDestroyPacket: INCOMPLETE");
-        
         Player pl = client.getPlayer();
         if(pl == null || !pl.isRoomLeader())
         {
@@ -278,7 +275,7 @@ public abstract class PacketHandler
         }
         
         Lobby lobby = GameHandler.instance().getLobby(pl.getLocation());
-        GameRoom room = lobby.getRoom(pl.getRoom());
+        GameRoom room = lobby == null ? null : lobby.getRoom(pl.getRoom());
         if(room == null)
         {
             System.err.println("Unable to delete room - room not found");
@@ -291,8 +288,6 @@ public abstract class PacketHandler
     // Room ID, Class ID
     public static void handleRoomJoinPacket(KatanaClient client, KatanaPacket packet)
     {
-        System.out.println("handleRoomJoinPacket: INCOMPLETE");
-        
         String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
         int room_id;
         int class_id;
@@ -310,8 +305,13 @@ public abstract class PacketHandler
         }
         
         Player pl = client.getPlayer();
+        if(pl == null)
+        {
+            System.err.println("roomJoin: NULL PLAYER");
+            return;
+        }
         Lobby lobby = GameHandler.instance().getLobby(pl.getLocation());
-        GameRoom room = lobby.getRoom(room_id);
+        GameRoom room = lobby == null ? null : lobby.getRoom(room_id);
         
         System.err.println("Player " + pl + " attempting to join room " + room);
         if(room == null)
@@ -339,6 +339,8 @@ public abstract class PacketHandler
         for(Integer i : room.getPlayers())
         {
             Player p = GameHandler.instance().getPlayer(i);
+            if(p == null)
+                continue;
             response.addData(p.getId() + ";" + p.getName() + ";" + p.getClassId() + ";");
             p.sendPacket(notify);
         }
@@ -363,6 +365,8 @@ public abstract class PacketHandler
         for(Integer i : room.getPlayers())
         {
             Player p = GameHandler.instance().getPlayer(i);
+            if(p == null)
+                continue;
             p.removeFromRoom();
             p.setRoomLeader(false);
             p.setLocation(lobby.getLocationId());
@@ -370,15 +374,21 @@ public abstract class PacketHandler
             p.sendPacket(response);
         }
         
+        room.clearPlayers();
         lobby.removeRoom(room.getId());
-        leader.setRoomLeader(false);
+        if(leader != null)
+            leader.setRoomLeader(false);
     }
     
     public static void handleRoomLeavePacket(KatanaClient client)
     {
-        System.out.println("handleRoomLeavePacket: INCOMPLETE");
+        Player pl = client.getPlayer();
+        if(pl == null)
+        {
+            System.err.println("roomLeave: NULL PLAYER");
+            return;
+        }
         
-        Player pl = GameHandler.instance().getPlayer(client.getId());
         int room_id = pl.getRoom();
         GameRoom room = GameHandler.instance().getLobby(pl.getLocation()).getRoom(room_id);
         if(room == null)
@@ -424,8 +434,6 @@ public abstract class PacketHandler
     // latitude, longitude
     public static void handleRoomListPacket(KatanaClient client, KatanaPacket packet)
     {
-        System.out.println("handleRoomListPacket: INCOMPLETE");
-        
         String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
         if(data.length < 2) // lat, long
         {
@@ -469,7 +477,13 @@ public abstract class PacketHandler
                 return;
             }
             
-            Player pl = GameHandler.instance().getPlayer(client.getId());
+            Player pl = client.getPlayer();
+            if(pl == null)
+            {
+                System.err.println("roomList: NULL PLAYER");
+                return;
+            }
+            
             Lobby old = GameHandler.instance().getLobby(pl.getLocation());
             if(old != null)
                 old.removePlayer(pl);
@@ -488,8 +502,6 @@ public abstract class PacketHandler
     // Class ID
     public static void handleClassChangePacket(KatanaClient client, KatanaPacket packet)
     {
-        System.out.println("handleClassChangePacket: INCOMPLETE");
-        
         String[] data = packet.getData().split(Constants.PACKET_DATA_SEPERATOR);
         if(data.length < 1)
         {
@@ -499,10 +511,7 @@ public abstract class PacketHandler
         }
         
         int class_id;
-        try
-        {
-            class_id = Integer.parseInt(data[0].trim()); 
-        }
+        try { class_id = Integer.parseInt(data[0].trim()); }
         catch(NumberFormatException ex)
         {
             System.err.println("handleClassChangePacket: " + ex.getLocalizedMessage());
@@ -518,6 +527,12 @@ public abstract class PacketHandler
         }
         
         Player pl = client.getPlayer();
+        if(pl == null)
+        {
+            System.err.println("handleClassChange: NULL PLAYER! D:");
+            return;
+        }
+        
         pl.setClass(class_id);
         
         int room_id = pl.getRoom();
@@ -545,10 +560,11 @@ public abstract class PacketHandler
     // Location already stored in Player
     public static void handleLeaderboardPacket(KatanaClient client, KatanaPacket packet)
     { 
-        int location = client.getPlayer().getLocation();
+        Player pl = client.getPlayer();
+        int location = pl == null ? -1 : pl.getLocation();
         if(location == -1)
         {
-            System.err.println("Player " + client.getPlayer() + " attempted to get leaderboard but is not in a lobby!");
+            System.err.println("NULL player or player not in lobby. Cannot get leaderboard.");
             return;
         }
         KatanaPacket response = new KatanaPacket(Opcode.S_LEADERBOARD);
@@ -562,10 +578,19 @@ public abstract class PacketHandler
     public static void handleGameStartPacket(KatanaClient client, KatanaPacket packet)
     {
         Player pl = client.getPlayer();
+        if(pl == null)
+        {
+            System.err.println("GameStart: NULL PLAYER");
+            return;
+        }
+        if(!pl.isRoomLeader())
+        {
+            System.err.println("Player " + pl + " attempted to start game but is not leader!");
+            return;
+        }
         
         Lobby lobby = GameHandler.instance().getLobby(pl.getLocation());
         GameRoom room = lobby.getRoom(pl.getRoom());
-        
         
         ArrayList<MapTemplate> templates = SQLCache.getMapsByLocation(pl.getLocation());
         // Pick a random template
@@ -580,9 +605,12 @@ public abstract class PacketHandler
             p.removeFromRoom();
             p.setRoomLeader(false);
             p.addToMap(instance.getGUID());
-            p.sendPacket(response);
+            //p.sendPacket(response);
             System.err.println("Added player " + p + " to map " + p.getMap());
         }
+        response.addData(instance.getBackground());
+        response.addData(instance.getPopulateData());
+        instance.broadcastPacketToAll(response, -1);
 
         GameHandler.instance().addMap(instance.getGUID(), instance);
        
@@ -611,14 +639,7 @@ public abstract class PacketHandler
         
         KatanaPacket response = new KatanaPacket(Opcode.S_GAME_POPULATE);
         response.addData(instance.getBackground());
-        for(int i : instance.getPlayers())
-        {
-            Player p = GameHandler.instance().getPlayer(i);
-            response.addData(p.getId() + ";" + 
-                        p.getHealth() + ";" + p.getMaxHealth() + ";" + 
-                        p.getX() + ";" + p.getY() + ";" + 
-                        SQLCache.getModel(p.getModelId()) + ";");
-        }
+        response.addData(instance.getPopulateData());
         
         instance.ready();
         pl.sendPacket(response);

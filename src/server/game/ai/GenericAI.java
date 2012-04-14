@@ -3,6 +3,8 @@ package server.game.ai;
 import java.util.Random;
 import server.game.Creature;
 import server.game.CreatureAI;
+import server.game.Map;
+import server.handlers.GameHandler;
 
 public class GenericAI extends CreatureAI
 {
@@ -19,9 +21,8 @@ public class GenericAI extends CreatureAI
         if(moveTimer < diff)
         {
             Random rand = new Random(System.currentTimeMillis());
-            int x = rand.nextInt(800);
-            int y = rand.nextInt(480);
-            m_creature.moveTo(x, y);
+            Map map = GameHandler.instance().getMap(m_creature.getMap());
+            m_creature.moveTo(map.getRandX(), map.getRandY());
             moveTimer = 500 + rand.nextInt(1000);
         }else moveTimer -= diff;
     }
