@@ -72,7 +72,7 @@ public abstract class Unit
     public void moveTo(float x, float y) { this.pos_x = x; this.pos_y = y; }
     public float getX()                  { return pos_x; }
     public float getY()                  { return pos_y; }
-    public void addToMap(int map)        { this.map_id = map_id; }
+    public void addToMap(int map)        { this.map_id = map; }
     public int getMap()                  { return map_id; }
     
     public void setModelId(int model) { this.model_id = model; }

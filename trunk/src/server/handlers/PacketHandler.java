@@ -590,6 +590,7 @@ public abstract class PacketHandler
             p.setRoomLeader(false);
             p.addToMap(instance.getGUID());
             p.sendPacket(response);
+            System.err.println("Added player " + p + " to map " + p.getMap());
         }
 
         KatanaServer.instance().addMap(instance.getGUID(), instance);
@@ -628,6 +629,7 @@ public abstract class PacketHandler
                         SQLCache.getModel(p.getModelId()) + ";");
         }
         
+        instance.ready();
         pl.sendPacket(response);
     }
     
@@ -655,6 +657,6 @@ public abstract class PacketHandler
         response.addData(pl.getId() + "");
         response.addData(data[0]);
         response.addData(data[1]);
-        instance.broadcastPacketToAll(packet, pl.getId());
+        instance.broadcastPacketToAll(response, pl.getId());
     }
 }
