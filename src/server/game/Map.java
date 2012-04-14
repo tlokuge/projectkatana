@@ -21,6 +21,8 @@ public class Map
     private ArrayList<Integer> player_list;
     private HashMap<Integer, Creature> creature_map;
     
+    private boolean ready;
+    
     private int interval;
     private final int UPDATE_INTERVAL = 2500;
     
@@ -40,7 +42,9 @@ public class Map
         this.player_list  = new ArrayList<>();
         this.creature_map = new HashMap<>();
         
-        interval = UPDATE_INTERVAL;
+        this.ready = false;
+        
+        interval = UPDATE_INTERVAL*5;
     }
     
     public static int getNextMapGUID() { return NEXT_MAP_GUID++; }
@@ -51,6 +55,7 @@ public class Map
     public int getDifficulty()      { return difficulty; }
     public String getName()         { return name; }
     public String getBackground()   { return background; }
+    public void ready()             { this.ready = true; }
     
     public void addPlayer(Player pl) { player_list.add(pl.getId()); }
     public ArrayList<Integer> getPlayers() { return player_list; }
@@ -64,6 +69,9 @@ public class Map
     
     public void update(int diff)
     {
+        if(!ready)
+            return;
+        
         for(int id : player_list)
         {
             Player p = KatanaServer.instance().getPlayer(id);
@@ -71,10 +79,11 @@ public class Map
                 p.update(diff);
         }
         
-        if(interval < UPDATE_INTERVAL)
+        if(interval < diff)
         {
             sendSyncPacket();
             interval = UPDATE_INTERVAL;
+            System.err.println("Interval: " + interval + " diff: " + diff);
         }else interval -= diff;
         
         for(int id : creature_map.keySet())
