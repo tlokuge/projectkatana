@@ -112,7 +112,6 @@ public class LobbyActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		//doKillService();
 	}
 	
 	/** Android Hardware Buttons */
@@ -175,14 +174,6 @@ public class LobbyActivity extends Activity {
     } 
     
     /** Button View onPress */
-    public void lobbyJoinButton(View v) {
-    	if(!client_inValidLocation) {
-    		Toast.makeText(getApplicationContext(), R.string.b_norealm, Toast.LENGTH_SHORT);
-    		return;
-    	}
-    	showSelectClassDialog();
-    }
-    
     public void lobbyCreateButton(View v) {
     	if(!client_inValidLocation) {
     		Toast.makeText(getApplicationContext(), R.string.b_norealm, Toast.LENGTH_SHORT);
@@ -515,4 +506,3 @@ public class LobbyActivity extends Activity {
 		return client_roomLeader;
 	}
 }
-
