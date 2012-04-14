@@ -71,10 +71,11 @@ public class RoomListAdapter extends BaseAdapter {
 			case 1:roomView.icon.setImageResource(R.drawable.notebook_ic_e); break;
 			case 2:roomView.icon.setImageResource(R.drawable.notebook_ic_m); break;
 			case 3:roomView.icon.setImageResource(R.drawable.notebook_ic_h); break;
-			*/
+			/*/
 			case 1:roomView.icon.setImageResource(R.drawable.ryerson_ic_e); break;
 			case 2:roomView.icon.setImageResource(R.drawable.ryerson_ic_m); break;
 			case 3:roomView.icon.setImageResource(R.drawable.ryerson_ic_h); break;
+			
 		}
 		return gridView;
 	}

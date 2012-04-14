@@ -74,8 +74,8 @@ public class LobbyActivity extends Activity {
 		// Hard code themes for now :D
 		
 		// NOTEBOOK
-		// setContentView(R.layout.notebook_vf);
-		// font = Typeface.createFromAsset(getAssets(), "fonts/mvboli.ttf");
+		//setContentView(R.layout.notebook_vf);
+		//font = Typeface.createFromAsset(getAssets(), "fonts/mvboli.ttf");
 		
 		// RYERSON
 		setContentView(R.layout.ryerson_vf);

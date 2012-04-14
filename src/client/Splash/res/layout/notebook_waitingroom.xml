@@ -4,15 +4,15 @@
     android:layout_height="fill_parent"
     android:padding="20dp"
     android:orientation="horizontal"
-    android:background="@drawable/ryerson_bg" >
+    android:background="@drawable/notebook_bg" >
 	
     <ImageButton android:id="@+id/b_start"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
+        android:layout_width="162dp"
+        android:layout_height="59dp"
         android:layout_marginTop="10dp"
         android:layout_alignParentLeft="true"
-        android:text="@string/b_start" 
-        
+		android:background="@drawable/notebook_st"
+		
         android:onClick="waitingRoomStartGame"/>
     
     <TextView android:id="@+id/l_wroomname"
