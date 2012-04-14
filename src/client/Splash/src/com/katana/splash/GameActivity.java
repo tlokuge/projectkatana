@@ -3,13 +3,9 @@ package com.katana.splash;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import katana.game.CharacterEntity;
 import katana.game.HPBar;
-import katana.game.MonsterEntity;
-import katana.game.PlayerEntity;
 import katana.game.Unit;
 import katana.receivers.KatanaReceiver;
-import katana.receivers.LocationReceiver;
 import katana.services.KatanaService;
 import katana.services.KatanaService.KatanaSBinder;
 import katana.shared.KatanaConstants;
@@ -44,7 +40,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -529,8 +524,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	    }
 	}
 	
-	    @SuppressWarnings("unused")
-	    private void doKillService() {
+	private void doKillService() {
 	    unbindService(katanaConnection);
 	    unregisterReceiver(katanaReceiver);
 	    stopService(new Intent(this, KatanaService.class));
