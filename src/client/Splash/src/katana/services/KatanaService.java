@@ -90,11 +90,10 @@ public class KatanaService extends Service {
 		if(socket == null)
 			return;
 		try	{
-			System.out.println("Sending Packet: " + packet.getOpcode().name());
-			
-			System.out.println("Packet Content: ");
+	    	System.out.println("Received packet: " + packet.getOpcode().name());
+	    	System.out.println("** Packet Content ** ");
 			System.out.println(packet);
-			System.out.println("** EndPacket **");
+			System.out.println("** End Packet **");
 			
 			OutputStream out = socket.getOutputStream();
 			out.write(packet.convertToBytes());
@@ -177,9 +176,9 @@ public class KatanaService extends Service {
     	Intent intent = new Intent(BROADCAST_ACTION);
     	intent.putExtra(OPCODE, packet.getOpcode().name());
     	System.out.println("Received packet: " + packet.getOpcode().name());
-    	System.out.println("Packet Content: ");
+    	System.out.println("** Packet Content ** ");
 		System.out.println(packet);
-		System.out.println("** EndPacket **");
+		System.out.println("** End Packet **");
     	
     	switch(packet.getOpcode()) {
     		case S_LOGOUT: 		handleLogout(); break;
