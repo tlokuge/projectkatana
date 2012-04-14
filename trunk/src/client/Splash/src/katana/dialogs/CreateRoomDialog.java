@@ -25,7 +25,7 @@ public class CreateRoomDialog extends Dialog {
 
 	public CreateRoomDialog(Context context, int theme) {
 		super(context, theme);
-		this.setContentView(R.layout.create_room);
+		this.setContentView(R.layout.dialog_createroom);
 		this.setTitle("Create Room");
 		this.setCancelable(true);
 		this.setOnCancelListener( new OnCancelListener() {
@@ -75,6 +75,7 @@ public class CreateRoomDialog extends Dialog {
 		name.setText(gp_name);
 
 		close.setOnClickListener(onClickListener);
+		close.setImageResource(R.drawable.ic_button_close);
 		confirm.setOnClickListener(onClickListener);
 	}
 

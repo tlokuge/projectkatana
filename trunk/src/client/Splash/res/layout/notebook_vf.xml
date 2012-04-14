@@ -5,9 +5,9 @@
 	android:layout_height="fill_parent" >
 	
 	<include android:id="@+id/lobby"  
-	    layout="@layout/lobby" />
+	    layout="@layout/notebook_lobby" />
 	
 	<include android:id="@+id/waiting_room"  
-	    layout="@layout/waiting_room" />
+	    layout="@layout/notebook_waitingroom" />
 	
 </ViewFlipper>

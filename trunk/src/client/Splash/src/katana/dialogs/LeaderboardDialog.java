@@ -19,7 +19,7 @@ public class LeaderboardDialog extends Dialog {
 	
 	public LeaderboardDialog(Context context, int theme) {
 		super(context, theme);
-		this.setContentView(R.layout.leaderboard);
+		this.setContentView(R.layout.dialog_leader);
 		this.setTitle("Leaderboards");
 		this.setCancelable(true);
 		this.setOnCancelListener( new OnCancelListener() {
@@ -32,7 +32,7 @@ public class LeaderboardDialog extends Dialog {
 		lobbyActivity = (LobbyActivity) context;
 		
 		close = (ImageButton) findViewById(R.id.b_close);
-		close.setImageResource(R.drawable.close);
+		close.setImageResource(R.drawable.ic_button_close);
 		close.setOnClickListener(onClickListener);
 		
 		scores = (TextView) findViewById(R.id.l_lb);

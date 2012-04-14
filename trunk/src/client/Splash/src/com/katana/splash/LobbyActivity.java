@@ -63,11 +63,25 @@ public class LobbyActivity extends Activity {
 	/** Android Power Manager */
 	private PowerManager.WakeLock wakeLockManager;
 	
+	/** HARDCODING STUFF :D **/
+	Typeface font;
+	
 	/** Android Activity Lifecycle */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.viewflipper);
+		
+		// Hard code themes for now :D
+		
+		// NOTEBOOK
+		// setContentView(R.layout.notebook_vf);
+		// font = Typeface.createFromAsset(getAssets(), "fonts/mvboli.ttf");
+		
+		// RYERSON
+		setContentView(R.layout.ryerson_vf);
+		font = Typeface.createFromAsset(getAssets(), "fonts/majalla.ttf");
+		
+		
 		// Load Preferences
 		client_gamePrefs = getSharedPreferences(KatanaConstants.PREFS_GAME, MODE_PRIVATE);
 		
@@ -75,7 +89,6 @@ public class LobbyActivity extends Activity {
 		lobby_roomGridView.setOnItemClickListener(selectRoomListener);
 		
 		TextView realmName = (TextView) findViewById(R.id.l_realmname);
-		Typeface font = Typeface.createFromAsset(getAssets(), "fonts/mvboli.ttf");
 		realmName.setTypeface(font);
 	}
 	
@@ -133,10 +146,10 @@ public class LobbyActivity extends Activity {
     	
     	MenuInflater inflater = getMenuInflater();
         if(!client_inRoom) {
-        	inflater.inflate(R.menu.lobby_menu, menu);
+        	inflater.inflate(R.menu.menu_lobby, menu);
         }
         else {
-        	inflater.inflate(R.menu.wroom_menu, menu);
+        	inflater.inflate(R.menu.menu_wroom, menu);
         }
         return true;
     }
@@ -231,27 +244,29 @@ public class LobbyActivity extends Activity {
 		katanaService.sendPacket(packet);
 	}
 	
+	// TODO: Condense these two functions into one!
 	public void lobbyJoinCreatedRoom() {
 		client_inRoom = true;
 		client_roomLeader = true;
 		waitingRoomShowPlayers(new ArrayList<String>());
 		String name = client_gamePrefs.getString(KatanaConstants.GAME_NAME, KatanaConstants.DEF_ROOMNAME);
-		int diff = client_gamePrefs.getInt(KatanaConstants.GAME_DIFF, KatanaConstants.DEF_ROOMDIFF);
+		
 		TextView room_gameName = (TextView)findViewById(R.id.l_wroomname);
-        TextView room_difficulty = (TextView)findViewById(R.id.l_wroomdiff);
+		room_gameName.setTypeface(font);
 		room_gameName.setText(name);
-		room_difficulty.setText(diff + "");
 		transitionToWaitingRoom();
 	}
 	
 	public void lobbyTransitionToWaitingRoom(Room selected){
 		client_inRoom = true;
+		
 		TextView room_gameName = (TextView)findViewById(R.id.l_wroomname);
-        TextView room_difficulty = (TextView)findViewById(R.id.l_wroomdiff);
+		room_gameName.setTypeface(font);
 		room_gameName.setText(selected.getName());
-		room_difficulty.setText(Integer.toString(selected.getDifficulty()));
 		transitionToWaitingRoom();
+		lobby_selectedRoom = null;
 	}
+	// END TODO
 	
 	/** Waiting room methods */
 	public void waitingRoomShowPlayers(ArrayList<String> al) {
@@ -353,14 +368,17 @@ public class LobbyActivity extends Activity {
 	private OnItemClickListener selectRoomListener = new OnItemClickListener() {
 		@Override
 		public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-			TextView roomName = (TextView) findViewById(R.id.l_roomname);
-			TextView roomDiff = (TextView) findViewById(R.id.l_difficulty);
-			TextView roomMaxp = (TextView) findViewById(R.id.l_maxplayer);
 			
-			lobby_selectedRoom = (Room) lobby_roomList.get(position);
-			roomName.setText(lobby_selectedRoom.getName());
-			roomDiff.setText(Integer.toString(lobby_selectedRoom.getDifficulty()));
-			roomMaxp.setText(Integer.toString(lobby_selectedRoom.getMaxPlyr()));
+			if(lobby_selectedRoom == null) {
+				lobby_selectedRoom = (Room) lobby_roomList.get(position);
+			} else {
+				Room lastSelected = lobby_selectedRoom;
+				lobby_selectedRoom = (Room) lobby_roomList.get(position);
+				if(lastSelected.getId() == lobby_selectedRoom.getId()) {
+					// Try to join the room
+					lobbySendJoinRequest();
+				} 
+			}
 		}
 	};
     

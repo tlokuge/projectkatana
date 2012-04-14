@@ -20,7 +20,7 @@ public class SelectClassDialog extends Dialog {
 	
 	public SelectClassDialog(Context context, int theme) {
 		super(context, theme);
-		this.setContentView(R.layout.select_class);
+		this.setContentView(R.layout.dialog_selectclass);
 		this.setTitle("Select Class");
 		this.setCancelable(true);
 		
@@ -31,9 +31,9 @@ public class SelectClassDialog extends Dialog {
     	close =  (ImageButton) findViewById(R.id.b_close);
     	desc = 	 (TextView)	   findViewById(R.id.l_classdesc);
     	
-    	class1.setImageResource(R.drawable.class1);
-    	class2.setImageResource(R.drawable.class2);
-    	close.setImageResource(R.drawable.close);
+    	class1.setImageResource(R.drawable.ic_class1_a);
+    	class2.setImageResource(R.drawable.ic_class2_a);
+    	close.setImageResource(R.drawable.ic_button_close);
     	desc.setText(KatanaConstants.DEF_DESC);
     	selectedClass = 0;
     	
@@ -69,8 +69,8 @@ public class SelectClassDialog extends Dialog {
 			this.dismiss();
 		} else {
 			selectedClass = 1;
-			class1.setImageResource(R.drawable.class1_selected);
-			class2.setImageResource(R.drawable.class2);
+			class1.setImageResource(R.drawable.ic_class1_b);
+			class2.setImageResource(R.drawable.ic_class2_a);
 			desc.setText(KatanaConstants.DESC_CLASS1);
 		}
 	}
@@ -90,8 +90,8 @@ public class SelectClassDialog extends Dialog {
 			this.dismiss();
 		} else {
 			selectedClass = 2;
-			class1.setImageResource(R.drawable.class1);
-			class2.setImageResource(R.drawable.class2_selected);
+			class1.setImageResource(R.drawable.ic_class1_a);
+			class2.setImageResource(R.drawable.ic_class2_b);
 			desc.setText(KatanaConstants.DESC_CLASS2);
 		}
 	}
