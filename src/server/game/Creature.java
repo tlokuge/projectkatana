@@ -6,20 +6,19 @@ import server.utils.SQLCache;
 
 public class Creature extends Unit
 {
-    private int guid;
+    private int entry;
     private int level;
     
     private CreatureAI ai;
     
-    private static int NEXT_GUID = 0;
+    private static int NEXT_GUID = 1;
     
-    public Creature(int id)
+    public Creature(int entry)
     {
-        super(id, "", 0, 0, 0, 0f, 0);
+        super(getNextGUID(), "", 0, 0, 0, 0f, 0);
         
-        this.guid = getNextGUID();
-        
-        CreatureTemplate template = SQLCache.getCreature(id);
+        this.entry = entry;
+        CreatureTemplate template = SQLCache.getCreature(entry);
         this.setName(template.getCreatureName());
         this.setMaxhealth(template.getHealth());
         this.setLevel(template.getLevel());
@@ -28,6 +27,8 @@ public class Creature extends Unit
         this.setSpeed(template.getMoveSpeed());
         this.setModelId(template.getModelId());
         this.ai = loadAI(template.getScript());
+        
+        System.err.println("Loaded AI: " + ai.toString());
     }
     
     private CreatureAI loadAI(String script_name)
@@ -37,7 +38,7 @@ public class Creature extends Unit
     
     public static int getNextGUID() { return NEXT_GUID++; }
     
-    public int getGUID() { return guid; }
+    public int getEntry() { return entry; }
     
     public void setLevel(int level) { this.level = level; }
     public int getLevel()           { return level; }

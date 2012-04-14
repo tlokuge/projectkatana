@@ -2,6 +2,10 @@ package server.game;
 
 import server.utils.SQLCache;
 import server.communication.KatanaClient;
+import server.handlers.GameHandler;
+import server.handlers.PacketHandler;
+import server.limbo.GameRoom;
+import server.limbo.Lobby;
 import server.shared.KatanaPacket;
 import server.templates.PlayerClassTemplate;
 
@@ -39,6 +43,26 @@ public class Player extends Unit
     public void sendPacket(KatanaPacket packet)
     {
         client.sendPacket(packet);
+    }
+    
+    public void logout()
+    {
+        if(room_id > 0)
+        {
+            Lobby lobby = GameHandler.instance().getLobby(getLocation());
+            GameRoom room = lobby.getRoom(room_id);
+            if(is_room_leader)
+                PacketHandler.destroyRoom(lobby, room);
+            else
+                PacketHandler.handleRoomLeavePacket(client);
+        }
+        
+        Map map = GameHandler.instance().getMap(getMap());
+        if(map != null)
+            map.removePlayer(getId());
+        
+        GameHandler.instance().removePlayer(getId());
+        client.remove(true);
     }
     
     public void setClass(int class_id) 

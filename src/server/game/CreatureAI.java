@@ -16,7 +16,6 @@ public abstract class CreatureAI
     public void onSpellCast(Unit target, Spell spell) {}
     
     public void castSpell(Spell spell, Unit target) {}
-    public void moveTo(float x, float y) {}
     
     public abstract void updateAI(int diff);
     public abstract CreatureAI getAI(Creature creature);

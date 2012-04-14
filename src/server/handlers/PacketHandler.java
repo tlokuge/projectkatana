@@ -85,16 +85,7 @@ public abstract class PacketHandler
     {
         System.out.println("handleLogoutPacket: INCOMPLETE");
         // Database stuff?
-        Player pl = client.getPlayer();
-        // Destroy any rooms that the player is in
-        if(pl.isRoomLeader())
-        {
-            Lobby lobby = GameHandler.instance().getLobby(pl.getLocation());
-            GameRoom room = lobby.getRoom(pl.getRoom());
-            destroyRoom(lobby, room);
-        }
-        
-        client.remove(true);
+        client.getPlayer().logout();
     }
     
     // Packet data format expected to be username / password

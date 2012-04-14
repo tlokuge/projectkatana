@@ -67,21 +67,6 @@ public class KatanaClient implements Runnable
             if(logout)
                 sendPacket(new KatanaPacket(Opcode.S_LOGOUT));
             
-            if(player != null)
-            {
-                if(player.getRoom() != -1)
-                {
-                    if(player.isRoomLeader())
-                    {
-                        Lobby lobby = GameHandler.instance().getLobby(player.getLocation());
-                        PacketHandler.destroyRoom(lobby, lobby.getRoom(player.getRoom()));
-                    }
-                    else
-                        PacketHandler.handleRoomLeavePacket(this);
-                }
-                GameHandler.instance().removePlayer(id);
-            }
-            
             client.close();
             thread.interrupt();
         }

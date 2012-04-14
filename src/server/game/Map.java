@@ -65,7 +65,7 @@ public class Map
         if(creature != null)
         {
             System.err.println("Spawned creature: " + creature);
-            creature_map.put(creature.getGUID(), creature);
+            creature_map.put(creature.getId(), creature);
             creature.moveTo(50, 50);
             creature.addToMap(guid);
         }
@@ -86,7 +86,7 @@ public class Map
     public void addPlayer(Player pl) { player_list.add(pl.getId()); }
     public void removePlayer(int pid)
     {
-        player_list.remove(pid);
+        player_list.remove((Integer)pid);
         if(player_list.isEmpty())
         {
             creature_map.clear();
@@ -99,7 +99,7 @@ public class Map
     public Creature spawnCreature(int cid)
     {
         Creature creature = new Creature(cid);
-        creature_map.put(creature.getGUID(), creature);
+        creature_map.put(creature.getId(), creature);
         creature.addToMap(guid);
         return creature;
     }
