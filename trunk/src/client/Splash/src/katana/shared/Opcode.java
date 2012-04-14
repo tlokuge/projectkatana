@@ -40,9 +40,11 @@ public enum Opcode
     S_LEADERBOARD,
     S_GAME_START,
     S_GAME_POPULATE,
-    S_GAME_UPDATE_SYNC,
-    S_GAME_SPELL_CAST,
-    S_GAME_UPDATE_MOVE,
+    S_UPDATE_SYNC,
+    S_UPDATE_SPELL,
+    S_UPDATE_MOVE,
+    S_UPDATE_DAMAGE_TAKEN,
+    S_UPDATE_DAMAGE_DONE,
     S_GAME_END;
     
     public static Opcode getOpcode(int code)

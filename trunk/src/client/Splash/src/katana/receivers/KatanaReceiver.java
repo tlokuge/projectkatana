@@ -111,18 +111,18 @@ public class KatanaReceiver extends BroadcastReceiver {
 			// Instantiate in onEngineStart() using 
 			//		private KatanaReceiver katanaReceiver = new KatanaReceiver(3);
 			if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_POPULATE.name())) { 
-				game.setBackground(intent.getStringExtra(KatanaService.EXTRAS_GAMEBG));
-				game.updateUnits(intent.getStringArrayListExtra(KatanaService.EXTRAS_GAMESTART));
+				String background = intent.getStringExtra(KatanaService.EXTRAS_GAMEBG);
+				ArrayList<String> unitList = intent.getStringArrayListExtra(KatanaService.EXTRAS_GAMESTART);
+
+				game.setBackground(background);
+				game.updateUnits(unitList);
 			}
-			else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_UPDATE_MOVE.name())) {
+			else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_UPDATE_MOVE.name())) {
 				int id = intent.getIntExtra(KatanaService.EXTRAS_UNITMOVE, 0);
 				float x = intent.getFloatExtra(KatanaService.EXTRAS_UNITMOVE_X, 0.0f);
 				float y = intent.getFloatExtra(KatanaService.EXTRAS_UNITMOVE_Y, 0.0f);
 				
 				game.moveUnit(id, x, y);
-			}
-			else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_UPDATE_SYNC.name())) {
-				game.updateUnits(intent.getStringArrayListExtra(KatanaService.EXTRAS_GAMESYNC));
 			}
 		}
 	}
