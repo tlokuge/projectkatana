@@ -34,7 +34,6 @@ public class CreateRoomDialog extends Dialog {
 				lobbyActivity.setRoomLeader(false);
 				arg0.dismiss();
 			}
-	
 		});
 		
 		lobbyActivity = (LobbyActivity) context;
