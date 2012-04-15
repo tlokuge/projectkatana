@@ -3,6 +3,7 @@ package katana.dialogs;
 import katana.shared.KatanaConstants;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -23,7 +24,13 @@ public class SelectClassDialog extends Dialog {
 		this.setContentView(R.layout.dialog_selectclass);
 		this.setTitle("Select Class");
 		this.setCancelable(true);
-		
+		this.setOnCancelListener( new OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface arg0) {
+				lobbyActivity.setRoomLeader(false);
+				arg0.dismiss();
+			}
+		});
 		lobbyActivity = (LobbyActivity) context;
 		
 		class1 = (ImageButton) findViewById(R.id.b_class1);
