@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import katana.adapters.PlayerListAdapter;
+import katana.constants.KatanaConstants;
+import katana.constants.Opcode;
 import katana.dialogs.CreateRoomDialog;
 import katana.dialogs.LeaderboardDialog;
 import katana.dialogs.SelectClassDialog;
+import katana.objects.KatanaPacket;
 import katana.objects.Lobby;
 import katana.objects.Player;
 import katana.objects.Room;
@@ -14,9 +17,6 @@ import katana.receivers.KatanaReceiver;
 import katana.receivers.LocationReceiver;
 import katana.services.KatanaService;
 import katana.services.KatanaService.KatanaSBinder;
-import katana.shared.KatanaConstants;
-import katana.shared.KatanaPacket;
-import katana.shared.Opcode;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -76,8 +76,8 @@ public class LobbyActivity extends Activity {
 		// Hard code themes for now :D
 		
 		// NOTEBOOK
-		//setContentView(R.layout.notebook_vf);
-		//font = Typeface.createFromAsset(getAssets(), "fonts/mvboli.ttf");
+		// setContentView(R.layout.notebook_vf);
+		// font = Typeface.createFromAsset(getAssets(), "fonts/mvboli.ttf");
 		
 		// RYERSON
 		setContentView(R.layout.ryerson_vf);
@@ -138,6 +138,7 @@ public class LobbyActivity extends Activity {
 		} else {
 			super.onBackPressed();
 			katanaService.sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
+			doKillService();
 			this.finish();
 		}
 	}
@@ -205,14 +206,14 @@ public class LobbyActivity extends Activity {
 	}
     
 	public void lobbySendJoinRequest(){		
-		katanaService.sendPacket(lobby.getJoinRequestPacket(client_gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1)));
+		katanaService.sendPacket(lobby.getJoinRequestPacket(client_gamePrefs.getInt(KatanaConstants.PREFS_GAME_CLASS, 1)));
 	}
 	
 	public void lobbySendCreateRequest(){
-		String name = client_gamePrefs.getString(KatanaConstants.GAME_NAME, KatanaConstants.DEF_ROOMNAME);
-		int diff = client_gamePrefs.getInt(KatanaConstants.GAME_DIFF, KatanaConstants.DEF_ROOMDIFF);
-		int maxp = client_gamePrefs.getInt(KatanaConstants.GAME_MAXP, KatanaConstants.DEF_ROOMMAXP);
-		int classid = client_gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1);
+		String name = client_gamePrefs.getString(KatanaConstants.PREFS_GAME_NAME, KatanaConstants.ROOM_NAME_DEFAULT);
+		int diff = client_gamePrefs.getInt(KatanaConstants.PREFS_GAME_DIFF, KatanaConstants.ROOM_DIFF_DEFAULT);
+		int maxp = client_gamePrefs.getInt(KatanaConstants.PREFS_GAME_MAXP, KatanaConstants.ROOM_MAXP_DEFAULT);
+		int classid = client_gamePrefs.getInt(KatanaConstants.PREFS_GAME_CLASS, 1);
 		
 		katanaService.sendPacket(lobby.getCreateRequestPacket(name,diff,maxp,classid));
 	}
@@ -222,7 +223,7 @@ public class LobbyActivity extends Activity {
 		String name;
 		if(client_roomLeader){
 			waitingRoomShowPlayers(new ArrayList<String>());
-			name = client_gamePrefs.getString(KatanaConstants.GAME_NAME, KatanaConstants.DEF_ROOMNAME);
+			name = client_gamePrefs.getString(KatanaConstants.PREFS_GAME_NAME, KatanaConstants.ROOM_NAME_DEFAULT);
 		} else {
 			name = lobby.getSelectedName();
 		}
@@ -249,13 +250,13 @@ public class LobbyActivity extends Activity {
 			room_playerRef.put(Integer.parseInt(lines[0]), i);
 			room_playerList.add(new Player(Integer.parseInt(lines[0]),lines[1],Integer.parseInt(lines[2])));
 		}
-		int pid = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getInt(KatanaConstants.PLAYER_ID, 0);
+		int pid = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getInt(KatanaConstants.PREFS_LOGIN_PLAYERID, 0);
 		if(al.isEmpty()){
 			room_playerRef.put(pid, 0);
 		} else {
 			room_playerRef.put(pid, position + 1);
 		}
-		room_playerList.add(new Player(pid, getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getString(KatanaConstants.LOGIN_USER, ""), client_gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1)));
+		room_playerList.add(new Player(pid, getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE).getString(KatanaConstants.PREFS_LOGIN_USER, ""), client_gamePrefs.getInt(KatanaConstants.PREFS_GAME_CLASS, 1)));
 		waitingRoomUpdatePlayers();
 	}
 
@@ -289,7 +290,7 @@ public class LobbyActivity extends Activity {
     
 
     public void waitingRoomRequestClassChange(int i){
-		int pid = getSharedPreferences(KatanaConstants.PREFS_LOGIN,MODE_PRIVATE).getInt(KatanaConstants.PLAYER_ID, 0);
+		int pid = getSharedPreferences(KatanaConstants.PREFS_LOGIN,MODE_PRIVATE).getInt(KatanaConstants.PREFS_LOGIN_PLAYERID, 0);
 		System.out.println("my id: " + room_playerRef.get(pid));
 		System.out.println("playerlist size: " + room_playerList.size());
 		room_playerList.get(room_playerRef.get(pid)).setClassId(i);
@@ -366,7 +367,6 @@ public class LobbyActivity extends Activity {
         }
     }
     
-	@SuppressWarnings("unused")
 	private void doKillService() {
         unbindService(katanaConnection);
         unregisterReceiver(katanaReceiver);
@@ -442,17 +442,17 @@ public class LobbyActivity extends Activity {
 	}
 	
 	public void setPlayerClass(int classid) {
-		client_gamePrefs.edit().putInt(KatanaConstants.GAME_CLASS, classid).commit();
+		client_gamePrefs.edit().putInt(KatanaConstants.PREFS_GAME_CLASS, classid).commit();
 	}
 	
 	public void setGamePrefs(SharedPreferences gamePrefs) {
-		String gp_name = gamePrefs.getString(KatanaConstants.GAME_NAME, KatanaConstants.DEF_ROOMNAME);
-		int gp_diff = gamePrefs.getInt(KatanaConstants.GAME_DIFF, KatanaConstants.DEF_ROOMDIFF);
-		int gp_maxp = gamePrefs.getInt(KatanaConstants.GAME_MAXP, KatanaConstants.DEF_ROOMMAXP);
+		String gp_name = gamePrefs.getString(KatanaConstants.PREFS_GAME_NAME, KatanaConstants.ROOM_NAME_DEFAULT);
+		int gp_diff = gamePrefs.getInt(KatanaConstants.PREFS_GAME_DIFF, KatanaConstants.ROOM_DIFF_DEFAULT);
+		int gp_maxp = gamePrefs.getInt(KatanaConstants.PREFS_GAME_MAXP, KatanaConstants.ROOM_MAXP_DEFAULT);
 		
-		client_gamePrefs.edit().putString(KatanaConstants.GAME_NAME, gp_name);
-		client_gamePrefs.edit().putInt(KatanaConstants.GAME_DIFF, gp_diff);
-		client_gamePrefs.edit().putInt(KatanaConstants.GAME_MAXP, gp_maxp);
+		client_gamePrefs.edit().putString(KatanaConstants.PREFS_GAME_NAME, gp_name);
+		client_gamePrefs.edit().putInt(KatanaConstants.PREFS_GAME_DIFF, gp_diff);
+		client_gamePrefs.edit().putInt(KatanaConstants.PREFS_GAME_MAXP, gp_maxp);
 	}
 	
 	public void setInValidLocation(boolean b) {

@@ -1,4 +1,7 @@
-package katana.shared;
+package katana.objects;
+
+import katana.constants.KatanaConstants;
+import katana.constants.Opcode;
 
 public class KatanaPacket
 {

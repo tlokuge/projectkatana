@@ -1,11 +1,11 @@
 package com.katana.splash;
 
+import katana.constants.KatanaConstants;
+import katana.constants.Opcode;
+import katana.objects.KatanaPacket;
 import katana.receivers.KatanaReceiver;
 import katana.services.KatanaService;
 import katana.services.KatanaService.KatanaSBinder;
-import katana.shared.KatanaConstants;
-import katana.shared.KatanaPacket;
-import katana.shared.Opcode;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -58,8 +58,8 @@ public class SplashActivity extends Activity {
         			
         			// Check preferences file for stored user/pass
         			client_prefs = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE);
-        			String user = client_prefs.getString(KatanaConstants.LOGIN_USER, null);
-        			String pass = client_prefs.getString(KatanaConstants.LOGIN_PASS, null);
+        			String user = client_prefs.getString(KatanaConstants.PREFS_LOGIN_USER, null);
+        			String pass = client_prefs.getString(KatanaConstants.PREFS_LOGIN_PASS, null);
         			
         			if (user == null || pass == null){
         				// No user login stored

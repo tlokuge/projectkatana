@@ -3,14 +3,14 @@ package com.katana.splash;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import katana.constants.KatanaConstants;
+import katana.constants.Opcode;
 import katana.dialogs.ScoresDialog;
 import katana.game.Unit;
+import katana.objects.KatanaPacket;
 import katana.receivers.KatanaReceiver;
 import katana.services.KatanaService;
 import katana.services.KatanaService.KatanaSBinder;
-import katana.shared.KatanaConstants;
-import katana.shared.KatanaPacket;
-import katana.shared.Opcode;
 
 import org.anddev.andengine.engine.Engine;
 import org.anddev.andengine.engine.camera.Camera;
@@ -68,7 +68,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	// TextureRegion
 	private TextureRegion bgTextureRegion;
 
-	private String background_name = KatanaConstants.DEFAULT_BG;
+	private String background_name = KatanaConstants.GAME_BG_DEFAULT;
 	private ArrayList<String> temp_unit_string_list;
 	private Scene katanaScene = new Scene();
 

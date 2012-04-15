@@ -2,9 +2,9 @@ package katana.receivers;
 
 import java.util.ArrayList;
 
+import katana.constants.KatanaConstants;
+import katana.constants.Opcode;
 import katana.services.KatanaService;
-import katana.shared.KatanaConstants;
-import katana.shared.Opcode;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -29,7 +29,7 @@ public class KatanaReceiver extends BroadcastReceiver {
     		if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_AUTH_OK.name())){
     			startMyActivity(context, LobbyActivity.class, null);
     			context.getSharedPreferences(KatanaConstants.PREFS_LOGIN, Context.MODE_PRIVATE).edit().putInt(
-    					KatanaConstants.PLAYER_ID, 
+    					KatanaConstants.PREFS_LOGIN_PLAYERID, 
     					Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID))
     					);
     			
@@ -44,7 +44,7 @@ public class KatanaReceiver extends BroadcastReceiver {
     			// Registered new user on server    			
     			loginActivity.setUserLoginPrefs(true);
     			context.getSharedPreferences(KatanaConstants.PREFS_LOGIN, Context.MODE_PRIVATE).edit().putInt(
-    					KatanaConstants.PLAYER_ID, 
+    					KatanaConstants.PREFS_LOGIN_PLAYERID, 
     					Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID))
     					);
     			
@@ -52,7 +52,7 @@ public class KatanaReceiver extends BroadcastReceiver {
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_AUTH_OK.name())){
     			loginActivity.setUserLoginPrefs(false);
     			context.getSharedPreferences(KatanaConstants.PREFS_LOGIN, Context.MODE_PRIVATE).edit().putInt(
-    					KatanaConstants.PLAYER_ID, 
+    					KatanaConstants.PREFS_LOGIN_PLAYERID, 
     					Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID))
     					);
     			KatanaService.player_id = Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_PLAYERID));

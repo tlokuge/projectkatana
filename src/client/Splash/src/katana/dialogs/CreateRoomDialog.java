@@ -1,6 +1,6 @@
 package katana.dialogs;
 
-import katana.shared.KatanaConstants;
+import katana.constants.KatanaConstants;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -46,14 +46,14 @@ public class CreateRoomDialog extends Dialog {
 		confirm = (Button) findViewById(R.id.b_makeroom);
 
 		String gp_name = gamePrefs.getString(
-				KatanaConstants.GAME_NAME,
-				KatanaConstants.DEF_ROOMNAME);
+				KatanaConstants.PREFS_GAME_NAME,
+				KatanaConstants.ROOM_NAME_DEFAULT);
 		int gp_diff = gamePrefs.getInt(
-				KatanaConstants.GAME_DIFF,
-				KatanaConstants.DEF_ROOMDIFF);
+				KatanaConstants.PREFS_GAME_DIFF,
+				KatanaConstants.ROOM_DIFF_DEFAULT);
 		int gp_maxp = gamePrefs.getInt(
-				KatanaConstants.GAME_MAXP,
-				KatanaConstants.DEF_ROOMMAXP);
+				KatanaConstants.PREFS_GAME_MAXP,
+				KatanaConstants.ROOM_MAXP_DEFAULT);
 
 		switch (gp_diff) {
 			case 1: diff.check(R.id.diff1); break;
@@ -99,15 +99,15 @@ public class CreateRoomDialog extends Dialog {
 	}
 
 	private void makeRoomPressed() {
-		if (name.length() < KatanaConstants.ROOMNAMEMIN) {
+		if (name.length() < KatanaConstants.LOBBY_MIN_ROOMNAME) {
 			// Room name is left blank
 			gamePrefs.edit().putString(
-					KatanaConstants.GAME_NAME,
-					KatanaConstants.DEF_ROOMNAME
+					KatanaConstants.PREFS_GAME_NAME,
+					KatanaConstants.ROOM_NAME_DEFAULT
 					).commit();
 		} else {
 			gamePrefs.edit().putString(
-					KatanaConstants.GAME_NAME,
+					KatanaConstants.PREFS_GAME_NAME,
 					name.getText().toString()
 					).commit();
 		}
@@ -115,33 +115,33 @@ public class CreateRoomDialog extends Dialog {
 		// Set game difficulty preferences
 		switch (diff.getCheckedRadioButtonId()) {
 		case R.id.diff1:
-			gamePrefs.edit().putInt(KatanaConstants.GAME_DIFF, 1).commit();
+			gamePrefs.edit().putInt(KatanaConstants.PREFS_GAME_DIFF, 1).commit();
 			break;
 		case R.id.diff2:
-			gamePrefs.edit().putInt(KatanaConstants.GAME_DIFF, 2).commit();
+			gamePrefs.edit().putInt(KatanaConstants.PREFS_GAME_DIFF, 2).commit();
 			break;
 		case R.id.diff3:
-			gamePrefs.edit().putInt(KatanaConstants.GAME_DIFF, 3).commit();
+			gamePrefs.edit().putInt(KatanaConstants.PREFS_GAME_DIFF, 3).commit();
 			break;
 		default:
-			gamePrefs.edit().putInt(KatanaConstants.GAME_DIFF, 2).commit();
+			gamePrefs.edit().putInt(KatanaConstants.PREFS_GAME_DIFF, 2).commit();
 			break;
 		}
 
 		// Set game max player preferences
 		switch (maxp.getCheckedRadioButtonId()) {
 		case R.id.plyr1:
-			gamePrefs.edit().putInt(KatanaConstants.GAME_MAXP, 1).commit();
+			gamePrefs.edit().putInt(KatanaConstants.PREFS_GAME_MAXP, 1).commit();
 			break;
 		case R.id.plyr2:
-			gamePrefs.edit().putInt(KatanaConstants.GAME_MAXP, 2).commit();
+			gamePrefs.edit().putInt(KatanaConstants.PREFS_GAME_MAXP, 2).commit();
 			break;
 		case R.id.plyr3:
-			gamePrefs.edit().putInt(KatanaConstants.GAME_MAXP, 3).commit();
+			gamePrefs.edit().putInt(KatanaConstants.PREFS_GAME_MAXP, 3).commit();
 			break;
 		case R.id.plyr4:
 		default:
-			gamePrefs.edit().putInt(KatanaConstants.GAME_MAXP, 4).commit();
+			gamePrefs.edit().putInt(KatanaConstants.PREFS_GAME_MAXP, 4).commit();
 			break;
 		}
 
