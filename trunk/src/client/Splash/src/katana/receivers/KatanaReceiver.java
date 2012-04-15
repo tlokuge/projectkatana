@@ -124,6 +124,10 @@ public class KatanaReceiver extends BroadcastReceiver {
 			else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_DESPAWN_UNIT.name())) {
 				game.despawnUnit(intent.getIntExtra(KatanaService.EXTRAS_DESPAWN, -1));
 			}
+			else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_END.name())) {
+				ArrayList<String> al = intent.getStringArrayListExtra(KatanaService.EXTRAS_GAMESCORES);
+				game.showScoresDialog(al);
+			}
 		}
 	}
 	

@@ -3,6 +3,7 @@ package com.katana.splash;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import katana.dialogs.ScoresDialog;
 import katana.game.Unit;
 import katana.receivers.KatanaReceiver;
 import katana.services.KatanaService;
@@ -453,4 +454,9 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	// --------------------------------------------------- //
 	// ---------------- END KATANASERVICE ---------------- //
 	// --------------------------------------------------- //
+
+	public void showScoresDialog(ArrayList<String> al) {
+		ScoresDialog dialog = new ScoresDialog(this, al, R.style.DialogTheme);
+    	dialog.show(); 
+	}
 }
