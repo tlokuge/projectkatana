@@ -42,7 +42,7 @@ import android.widget.ViewFlipper;
 
 public class LobbyActivity extends Activity {
 	/** Lobby Class **/
-	Lobby lobby;
+	public Lobby lobby;
 	
 	/** Lobby Variables */
 	Room lobby_selectedRoom;
@@ -57,8 +57,6 @@ public class LobbyActivity extends Activity {
 	private boolean client_inRoom;
 	private boolean client_inValidLocation;
 	private boolean client_roomLeader;
-	@SuppressWarnings("unused")
-	private int client_createdRoomId = -1; // Probably not needed anymore :D
 	private double client_latitude;
 	private double client_longitude;
 	private SharedPreferences client_gamePrefs;
@@ -217,7 +215,7 @@ public class LobbyActivity extends Activity {
 		katanaService.sendPacket(lobby.getCreateRequestPacket(name,diff,maxp,classid));
 	}
 
-	public void lobbyTransitionToWaitingRoom(Room selected){
+	public void lobbyTransitionToWaitingRoom(){
 		client_inRoom = true;
 		String name;
 		if(client_roomLeader){
@@ -421,14 +419,6 @@ public class LobbyActivity extends Activity {
     	client_longitude = d;
     }
     
-    public void setCreatedRoomId(int i) {
-		client_createdRoomId = i;
-	}
-    
-    public void setSelectedRoom(Room r) {
-		lobby_selectedRoom = r;
-	}
-    
     public void setLeaderboardScores(String s){
 		lobby_leaderboard = s;
 	}
@@ -453,10 +443,6 @@ public class LobbyActivity extends Activity {
 		client_gamePrefs.edit().putString(KatanaConstants.GAME_NAME, gp_name);
 		client_gamePrefs.edit().putInt(KatanaConstants.GAME_DIFF, gp_diff);
 		client_gamePrefs.edit().putInt(KatanaConstants.GAME_MAXP, gp_maxp);
-	}
-	
-	public Room getSelectedRoom() {
-		return lobby_selectedRoom;
 	}
 	
 	public void setInValidLocation(boolean b) {
