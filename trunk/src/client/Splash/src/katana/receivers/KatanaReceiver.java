@@ -61,49 +61,46 @@ public class KatanaReceiver extends BroadcastReceiver {
     		}
 		} else if(mode == 2) {
 			// LobbyActivity
-			LobbyActivity lobby = (LobbyActivity) context;
+			LobbyActivity activity = (LobbyActivity) context;
 			if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_LIST.name())){
-				lobby.setInValidLocation(true);
+				activity.setInValidLocation(true);
     			String locName = intent.getStringExtra(KatanaService.EXTRAS_LOCNAME);
     			ArrayList<String> al = intent.getStringArrayListExtra(KatanaService.EXTRAS_ROOMSLIST);
-    			lobby.lobbyShowRooms(locName, al);
+    			activity.lobbyShowRooms(locName, al);
     		} else if (intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_JOIN_OK.name())) {
     			ArrayList<String> al = intent.getStringArrayListExtra(KatanaService.EXTRAS_PLAYERLIST);
-    			lobby.waitingRoomShowPlayers(al);
-    			lobby.lobbyTransitionToWaitingRoom(lobby.getSelectedRoom());
+    			activity.waitingRoomShowPlayers(al);
+    			activity.lobbyTransitionToWaitingRoom();
     		} else if (intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_JOIN_NO.name())) {
-    			Toast.makeText(lobby, "You cant join this room.", Toast.LENGTH_SHORT).show();
+    			Toast.makeText(activity, "You cant join this room.", Toast.LENGTH_SHORT).show();
     		} else if (intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_PLAYER_JOIN.name())) {
     			String s = intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME);
     	    	String lines[] = s.split(";");
-    			lobby.waitingRoomAddPlayer(lines);
+    			activity.waitingRoomAddPlayer(lines);
     		} else if (intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_PLAYER_LEAVE.name())) {
-    			lobby.waitingRoomRemovePlayer(Integer.parseInt((intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME))));
-    		}
-    		else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_CREATE_OK.name()))	{
-    			lobby.setCreatedRoomId(Integer.parseInt(intent.getStringExtra(KatanaService.EXTRAS_ROOMID)));
-    			lobby.setRoomLeader(true);
-    			lobby.lobbyTransitionToWaitingRoom(null);
-    			lobby.lobbyRefresh(null);
-    		}
-    		else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_CREATE_NO.name()))	{
-    			lobby.setSelectedRoom(null);
+    			activity.waitingRoomRemovePlayer(Integer.parseInt((intent.getStringExtra(KatanaService.EXTRAS_PLAYERNAME))));
+    		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_CREATE_OK.name()))	{
+    			activity.setRoomLeader(true);
+    			activity.lobbyTransitionToWaitingRoom();
+    			activity.lobbyRefresh(null);
+    		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_CREATE_NO.name()))	{
+    			Toast.makeText(activity, "Room create failed!", Toast.LENGTH_SHORT).show();
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_PLAYER_UPDATE_CLASS.name())) {
-    			if(lobby.isInRoom()){
+    			if(activity.isInRoom()){
     				int playerid = intent.getIntExtra(KatanaService.EXTRAS_PLAYERID, -1);
     				int playerclass = intent.getIntExtra(KatanaService.EXTRAS_PLAYERCLASS, -1);
-    				lobby.waitingRoomClassUpdate(playerid, playerclass);
+    				activity.waitingRoomClassUpdate(playerid, playerclass);
     			}
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_DESTROY.name())) {
-    			if(lobby.isInRoom()){
-    				lobby.lobbyRefresh(null);
-    				lobby.setInRoom(false);
-    				lobby.setRoomLeader(false);
-    				lobby.transitionToLobby();
+    			if(activity.isInRoom()){
+    				activity.lobbyRefresh(null);
+    				activity.setInRoom(false);
+    				activity.setRoomLeader(false);
+    				activity.transitionToLobby();
     			}
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_LEADERBOARD.name())) {
-    			lobby.setLeaderboardScores(intent.getStringExtra(KatanaService.EXTRAS_SCORES));
-    			lobby.showLeaderboardDialog();
+    			activity.setLeaderboardScores(intent.getStringExtra(KatanaService.EXTRAS_SCORES));
+    			activity.showLeaderboardDialog();
     		}
     		else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_START.name())) {
     			Bundle gBundle = new Bundle();

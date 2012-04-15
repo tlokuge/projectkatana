@@ -408,7 +408,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	// REQUIRED FOR KATANA SERVICE DO NOT CHANGE OR REMOVE //
 	// --------------------------------------------------- //
 	private KatanaService katanaService;
-	private KatanaReceiver katanaReceiver;
+	public KatanaReceiver katanaReceiver;
 	private boolean serviceBound;
 
 	private void doBindService() {
