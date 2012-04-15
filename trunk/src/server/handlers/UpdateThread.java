@@ -25,6 +25,8 @@ public class UpdateThread implements Runnable
             if(map != null)
                 map.update(update_diff);
         }
+        
+        GameHandler.instance().safelyRemoveMaps();
     }
     
     public void run()
