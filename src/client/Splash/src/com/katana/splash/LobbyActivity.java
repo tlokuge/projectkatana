@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import katana.adapters.PlayerListAdapter;
-import katana.adapters.RoomListAdapter;
 import katana.dialogs.CreateRoomDialog;
 import katana.dialogs.LeaderboardDialog;
 import katana.dialogs.SelectClassDialog;
+import katana.objects.Lobby;
 import katana.objects.Player;
 import katana.objects.Room;
 import katana.receivers.KatanaReceiver;
@@ -41,6 +41,9 @@ import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 public class LobbyActivity extends Activity {
+	/** Lobby Class **/
+	Lobby lobby;
+	
 	/** Lobby Variables */
 	Room lobby_selectedRoom;
 	ArrayList<Room> lobby_roomList;
@@ -81,6 +84,8 @@ public class LobbyActivity extends Activity {
 		setContentView(R.layout.ryerson_vf);
 		font = Typeface.createFromAsset(getAssets(), "fonts/majalla.ttf");
 		
+		// Create Lobby
+		lobby = new Lobby(this);
 		
 		// Load Preferences
 		client_gamePrefs = getSharedPreferences(KatanaConstants.PREFS_GAME, MODE_PRIVATE);
@@ -187,36 +192,20 @@ public class LobbyActivity extends Activity {
     	// Use last known location
     	client_latitude = katanaService.getLastKnownLocation().getLatitude();
     	client_longitude = katanaService.getLastKnownLocation().getLongitude();
-    	
-    	// Send server packet
-    	KatanaPacket packet = new KatanaPacket(Opcode.C_ROOM_LIST);
-		packet.addData(Double.toString(client_latitude));
-		packet.addData(Double.toString(client_longitude));
-		katanaService.sendPacket(packet);
+    	katanaService.sendPacket(lobby.getRefreshPacket(client_latitude, client_longitude));
     }
     
     /** Lobby Methods */
 	public void lobbyShowRooms(String locName, ArrayList<String> al){
-		lobby_roomList = new ArrayList<Room>();
-		for (int i = 0; i < al.size(); i++){
-			String[] lines = al.get(i).split(";");
-			if(lines.length < 4)
-				continue;
-			lobby_roomList.add(new Room(Integer.parseInt(lines[0]),lines[1],Integer.parseInt(lines[2]),Integer.parseInt(lines[3])));
-		}
+		lobby.populate(al);
+		lobby.showRooms();
 		
 		TextView realmName = (TextView) findViewById(R.id.l_realmname);
 		realmName.setText(locName);
-		GridView lobby_roomGridView = (GridView) findViewById(R.id.gv_roomslist);
-		lobby_roomGridView.setAdapter(new RoomListAdapter(this,lobby_roomList));       
 	}
     
-	public void lobbySendJoinRequest(){
-		// Send a join room packet to server
-		KatanaPacket packet = new KatanaPacket(Opcode.C_ROOM_JOIN);
-		packet.addData(Integer.toString(lobby_selectedRoom.getId()));
-		packet.addData(Integer.toString(client_gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1)));
-		katanaService.sendPacket(packet);
+	public void lobbySendJoinRequest(){		
+		katanaService.sendPacket(lobby.getJoinRequestPacket(client_gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1)));
 	}
 	
 	public void lobbySendCreateRequest(){
@@ -225,31 +214,24 @@ public class LobbyActivity extends Activity {
 		int maxp = client_gamePrefs.getInt(KatanaConstants.GAME_MAXP, KatanaConstants.DEF_ROOMMAXP);
 		int classid = client_gamePrefs.getInt(KatanaConstants.GAME_CLASS, 1);
 		
-		lobby_selectedRoom = new Room(-1, name, diff, maxp);
-		
-		KatanaPacket packet = new KatanaPacket(Opcode.C_ROOM_CREATE);
-		packet.addData(name);
-		packet.addData(diff + "");
-		packet.addData(maxp + "");
-		packet.addData(classid + "");
-		katanaService.sendPacket(packet);
+		katanaService.sendPacket(lobby.getCreateRequestPacket(name,diff,maxp,classid));
 	}
 
 	public void lobbyTransitionToWaitingRoom(Room selected){
 		client_inRoom = true;
 		String name;
-		if(client_roomLeader) {
+		if(client_roomLeader){
 			waitingRoomShowPlayers(new ArrayList<String>());
 			name = client_gamePrefs.getString(KatanaConstants.GAME_NAME, KatanaConstants.DEF_ROOMNAME);
 		} else {
-			name = selected.getName();
+			name = lobby.getSelectedName();
 		}
 		
+		lobby.setSelectedRoom(-1);
 		TextView room_gameName = (TextView)findViewById(R.id.l_wroomname);
 		room_gameName.setTypeface(font);
 		room_gameName.setText(name);
 		transitionToWaitingRoom();
-		lobby_selectedRoom = null;
 	}
 	
 	/** Waiting room methods */
@@ -349,16 +331,12 @@ public class LobbyActivity extends Activity {
 	private OnItemClickListener selectRoomListener = new OnItemClickListener() {
 		@Override
 		public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-			
-			if(lobby_selectedRoom == null) {
-				lobby_selectedRoom = (Room) lobby_roomList.get(position);
+			if(lobby.getSelectedRoom() != position) {
+				lobby.setSelectedRoom(position);
 			} else {
-				Room lastSelected = lobby_selectedRoom;
-				lobby_selectedRoom = (Room) lobby_roomList.get(position);
-				if(lastSelected.getId() == lobby_selectedRoom.getId()) {
-					// Try to join the room
+				if(lobby.getSelectedRoom() == position) {
 					showSelectClassDialog();
-				} 
+				}
 			}
 		}
 	};
