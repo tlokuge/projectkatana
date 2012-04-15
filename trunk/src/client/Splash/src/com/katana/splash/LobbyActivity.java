@@ -47,7 +47,8 @@ public class LobbyActivity extends Activity {
 	/** Lobby Variables */
 	Room lobby_selectedRoom;
 	ArrayList<Room> lobby_roomList;
-	String lobby_leaderboard;
+	String lobby_lbScores;
+	String lobby_lbNames;
 	
 	/** Waiting room Variables */
 	private ArrayList<Player> room_playerList;
@@ -419,12 +420,20 @@ public class LobbyActivity extends Activity {
     	client_longitude = d;
     }
     
+    public void setLeaderboardNames(String s) {
+    	lobby_lbNames = s;
+    }
+    
+    public String getLeaderboardNames() {
+    	return lobby_lbNames;
+    }
+    
     public void setLeaderboardScores(String s){
-		lobby_leaderboard = s;
+		lobby_lbScores = s;
 	}
 	
 	public String getLeaderboardScores(){
-		return lobby_leaderboard;
+		return lobby_lbScores;
 	}
 	
 	public SharedPreferences getGamePrefs() {

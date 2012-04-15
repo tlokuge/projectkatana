@@ -99,7 +99,20 @@ public class KatanaReceiver extends BroadcastReceiver {
     				activity.transitionToLobby();
     			}
     		} else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_LEADERBOARD.name())) {
-    			activity.setLeaderboardScores(intent.getStringExtra(KatanaService.EXTRAS_SCORES));
+    			String[] pl_lines = intent.getStringExtra(KatanaService.EXTRAS_SCORES).split(KatanaConstants.PACKET_DATA_SEPERATOR);
+    			String score = "";
+    			String names = "";
+    			
+    			for(int i = 0; i < pl_lines.length; i++) {
+    				String[] lines = pl_lines[i].split(";");
+    				if(lines.length < 2)
+    					continue;
+    				score = score + lines[0] + "\n";
+    				names = names + lines[1] + "\n";
+    			}
+    			
+    			activity.setLeaderboardNames(names);
+    			activity.setLeaderboardScores(score);
     			activity.showLeaderboardDialog();
     		}
     		else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_START.name())) {
