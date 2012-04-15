@@ -17,6 +17,7 @@ import org.anddev.andengine.engine.camera.Camera;
 import org.anddev.andengine.engine.options.EngineOptions;
 import org.anddev.andengine.engine.options.EngineOptions.ScreenOrientation;
 import org.anddev.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
+import org.anddev.andengine.entity.IEntity;
 import org.anddev.andengine.entity.modifier.MoveModifier;
 import org.anddev.andengine.entity.scene.Scene;
 import org.anddev.andengine.entity.scene.Scene.IOnSceneTouchListener;
@@ -34,6 +35,8 @@ import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextur
 import org.anddev.andengine.opengl.texture.region.TextureRegion;
 import org.anddev.andengine.opengl.texture.region.TiledTextureRegion;
 import org.anddev.andengine.ui.activity.BaseGameActivity;
+import org.anddev.andengine.util.modifier.IModifier;
+import org.anddev.andengine.util.modifier.IModifier.IModifierListener;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -83,6 +86,8 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private int bitmap_y = 0;
 
 	private int userID;
+	
+	private MoveModifier mod;
 
 	/** ANDROID ACTIVITY LIFECYCLE **/
 	/** DO NOT REMOVE **/
@@ -194,10 +199,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 		return katanaScene;
 	}
 
-	public void onLoadComplete() {
-	
-	}
-
+	public void onLoadComplete() {}
 	private TiledTextureRegion createTexture(final String file, int animations) {
 		
 		TiledTextureRegion texture = texture_map.get(file);
@@ -265,12 +267,26 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 		float realMoveDuration = length / velocity;
 
 		if (!(offX == 0 && offY == 0)) {
-			MoveModifier mod = new MoveModifier(realMoveDuration, 
+			mod = new MoveModifier(realMoveDuration, 
 					curr_spriteX,
 					dest_spriteX, 
 					curr_spriteY, 
 					dest_spriteY);
-			sprite.registerEntityModifier(mod.deepCopy());
+			
+			mod.addModifierListener(new IModifierListener<IEntity>()
+				{
+					@Override
+					public void onModifierStarted(IModifier<IEntity> pModifier,	IEntity pItem) {}
+					@Override
+					public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) 
+					{
+						Log.d("MOVE", "COMPLETE");
+						katanaService.sendPacket(new KatanaPacket(Opcode.C_MOVE_COMPLETE));
+					}
+			
+				});
+
+			sprite.registerEntityModifier(mod);
 		}
 	}
 	
@@ -279,6 +295,14 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	//    Methods called by KatanaReceiver   //
 	// ------------------------------------- //
 	public void updateUnits(ArrayList<String> unitList) {
+		// Prepare to update any existing units
+		for(int id : unit_map.keySet())
+		{
+			Unit u = unit_map.get(id);
+			if(u != null)
+				u.update(false);
+		}
+		
 		// id, health, model
 		for (String unit_str : unitList) 
 		{
@@ -318,11 +342,25 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 					u = spawnUnit(id, max_health, model_name, x, y);
 
 				}
+				u.update(true);
 			} catch (NumberFormatException ex)
 			{
 				System.err.println("GameActivity: " + ex.getLocalizedMessage());
 			}
 		}
+		
+		ArrayList<Integer> removeList = new ArrayList<Integer>();
+		// Prepare to remove any unupdated units
+		for(int id : unit_map.keySet())
+		{
+			Unit u = unit_map.get(id);
+			if(u == null || !u.isUpdated())
+				removeList.add(id);
+		}
+		
+		// Remove unupdated units
+		for(int id : removeList)
+			despawnUnit(id);
 	}
 
 	public Unit spawnUnit(int id, int health, String model_name, float pos_x, float pos_y)
@@ -341,9 +379,21 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	public void despawnUnit(int unit_id) {
 		Unit removedUnit = unit_map.get(unit_id);
 		if(removedUnit == null)
-			return;
+			return; 
 		unit_map.remove(unit_id);
-		katanaScene.detachChild(removedUnit.getSprite());
+		removeSprite(removedUnit.getSprite());
+	}
+	
+	private void removeSprite(final AnimatedSprite sprite)
+	{
+		mEngine.runOnUpdateThread(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				katanaScene.detachChild(sprite);
+			}
+		});
 	}
 	
 	public void moveUnit(int unit_id, float x, float y) {
@@ -388,6 +438,8 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 			float x = ev.getX();
 			float y = ev.getY();
 			Unit user = unit_map.get(userID);
+			if(user == null)
+				return false;
 			AnimatedSprite sprite = user.getSprite();
 			move(sprite, ev.getX(), ev.getY());
 

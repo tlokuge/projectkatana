@@ -50,5 +50,7 @@ public abstract class Constants
     public static final int DIFFICULTY_MEDIUM = 2;
     public static final int DIFFICULTY_EASY   = 1;
     
+    public static final int GAME_END_TIMER = 30000;
+    
     public static final int CREATURE_WATERMELON_ENTRY = 2;
 }

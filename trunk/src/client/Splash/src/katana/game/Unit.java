@@ -15,6 +15,8 @@ public class Unit
 	private String model_name;
 	private HPBar bar;
 	
+	private boolean updated;
+	
 	public Unit(int id, int health, float x, float y)
 	{
 		this.id = id;
@@ -23,6 +25,8 @@ public class Unit
 		
 		this.x = x;
 		this.y = y;
+		
+		updated = false;
 	}
 	
 	public Unit(int id, int health, float x, float y, AnimatedSprite model)
@@ -59,10 +63,13 @@ public class Unit
 	{ 
 		this.model = model;
 		this.model_name = model_name;
-		this.bar = HPBar.createDefaultHPBar(model, cur_health);
+		//this.bar = HPBar.createDefaultHPBar(model, cur_health);
 	}
 	public AnimatedSprite getSprite() { return model; }
 	public String getModelName() 	  { return model_name; }
+	
+	public void update(boolean flag) { updated = flag; }
+	public boolean isUpdated() { return updated; }
 	
 	public HPBar setHPBar() { return bar; }
 
