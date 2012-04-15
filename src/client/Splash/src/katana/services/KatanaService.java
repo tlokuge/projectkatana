@@ -40,6 +40,7 @@ public class KatanaService extends Service {
 	public static final String EXTRAS_UNITMOVE_Y = "unitMove_y";
 	public static final String EXTRAS_GAMESYNC = "gameSync";
 	public static final String EXTRAS_DESPAWN = "despawn";
+	public static final String EXTRAS_GAMESCORES = "gameScore";
 	
 	
 	public static int player_id = 0;
@@ -204,6 +205,7 @@ public class KatanaService extends Service {
     		case S_GAME_UPDATE_MOVE: handleGameUpdateMove(packet, intent); break;
     		case S_GAME_UPDATE_SYNC: handleGameUpdateSync(packet, intent); break;
     		case S_GAME_DESPAWN_UNIT:handleGameDespawnUnit(packet, intent); break;
+    		case S_GAME_END: 		 handleGameEnd(packet, intent); break;
     		default: break;
     	}
     	sendBroadcast(intent);
@@ -303,6 +305,16 @@ public class KatanaService extends Service {
 		intent.putExtra(EXTRAS_DESPAWN, Integer.parseInt(packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR)[0]));
 	}
 
+	private void handleGameEnd(KatanaPacket packet, Intent intent)
+	{
+		String[] lines = packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR);
+		ArrayList<String> scoreList = new ArrayList<String>();
+		for(int i = 0; i < lines.length; i++)
+			scoreList.add(lines[i]);
+		
+		intent.putStringArrayListExtra(EXTRAS_GAMESCORES, scoreList);
+	}
+	
 	/** For Location Manager */
 	private LocationManager locManager;
 	private double latitude;

@@ -1,5 +1,7 @@
 package katana.dialogs;
 
+import java.util.ArrayList;
+
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -17,8 +19,9 @@ public class ScoresDialog extends Dialog {
 	SharedPreferences gamePrefs;
 	ImageButton close;
 	TextView scores;
+	String scoresList;
 	
-	public ScoresDialog(final Context context, int theme) {
+	public ScoresDialog(final Context context, ArrayList<String> al, int theme) {
 		super(context, theme);
 		this.setContentView(R.layout.dialog_scores);
 		this.setTitle("Leaderboards");
@@ -32,13 +35,18 @@ public class ScoresDialog extends Dialog {
 				game.katanaReceiver.startMyActivity(context, LobbyActivity.class, null);
 			}
 		});	
-
+		scoresList = "";
+		
+		for(int i = 0; i < al.size(); i++){
+			scoresList = scoresList + al.get(i) + "\n";
+		}
+		
 		close = (ImageButton) findViewById(R.id.b_close);
 		close.setImageResource(R.drawable.ic_button_close);
 		close.setOnClickListener(onClickListener);
 		
 		scores = (TextView) findViewById(R.id.l_scores);
-		scores.setText(lobbyActivity.getLeaderboardScores());
+		scores.setText(scoresList);
 	}
 
 	private View.OnClickListener onClickListener = new View.OnClickListener() {
