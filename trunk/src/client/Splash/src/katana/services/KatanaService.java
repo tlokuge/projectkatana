@@ -93,7 +93,7 @@ public class KatanaService extends Service {
 		if(socket == null)
 			return;
 		try	{
-	    	System.out.println("Received packet: " + packet.getOpcode().name());
+	    	System.out.println("Sending packet: " + packet.getOpcode().name());
 	    	System.out.println("** Packet Content ** ");
 			System.out.println(packet);
 			System.out.println("** End Packet **");
@@ -178,7 +178,7 @@ public class KatanaService extends Service {
 	private void parsePacket(KatanaPacket packet) {
     	Intent intent = new Intent(BROADCAST_ACTION);
     	intent.putExtra(OPCODE, packet.getOpcode().name());
-    	System.out.println("Sending packet: " + packet.getOpcode().name());
+    	System.out.println("Received packet: " + packet.getOpcode().name());
     	System.out.println("** Packet Content ** ");
 		System.out.println(packet);
 		System.out.println("** End Packet **");
