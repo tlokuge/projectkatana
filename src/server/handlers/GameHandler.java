@@ -1,5 +1,6 @@
 package server.handlers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
@@ -13,15 +14,21 @@ public class GameHandler
     private HashMap<Integer, Lobby> lobbies;
     private HashMap<Integer, Map> maps;
     
+    private ArrayList<Integer> removeMapList;
+    
     private Random randGenerator;
     
     private static GameHandler instance;
+    
+    private int NEXT_GUID = 500000;
     
     private GameHandler()
     {
         players        = new HashMap<Integer, Player>();
         lobbies        = new HashMap<Integer, Lobby>();
         maps           = new HashMap<Integer, Map>();
+        
+        removeMapList = new ArrayList<Integer>();
         
         randGenerator  = new Random(System.currentTimeMillis());
     }
@@ -52,11 +59,22 @@ public class GameHandler
     public Set<Integer> getLocationIDs()        { return lobbies.keySet(); }
     
     public void addMap(int id, Map map)         { maps.put(id, map); }
-    public Map removeMap(int id)                { return maps.remove(id); }
+    public void removeMap(int id)               { removeMapList.add(id); }
     public Map getMap(int id)                   { return maps.get(id); }
     public HashMap<Integer, Map> getMaps()      { return maps; }
+    
+    public void safelyRemoveMaps()
+    {
+        if(removeMapList.isEmpty())
+            return;
+        
+        for(Integer i : removeMapList)
+            maps.remove(i);
+    }
     
     public int getRandInt(int maxInt)  { return randGenerator.nextInt(maxInt); }
     public int getRandInt()            { return randGenerator.nextInt(); }
     public float getRandFloat()        { return randGenerator.nextFloat(); }
+    
+    public int getNextGUID() { return NEXT_GUID++; }
 }

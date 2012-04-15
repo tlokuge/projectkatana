@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import server.game.ai.GenericAI;
 import server.handlers.GameHandler;
+import server.handlers.SQLHandler;
 import server.shared.Constants;
 import server.shared.KatanaPacket;
 import server.shared.Opcode;
@@ -38,8 +39,6 @@ public class Map
     private final int UPDATE_INTERVAL = 2500;
     private final int DEFAULT_MAX_X = 800;
     private final int DEFAULT_MAX_Y = 480;
-    
-    private static int NEXT_MAP_GUID = 0;
     
     public Map(int id, int difficulty)
     {
@@ -91,7 +90,7 @@ public class Map
         }
     }
     
-    public static int getNextMapGUID() { return NEXT_MAP_GUID++; }
+    public static int getNextMapGUID() { return GameHandler.instance().getNextGUID(); }
     
     public int getMapId()           { return id; }
     public int getGUID()            { return guid; }
@@ -143,10 +142,7 @@ public class Map
     {
         Creature boss = creature_map.get(boss_guid);
         if(boss == null || pl == null)
-        {
-            System.err.println("DSHSJKDHSJKHDSJKLH error");
             return;
-        }
         
         ((GenericAI)boss.getAI()).checkMovement(pl);
     }
@@ -181,9 +177,13 @@ public class Map
             for(int pid : getPlayers())
             {
                 Player pl = GameHandler.instance().getPlayer(pid);
+                int points = pl.getPoints();
                 if(pl != null)
-                    packet.addData(pl.getName() + ";" + pl.getPoints() + ";");
+                    packet.addData(pl.getName() + ";" + points + ";");
+                pl.setPoints(0);
                 removeList.add(pid);
+                // Update the leaderboard in the database
+                SQLHandler.instance().runInsertUpdateLeaderboardQuery(pid, location_id, points);
             }
             broadcastPacketToAll(packet, -1);
             for(int pid : removeList)

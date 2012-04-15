@@ -35,6 +35,9 @@ public abstract class Constants
     public static final String CREATURE_QUERY = "SELECT `creature_id`, `creature_name`, `health`, `level`, `attack_speed`, `attack_damage`, `move_speed`, `model_id`, `script` FROM `creatures`;";
     public static final String MAPTEMPLATE_QUERY = "SELECT `map_id`, `location_id`, `map_name`, `background` FROM `map_template`;";
     public static final String CREATUREINSTANCE_QUERY = "SELECT `creature_id` FROM `creature_instance` WHERE `map_id` = ?;";
+    public static final String LEADERBOARDCHECK_QUERY = "SELECT `user_id` FROM `leaderboard` WHERE `user_id` = ? AND `location_id` = ?;";
+    public static final String LEADERBOARDINSERT_QUERY = "INSERT INTO `leaderboard` (`user_id`, `location_id`, `points`) VALUES (?,?,?);";
+    public static final String LEADERBOARDUPDATE_QUERY = "UPDATE `leaderboard` SET `points` = (`points` + ?) WHERE `user_id` = ? AND `location_id` = ?;";
     
     // Default player stats
     public static final int DEFAULT_PLAYER_HEALTH  = 5000;

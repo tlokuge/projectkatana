@@ -1,6 +1,7 @@
 package server.game;
 
 import server.handlers.AIHandler;
+import server.handlers.GameHandler;
 import server.templates.CreatureTemplate;
 import server.utils.SQLCache;
 
@@ -10,8 +11,6 @@ public class Creature extends Unit
     private int level;
     
     private CreatureAI ai;
-    
-    private static int NEXT_GUID = 1;
     
     public Creature(int entry, int map_id)
     {
@@ -40,7 +39,7 @@ public class Creature extends Unit
         return AIHandler.instance().getAIByName(script_name, this);
     }
     
-    public static int getNextGUID() { return NEXT_GUID++; }
+    public static int getNextGUID() { return GameHandler.instance().getNextGUID(); }
     
     public int getEntry() { return entry; }
     

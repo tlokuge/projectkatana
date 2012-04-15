@@ -88,27 +88,7 @@ public class GenericAI extends CreatureAI
     }
     
     public void updateAI(int diff)
-    {
-        if(gameTimer < diff)
-        {
-            System.out.println("ENDING GAME");
-            Map map = GameHandler.instance().getMap(m_creature.getMap());
-            KatanaPacket packet = new KatanaPacket(Opcode.S_GAME_END);
-            ArrayList<Integer> removeList = new ArrayList<Integer>();
-            for(int pid : map.getPlayers())
-            {
-                Player pl = GameHandler.instance().getPlayer(pid);
-                if(pl != null)
-                    packet.addData(pl.getName() + ";" + pl.getPoints() + ";");
-                removeList.add(pid);
-            }
-            map.broadcastPacketToAll(packet, moveTimer);
-            for(int pid : removeList)
-                map.removePlayer(pid);
-            GameHandler.instance().removeMap(map.getGUID());
-            map.despawnCreature(m_creature.getId());
-        }else gameTimer -= diff;
-        
+    {        
         if(moveTimer < diff)
         {
             Map map = GameHandler.instance().getMap(m_creature.getMap());

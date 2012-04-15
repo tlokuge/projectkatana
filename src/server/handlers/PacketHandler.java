@@ -602,6 +602,7 @@ public abstract class PacketHandler
             instance.addPlayer(p);
             p.removeFromRoom();
             p.setRoomLeader(false);
+            p.setLocation(-1);
             p.addToMap(instance.getGUID());
             //p.sendPacket(response);
             System.err.println("Added player " + p + " to map " + p.getMap());

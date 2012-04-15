@@ -322,7 +322,7 @@ public class SQLHandler
         return null;
     }
     
-    public ArrayList<HashMap<String, Object>> runModelQuery()
+    public synchronized ArrayList<HashMap<String, Object>> runModelQuery()
     {
         checkConnection();
         
@@ -342,7 +342,7 @@ public class SQLHandler
         return null;
     }
     
-    public ArrayList<HashMap<String, Object>> runMapTemplateQuery()
+    public synchronized ArrayList<HashMap<String, Object>> runMapTemplateQuery()
     {
         checkConnection();
         
@@ -362,7 +362,7 @@ public class SQLHandler
         return null;
     }
     
-    public ArrayList<HashMap<String, Object>> runCreatureInstanceQuery(int map_id)
+    public synchronized ArrayList<HashMap<String, Object>> runCreatureInstanceQuery(int map_id)
     {
         checkConnection();
         
@@ -381,6 +381,44 @@ public class SQLHandler
         }
         
         return null;
+    }
+    
+    public synchronized void runInsertUpdateLeaderboardQuery(int player_id, int location_id, int score)
+    {
+        checkConnection();
+        
+        try
+        {
+            PreparedStatement query = connection.prepareStatement(Constants.LEADERBOARDCHECK_QUERY);
+            query.setInt(1, player_id);
+            query.setInt(2, location_id);
+            ResultSet results = query.executeQuery();
+            // Check if a row exists, if so just update the row
+            if(results.first())
+            {
+                query.close();
+                query = connection.prepareStatement(Constants.LEADERBOARDUPDATE_QUERY);
+                query.setInt(1, score);
+                query.setInt(2, player_id);
+                query.setInt(3, location_id);
+                query.execute();
+            }
+            else // Row does not exist, so insert it
+            {
+                query.close();
+                query = connection.prepareStatement(Constants.LEADERBOARDINSERT_QUERY);
+                query.setInt(1, player_id);
+                query.setInt(2, location_id);
+                query.setInt(3, score);
+                query.execute();
+            }
+            
+            query.close();
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
     }
     
     /*
