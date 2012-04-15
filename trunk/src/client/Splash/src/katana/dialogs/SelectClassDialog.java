@@ -1,6 +1,6 @@
 package katana.dialogs;
 
-import katana.shared.KatanaConstants;
+import katana.constants.KatanaConstants;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -41,7 +41,7 @@ public class SelectClassDialog extends Dialog {
     	class1.setImageResource(R.drawable.ic_class1_a);
     	class2.setImageResource(R.drawable.ic_class2_a);
     	close.setImageResource(R.drawable.ic_button_close);
-    	desc.setText(KatanaConstants.DEF_DESC);
+    	desc.setText(KatanaConstants.CLASS_DESC_DEFAULT);
     	selectedClass = 0;
     	
     	class1.setOnClickListener(onClickListener);
@@ -78,7 +78,7 @@ public class SelectClassDialog extends Dialog {
 			selectedClass = 1;
 			class1.setImageResource(R.drawable.ic_class1_b);
 			class2.setImageResource(R.drawable.ic_class2_a);
-			desc.setText(KatanaConstants.DESC_CLASS1);
+			desc.setText(KatanaConstants.CLASS_DESC_1);
 		}
 	}
 	
@@ -99,7 +99,7 @@ public class SelectClassDialog extends Dialog {
 			selectedClass = 2;
 			class1.setImageResource(R.drawable.ic_class1_a);
 			class2.setImageResource(R.drawable.ic_class2_b);
-			desc.setText(KatanaConstants.DESC_CLASS2);
+			desc.setText(KatanaConstants.CLASS_DESC_2);
 		}
 	}
 	

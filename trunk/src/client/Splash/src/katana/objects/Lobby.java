@@ -3,8 +3,7 @@ package katana.objects;
 import java.util.ArrayList;
 
 import katana.adapters.RoomListAdapter;
-import katana.shared.KatanaPacket;
-import katana.shared.Opcode;
+import katana.constants.Opcode;
 import android.widget.GridView;
 
 import com.katana.splash.LobbyActivity;

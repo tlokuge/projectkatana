@@ -8,9 +8,9 @@ import java.net.SocketException;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 
-import katana.shared.KatanaConstants;
-import katana.shared.KatanaPacket;
-import katana.shared.Opcode;
+import katana.constants.KatanaConstants;
+import katana.constants.Opcode;
+import katana.objects.KatanaPacket;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -85,7 +85,7 @@ public class KatanaService extends Service {
 			ex.printStackTrace();
 			// Print error, quit?
 		}
-		return START_STICKY;
+		return START_NOT_STICKY;
 	}
 	
 	/* methods for clients */

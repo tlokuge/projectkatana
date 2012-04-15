@@ -1,4 +1,4 @@
-package katana.shared;
+package katana.constants;
 
 public enum Opcode
 {

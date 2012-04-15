@@ -1,11 +1,11 @@
 package com.katana.splash;
 
+import katana.constants.KatanaConstants;
+import katana.constants.Opcode;
+import katana.objects.KatanaPacket;
 import katana.receivers.KatanaReceiver;
 import katana.services.KatanaService;
 import katana.services.KatanaService.KatanaSBinder;
-import katana.shared.KatanaConstants;
-import katana.shared.KatanaPacket;
-import katana.shared.Opcode;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -31,7 +31,6 @@ public class LoginActivity extends Activity {
 	private EditText cpasField;
 	
     /** Android activity life cycle */
-	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,10 +74,10 @@ public class LoginActivity extends Activity {
     }
     
     private void checkInput(String user, String pass, String cpas) {
-    	if( user.length() < KatanaConstants.USERMIN || pass.length() < KatanaConstants.PASSMIN || cpas.length() < KatanaConstants.PASSMIN) {
+    	if( user.length() < KatanaConstants.LOGIN_USERMIN || pass.length() < KatanaConstants.LOGIN_PASSMIN || cpas.length() < KatanaConstants.LOGIN_PASSMIN) {
     		// Area to expand on invalid input cases for more customized User Interface
         	Toast.makeText(getApplicationContext(), "Check input fields!", Toast.LENGTH_SHORT).show();
-    	} else if ( user.length() > KatanaConstants.USERMAX || pass.length() > KatanaConstants.PASSMAX || cpas.length() > KatanaConstants.PASSMAX){
+    	} else if ( user.length() > KatanaConstants.LOGIN_USERMAX || pass.length() > KatanaConstants.LOGIN_PASSMAX || cpas.length() > KatanaConstants.LOGIN_PASSMAX){
     		// Area to expand on invalid input cases for more customized User Interface
         	Toast.makeText(getApplicationContext(), "Check input fields!", Toast.LENGTH_SHORT).show();
     	} else {
@@ -104,10 +103,10 @@ public class LoginActivity extends Activity {
 	public void setUserLoginPrefs(boolean isNewUser){
 		String user = userField.getText().toString().trim();
 		String pass = passField.getText().toString().trim();
-		getSharedPreferences(KatanaConstants.PREFS_LOGIN,MODE_PRIVATE).edit().putString(KatanaConstants.LOGIN_USER, user).commit();
-	    getSharedPreferences(KatanaConstants.PREFS_LOGIN,MODE_PRIVATE).edit().putString(KatanaConstants.LOGIN_PASS, pass).commit();
+		getSharedPreferences(KatanaConstants.PREFS_LOGIN,MODE_PRIVATE).edit().putString(KatanaConstants.PREFS_LOGIN_USER, user).commit();
+	    getSharedPreferences(KatanaConstants.PREFS_LOGIN,MODE_PRIVATE).edit().putString(KatanaConstants.PREFS_LOGIN_PASS, pass).commit();
 	    if( isNewUser ) {
-	    	String message = "Welcome to  " + KatanaConstants.GAMENAME + ", " + user + "!";
+	    	String message = "Welcome to  " + KatanaConstants.KATANA_NAME + ", " + user + "!";
 			Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
 	    } else {
 	    	String message = "Welcome back " + user + "!";
