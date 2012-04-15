@@ -44,4 +44,11 @@ public abstract class Constants
     
     // Waiting Room
     public static final int ROOM_MAX_PLAYERS    = 4;
+    
+    // Game
+    public static final int DIFFICULTY_HARD   = 3;
+    public static final int DIFFICULTY_MEDIUM = 2;
+    public static final int DIFFICULTY_EASY   = 1;
+    
+    public static final int CREATURE_WATERMELON_ENTRY = 2;
 }

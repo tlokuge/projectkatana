@@ -48,7 +48,7 @@ public abstract class Unit
         this.pos_x  = 0.0f;
         this.pos_y  = 0.0f;
         
-        System.out.println("USER [" + id + ", " + name + "]");
+        System.out.println("UNIT [" + id + ", " + name + "]");
     }
     
     public void setId(int id)        { this.id = id; }
@@ -82,6 +82,7 @@ public abstract class Unit
         if(map != null)
             map.broadcastPacketToAll(packet, id);
     }
+    public void setPosition(float x, float y) { this.pos_x = x; this.pos_y = y; }
     public float getX()                  { return pos_x; }
     public float getY()                  { return pos_y; }
     public void addToMap(int map)        { this.map_id = map; }

@@ -81,7 +81,7 @@ public class KatanaClient implements Runnable
         
     }
     
-    public void sendPacket(KatanaPacket packet)
+    public synchronized void sendPacket(KatanaPacket packet)
     {
         try
         {
@@ -132,7 +132,10 @@ public class KatanaClient implements Runnable
             System.err.println("KatanaClient " + id + " - received IOEXception " + ex.getLocalizedMessage() + "!");
             remove(false);
         }
-        catch(NullPointerException ex) {}
+        catch(NullPointerException ex) 
+        {
+            ex.printStackTrace();
+        }
         catch(Exception ex)
         {
             //remove(true);

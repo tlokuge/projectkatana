@@ -1,6 +1,7 @@
 package server.handlers;
 
 import java.util.HashMap;
+import java.util.Random;
 import java.util.Set;
 import server.game.Map;
 import server.game.Player;
@@ -12,6 +13,8 @@ public class GameHandler
     private HashMap<Integer, Lobby> lobbies;
     private HashMap<Integer, Map> maps;
     
+    private Random randGenerator;
+    
     private static GameHandler instance;
     
     private GameHandler()
@@ -19,6 +22,8 @@ public class GameHandler
         players        = new HashMap<Integer, Player>();
         lobbies        = new HashMap<Integer, Lobby>();
         maps           = new HashMap<Integer, Map>();
+        
+        randGenerator  = new Random(System.currentTimeMillis());
     }
     
     public Object clone() throws CloneNotSupportedException
@@ -50,4 +55,8 @@ public class GameHandler
     public Map removeMap(int id)                { return maps.remove(id); }
     public Map getMap(int id)                   { return maps.get(id); }
     public HashMap<Integer, Map> getMaps()      { return maps; }
+    
+    public int getRandInt(int maxInt)  { return randGenerator.nextInt(maxInt); }
+    public int getRandInt()            { return randGenerator.nextInt(); }
+    public float getRandFloat()        { return randGenerator.nextFloat(); }
 }

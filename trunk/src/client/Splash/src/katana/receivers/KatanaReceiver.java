@@ -121,6 +121,11 @@ public class KatanaReceiver extends BroadcastReceiver {
 				float y = intent.getFloatExtra(KatanaService.EXTRAS_UNITMOVE_Y, 0.0f);
 				
 				game.moveUnit(id, x, y);
+			}else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_UPDATE_SYNC.name())) {
+				game.updateUnits(intent.getStringArrayListExtra(KatanaService.EXTRAS_GAMESYNC));
+			}
+			else if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_GAME_DESPAWN_UNIT.name())) {
+				game.despawnUnit(intent.getIntExtra(KatanaService.EXTRAS_DESPAWN, -1));
 			}
 		}
 	}

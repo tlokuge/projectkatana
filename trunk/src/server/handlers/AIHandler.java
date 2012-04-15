@@ -3,6 +3,7 @@ package server.handlers;
 import java.util.HashMap;
 import server.game.Creature;
 import server.game.CreatureAI;
+import server.game.ai.DoNothingAI;
 import server.game.ai.GenericAI;
 
 public class AIHandler 
@@ -43,6 +44,7 @@ public class AIHandler
     {
         System.out.println("Loading AI Scripts....");
         ai_map.put("GenericAI", new GenericAI(null));
+        ai_map.put("DoNothingAI", new DoNothingAI(null));
         
         System.out.println("Loaded " + ai_map.size() + " AI Scripts!");
     }

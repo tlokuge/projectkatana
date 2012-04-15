@@ -19,6 +19,11 @@ public class Creature extends Unit
         
         this.entry = entry;
         CreatureTemplate template = SQLCache.getCreature(entry);
+        if(template == null)
+        {
+            System.err.println("OMG ATTEMPTED TO SPAWN INVALID CREATURE (entry: " + entry + ")");
+            return;
+        }
         this.setName(template.getCreatureName());
         this.setMaxhealth(template.getHealth());
         this.setLevel(template.getLevel());
@@ -27,8 +32,6 @@ public class Creature extends Unit
         this.setSpeed(template.getMoveSpeed());
         this.setModelId(template.getModelId());
         this.ai = loadAI(template.getScript());
-        
-        System.err.println("Loaded AI: " + ai.toString());
     }
     
     private CreatureAI loadAI(String script_name)
@@ -43,6 +46,7 @@ public class Creature extends Unit
     public void setLevel(int level) { this.level = level; }
     public int getLevel()           { return level; }
 
+    public CreatureAI getAI()       { return ai; }
     @Override
     public void update(int diff)
     {

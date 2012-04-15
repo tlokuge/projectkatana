@@ -38,6 +38,8 @@ public class KatanaService extends Service {
 	public static final String EXTRAS_UNITMOVE = "unitMove";
 	public static final String EXTRAS_UNITMOVE_X = "unitMove_x";
 	public static final String EXTRAS_UNITMOVE_Y = "unitMove_y";
+	public static final String EXTRAS_GAMESYNC = "gameSync";
+	public static final String EXTRAS_DESPAWN = "despawn";
 	
 	
 	public static int player_id = 0;
@@ -199,7 +201,9 @@ public class KatanaService extends Service {
     		case S_ROOM_CREATE_NO: break;
     		case S_GAME_START: 		 handleGamePopulate(packet, intent); break;
     		case S_GAME_POPULATE: 	 handleGamePopulate(packet, intent); break;
-    		case S_GAME_UPDATE_MOVE: handleUpdateMove(packet, intent); break;
+    		case S_GAME_UPDATE_MOVE: handleGameUpdateMove(packet, intent); break;
+    		case S_GAME_UPDATE_SYNC: handleGameUpdateSync(packet, intent); break;
+    		case S_GAME_DESPAWN_UNIT:handleGameDespawnUnit(packet, intent); break;
     		default: break;
     	}
     	sendBroadcast(intent);
@@ -275,13 +279,28 @@ public class KatanaService extends Service {
 		intent.putStringArrayListExtra(EXTRAS_GAMESTART, unitList);
 	}
 	
-	private void handleUpdateMove(KatanaPacket packet, Intent intent)
+	private void handleGameUpdateMove(KatanaPacket packet, Intent intent)
 	{
 		String[] lines = packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR);
 		
 		intent.putExtra(EXTRAS_UNITMOVE, Integer.parseInt(lines[0]));
 		intent.putExtra(EXTRAS_UNITMOVE_X, Float.parseFloat(lines[1]));
 		intent.putExtra(EXTRAS_UNITMOVE_Y, Float.parseFloat(lines[2]));
+	}
+	private void handleGameUpdateSync(KatanaPacket packet, Intent intent)
+	{
+		String[] lines = packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR);
+		
+		ArrayList<String> unitList = new ArrayList<String>();
+		for(String s : lines)
+			unitList.add(s);
+		
+		intent.putStringArrayListExtra(EXTRAS_GAMESYNC, unitList);
+	}
+	
+	private void handleGameDespawnUnit(KatanaPacket packet, Intent intent)
+	{
+		intent.putExtra(EXTRAS_DESPAWN, Integer.parseInt(packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR)[0]));
 	}
 
 	/** For Location Manager */
