@@ -43,6 +43,7 @@ public enum Opcode
     S_GAME_UPDATE_SYNC,
     S_GAME_SPELL_CAST,
     S_GAME_UPDATE_MOVE,
+    S_GAME_DESPAWN_UNIT,
     S_GAME_END;
     
     public static Opcode getOpcode(int code)

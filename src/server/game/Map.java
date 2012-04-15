@@ -2,7 +2,8 @@ package server.game;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
+import java.util.Iterator;
+import server.game.ai.GenericAI;    
 import server.handlers.GameHandler;
 import server.shared.KatanaPacket;
 import server.shared.Opcode;
@@ -21,14 +22,15 @@ public class Map
     
     private ArrayList<Integer> player_list;
     private HashMap<Integer, Creature> creature_map;
+    private ArrayList<Creature> temp_creature_holder;
     
     private boolean ready;
     
     private int interval;
+    private int boss_guid;
     
     private int max_x;
     private int max_y;
-    private Random rand;
     
     private final int UPDATE_INTERVAL = 2500;
     private final int DEFAULT_MAX_X = 800;
@@ -49,6 +51,7 @@ public class Map
         
         this.player_list  = new ArrayList<Integer>();
         this.creature_map = new HashMap<Integer, Creature>();
+        this.temp_creature_holder = new ArrayList<Creature>();
         
         this.ready = false;
         
@@ -56,7 +59,8 @@ public class Map
         
         this.max_x = DEFAULT_MAX_X;
         this.max_y = DEFAULT_MAX_Y;
-        this.rand = new Random(System.currentTimeMillis());
+        
+        boss_guid = -1;
         
         spawnRandomCreatureFromTemplate(template);
     }
@@ -68,20 +72,19 @@ public class Map
         
         ArrayList<Integer> entries = template.getCreatureEntries();
         if(entries == null || entries.isEmpty())
-            return;
-        
-        int creature_id = entries.get(new Random(System.currentTimeMillis()).nextInt(entries.size()));
-        
-        Creature creature = new Creature(creature_id);
-        if(creature != null)
         {
-            System.err.println("Spawned creature: " + creature);
-            creature_map.put(creature.getId(), creature);
-            creature.moveTo(50, 50);
-            creature.addToMap(guid);
+            System.err.println("No creature to spawn on map creation");
+            return;
         }
         
-        System.err.println("dshjadsk");
+        int creature_id = entries.get(GameHandler.instance().getRandInt(entries.size()));
+        
+        Creature creature = spawnCreature(creature_id, getRandX(), getRandY());
+        if(creature != null)
+        {
+            System.out.println("Spawned creature: " + creature);
+            boss_guid = creature.getId();
+        }
     }
     
     public static int getNextMapGUID() { return NEXT_MAP_GUID++; }
@@ -97,8 +100,8 @@ public class Map
     public void setMaxCoords(int mx, int my) { this.max_x = mx; this.max_y = my; }
     public float getMaxX()                   { return max_x; }
     public float getMaxY()                   { return max_y; }
-    public float getRandX()                  { return rand.nextInt(max_x); }
-    public float getRandY()                  { return rand.nextInt(max_y); }
+    public float getRandX()                  { return GameHandler.instance().getRandInt(max_x); }
+    public float getRandY()                  { return GameHandler.instance().getRandInt(max_y); }
     
     public void addPlayer(Player pl) { player_list.add(pl.getId()); }
     public void removePlayer(int pid)
@@ -113,12 +116,47 @@ public class Map
     
     public ArrayList<Integer> getPlayers() { return player_list; }
     
-    public Creature spawnCreature(int cid)
+    public Creature spawnCreature(int cid, float pos_x, float pos_y)
     {
         Creature creature = new Creature(cid);
-        creature_map.put(creature.getId(), creature);
+        temp_creature_holder.add(creature);
         creature.addToMap(guid);
+        creature.setPosition(pos_x, pos_y);
         return creature;
+    }
+    
+    public void despawnCreature(int cguid)
+    {
+        creature_map.remove((Integer)cguid);
+        
+        KatanaPacket packet = new KatanaPacket(Opcode.S_GAME_DESPAWN_UNIT);
+        packet.addData(cguid + "");
+        broadcastPacketToAll(packet, -1);
+    }
+    
+    public Creature getCreature(int cguid) { return creature_map.get(cguid); }
+    
+    public void notifyMovement(Player pl)
+    {
+        Creature boss = creature_map.get(boss_guid);
+        if(boss == null || pl == null)
+        {
+            System.err.println("DSHSJKDHSJKHDSJKLH error");
+            return;
+        }
+        
+        ((GenericAI)boss.getAI()).checkMovement(pl);
+    }
+    
+    private void mergeTempHolder()
+    {
+        if(temp_creature_holder.isEmpty())
+            return;
+        
+        for(Creature cr : temp_creature_holder)
+            creature_map.put(cr.getId(), cr);
+        
+        temp_creature_holder.clear();
     }
     
     public void update(int diff)
@@ -139,11 +177,16 @@ public class Map
             interval = UPDATE_INTERVAL;
         }else interval -= diff;
         
-        for(int cid : creature_map.keySet())
-            creature_map.get(cid).update(diff);
+        Iterator<Integer> itr = creature_map.keySet().iterator();
+        while(itr.hasNext())
+        {
+            Creature c = creature_map.get(itr.next());
+            if(c != null)
+                c.update(diff);
+        }
     }
     
-    public void broadcastPacketToAll(KatanaPacket packet, int ignore_player_id)
+    public synchronized void broadcastPacketToAll(KatanaPacket packet, int ignore_player_id)
     {
         if(packet == null)
         {
@@ -181,6 +224,8 @@ public class Map
                         c.getX() + ";" + c.getY() + ";" +
                         SQLCache.getModel(c.getModelId()) + ";\n");
         }
+        
+        mergeTempHolder();
         
         return data;
     }

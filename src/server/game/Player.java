@@ -1,6 +1,5 @@
 package server.game;
 
-import server.utils.SQLCache;
 import server.communication.KatanaClient;
 import server.handlers.GameHandler;
 import server.handlers.PacketHandler;
@@ -8,6 +7,7 @@ import server.limbo.GameRoom;
 import server.limbo.Lobby;
 import server.shared.KatanaPacket;
 import server.templates.PlayerClassTemplate;
+import server.utils.SQLCache;
 
 public class Player extends Unit
 {
@@ -22,6 +22,8 @@ public class Player extends Unit
     
     private boolean is_room_leader;
     
+    private int points;
+    
     public Player(int id, String name, int max_health, int atk_speed, int atk_damage, float move_speed, int model_id, KatanaClient client)
     {
         super(id, name, max_health, atk_speed, atk_damage, move_speed, model_id);
@@ -34,6 +36,8 @@ public class Player extends Unit
         location = -1;
     
         room_id = -1;
+        
+        points = 0;
         
         is_room_leader = false;
     }
@@ -86,6 +90,22 @@ public class Player extends Unit
     public int getRoom()               { return room_id; }
     public void setRoomLeader(boolean leader) { this.is_room_leader = leader; }
     public boolean isRoomLeader()             { return is_room_leader; }
+    
+    public void setPoints(int points) { this.points = points; }
+    public void addPoints(int add)    { this.points += add; }
+    public int getPoints()            { return points; }
+    
+    @Override
+    public void moveTo(float mx, float my)
+    {
+        super.moveTo(mx, my);
+        
+        Map map = GameHandler.instance().getMap(getMap());
+        if(map == null)
+            return;
+        
+        map.notifyMovement(this);
+    }
     
     @Override
     public void update(int diff)

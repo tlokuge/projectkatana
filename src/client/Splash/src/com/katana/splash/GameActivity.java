@@ -77,6 +77,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private final int NUM_ANIMS = 5;
 
 	private HashMap<Integer, Unit> unit_map = new HashMap<Integer, Unit>();
+	private HashMap<String, TiledTextureRegion> texture_map = new HashMap<String, TiledTextureRegion>();
 	private int bitmap_x = 0;
 	private int bitmap_y = 0;
 
@@ -110,12 +111,10 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 
 	public void onPause() {
 		super.onPause();
-		
 		Log.d("CDA", "onPause");
 		System.err.println("onPause");
 		katanaService.sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
 		doUnbindService();
-		doKillService();
 		this.finish();
 	}
 
@@ -199,6 +198,11 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	}
 
 	private TiledTextureRegion createTexture(final String file, int animations) {
+		
+		TiledTextureRegion texture = texture_map.get(file);
+		if(texture != null)
+			return texture;
+		
 		int bx = bitmap_x;
 		int by = bitmap_y;
 		stepBitmapCoordinates();
@@ -216,7 +220,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 					BITMAP_SQUARE, 
 					TextureOptions.BILINEAR_PREMULTIPLYALPHA);
 
-		return BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(
+		texture = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(
 				spriteTextureAtlas, 
 				this, 
 				file, 
@@ -224,6 +228,10 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 				by, 
 				animations, 
 				1);
+		
+		texture_map.put(file, texture);
+		
+		return texture;
 	}
 
 	private void stepBitmapCoordinates() {
@@ -264,12 +272,6 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 			sprite.registerEntityModifier(mod.deepCopy());
 		}
 	}
-
-	public void removeSprite(int sprite_id) {
-		Unit removedUnit = unit_map.get(sprite_id);
-		unit_map.remove(sprite_id);
-		katanaScene.detachChild(removedUnit.getSprite());
-	}
 	
 	
 	// ------------------------------------- //
@@ -277,13 +279,14 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	// ------------------------------------- //
 	public void updateUnits(ArrayList<String> unitList) {
 		// id, health, model
-		for (String unit_str : unitList) {
+		for (String unit_str : unitList) 
+		{
 			String[] data = unit_str.split(";");
-			if (data.length < 6) {
+			if (data.length < 6)
 				continue;
-			}
-	
-			try {
+			
+			try 
+			{
 				Integer id = Integer.parseInt(data[0].trim());
 				int cur_health = Integer.parseInt(data[1].trim());
 				int max_health = Integer.parseInt(data[2].trim());
@@ -291,32 +294,38 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 				float y = Float.parseFloat(data[4].trim());
 				String model_name = data[5].trim();
 				Unit u = unit_map.remove(id);
-				if (u != null) {
+				if (u != null)
+				{
 					u.setHealth(cur_health);
 					u.setMaxHealth(max_health);
-					if (!u.getModelName().equalsIgnoreCase(model_name)) {
+					if (!u.getModelName().equalsIgnoreCase(model_name)) 
+					{
 						TiledTextureRegion texture = createTexture(model_name, NUM_ANIMS);
 						AnimatedSprite model = createSprite(x, y, texture, u);
 						u.setModel(model, model_name);
 					}
 					float oldx = u.getX();
 					float oldy = u.getY();
-					if (oldx != x && oldy != y) {
+					if (oldx != x && oldy != y) 
+					{
 						u.moveTo(x, y);
 						u.getSprite().setPosition(x, y);
 					}
 					unit_map.put(id, u);
-				} else {
+				} else
+				{
 					u = spawnUnit(id, max_health, model_name, x, y);
 
 				}
-			} catch (NumberFormatException ex) {
+			} catch (NumberFormatException ex)
+			{
 				System.err.println("GameActivity: " + ex.getLocalizedMessage());
 			}
 		}
 	}
 
-	public Unit spawnUnit(int id, int health, String model_name, float pos_x, float pos_y) {
+	public Unit spawnUnit(int id, int health, String model_name, float pos_x, float pos_y)
+	{
 		final Unit unit = new Unit(id, health, pos_x, pos_y);
 		TiledTextureRegion texture = createTexture(model_name, NUM_ANIMS);
 		AnimatedSprite model = createSprite(pos_x, pos_y, texture, unit);
@@ -326,6 +335,14 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 		katanaScene.registerTouchArea(model);
 		unit_map.put(id, unit);
 		return unit;
+	}
+
+	public void despawnUnit(int unit_id) {
+		Unit removedUnit = unit_map.get(unit_id);
+		if(removedUnit == null)
+			return;
+		unit_map.remove(unit_id);
+		katanaScene.detachChild(removedUnit.getSprite());
 	}
 	
 	public void moveUnit(int unit_id, float x, float y) {
