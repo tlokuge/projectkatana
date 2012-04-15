@@ -13,7 +13,7 @@ public class Creature extends Unit
     
     private static int NEXT_GUID = 1;
     
-    public Creature(int entry)
+    public Creature(int entry, int map_id)
     {
         super(getNextGUID(), "", 0, 0, 0, 0f, 0);
         
@@ -31,6 +31,7 @@ public class Creature extends Unit
         this.setAttackDamage(template.getAttackDamage());
         this.setSpeed(template.getMoveSpeed());
         this.setModelId(template.getModelId());
+        this.addToMap(map_id);
         this.ai = loadAI(template.getScript());
     }
     

@@ -17,6 +17,7 @@ public enum Opcode
     C_GAME_START,
     C_GAME_READY,
     C_MOVE,
+    C_MOVE_COMPLETE,
     C_SPELL,
     
     /** SERVER **/

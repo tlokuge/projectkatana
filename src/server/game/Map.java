@@ -3,8 +3,9 @@ package server.game;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import server.game.ai.GenericAI;    
+import server.game.ai.GenericAI;
 import server.handlers.GameHandler;
+import server.shared.Constants;
 import server.shared.KatanaPacket;
 import server.shared.Opcode;
 import server.templates.MapTemplate;
@@ -27,6 +28,8 @@ public class Map
     private boolean ready;
     
     private int interval;
+    private int gameEndTimer;
+    
     private int boss_guid;
     
     private int max_x;
@@ -55,7 +58,8 @@ public class Map
         
         this.ready = false;
         
-        interval = UPDATE_INTERVAL*2;
+        interval        = UPDATE_INTERVAL*2;
+        gameEndTimer    = Constants.GAME_END_TIMER;
         
         this.max_x = DEFAULT_MAX_X;
         this.max_y = DEFAULT_MAX_Y;
@@ -118,9 +122,8 @@ public class Map
     
     public Creature spawnCreature(int cid, float pos_x, float pos_y)
     {
-        Creature creature = new Creature(cid);
+        Creature creature = new Creature(cid, guid);
         temp_creature_holder.add(creature);
-        creature.addToMap(guid);
         creature.setPosition(pos_x, pos_y);
         return creature;
     }
@@ -159,10 +162,36 @@ public class Map
         temp_creature_holder.clear();
     }
     
+    private void clearCreatures()
+    {
+        temp_creature_holder.clear();
+        creature_map.clear();
+    }
+    
     public void update(int diff)
     {
         if(!ready)
             return;
+        
+        if(gameEndTimer < diff)
+        {
+            System.out.println("ENDING GAME");
+            KatanaPacket packet = new KatanaPacket(Opcode.S_GAME_END);
+            ArrayList<Integer> removeList = new ArrayList<Integer>();
+            for(int pid : getPlayers())
+            {
+                Player pl = GameHandler.instance().getPlayer(pid);
+                if(pl != null)
+                    packet.addData(pl.getName() + ";" + pl.getPoints() + ";");
+                removeList.add(pid);
+            }
+            broadcastPacketToAll(packet, -1);
+            for(int pid : removeList)
+                removePlayer(pid);
+            clearCreatures();
+            ready = false;
+            GameHandler.instance().removeMap(guid);
+        }else gameEndTimer -= diff;
         
         for(int pid : player_list)
         {
@@ -180,6 +209,12 @@ public class Map
         Iterator<Integer> itr = creature_map.keySet().iterator();
         while(itr.hasNext())
         {
+            if(itr == null)
+            {
+                System.err.println("null itr");
+                break;
+            }
+            
             Creature c = creature_map.get(itr.next());
             if(c != null)
                 c.update(diff);

@@ -38,9 +38,10 @@ public abstract class PacketHandler
             case C_CLASS_CHANGE:handleClassChangePacket(client, packet);break;
             case C_LEADERBOARD: handleLeaderboardPacket(client, packet);break;
                 
-            case C_GAME_START:  handleGameStartPacket(client, packet);  break;
-            case C_GAME_READY:  handleGameReadyPacket(client, packet);  break;
-            case C_MOVE:        handleGameMovePacket(client, packet);   break;
+            case C_GAME_START:      handleGameStartPacket(client, packet);      break;
+            case C_GAME_READY:      handleGameReadyPacket(client, packet);      break;
+            case C_MOVE:            handleGameMovePacket(client, packet);       break;
+            case C_MOVE_COMPLETE:   handleMoveCompletePacket(client, packet);   break;
                 
             case C_SPELL:
                 break;
@@ -588,15 +589,12 @@ public abstract class PacketHandler
             System.err.println("Player " + pl + " attempted to start game but is not leader!");
             return;
         }
-        
         Lobby lobby = GameHandler.instance().getLobby(pl.getLocation());
         GameRoom room = lobby.getRoom(pl.getRoom());
-        
         ArrayList<MapTemplate> templates = SQLCache.getMapsByLocation(pl.getLocation());
         // Pick a random template
-        MapTemplate template = templates.get(new Random(System.currentTimeMillis()).nextInt(templates.size()));
+        MapTemplate template = templates.get(GameHandler.instance().getRandInt(templates.size()));
         Map instance = new Map(template.getId(), room.getDifficulty());
-        
         KatanaPacket response = new KatanaPacket(Opcode.S_GAME_START);
         for(int i : room.getPlayers())
         {
@@ -656,6 +654,11 @@ public abstract class PacketHandler
         }
         
         Player pl = client.getPlayer();
+        if(pl == null)
+        {
+            System.err.println("Movement error");
+            return;
+        }
         Map instance = GameHandler.instance().getMap(pl.getMap());
         if(instance == null)
         {
@@ -670,5 +673,24 @@ public abstract class PacketHandler
         response.addData(data[0]);
         response.addData(data[1]);
         instance.broadcastPacketToAll(response, pl.getId());
+    }
+    
+    public static void handleMoveCompletePacket(KatanaClient client, KatanaPacket packet)
+    {
+        Player pl = client.getPlayer();
+        if(pl == null)
+        {
+            System.err.println("move complete error");
+            return;
+        }
+        
+        Map instance = GameHandler.instance().getMap(pl.getMap());
+        if(instance == null)
+        {
+            System.err.println("move complete map error");
+            return;
+        }
+        
+        instance.notifyMovement(pl);
     }
 }

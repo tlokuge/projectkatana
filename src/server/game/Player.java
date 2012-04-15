@@ -96,18 +96,6 @@ public class Player extends Unit
     public int getPoints()            { return points; }
     
     @Override
-    public void moveTo(float mx, float my)
-    {
-        super.moveTo(mx, my);
-        
-        Map map = GameHandler.instance().getMap(getMap());
-        if(map == null)
-            return;
-        
-        map.notifyMovement(this);
-    }
-    
-    @Override
     public void update(int diff)
     {
         super.update(diff);
