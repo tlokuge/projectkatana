@@ -15,7 +15,8 @@ public class LeaderboardDialog extends Dialog {
 	LobbyActivity lobbyActivity;
 	SharedPreferences gamePrefs;
 	ImageButton close;
-	TextView scores;
+	TextView leaderNames;
+	TextView leaderScores;
 	
 	public LeaderboardDialog(Context context, int theme) {
 		super(context, theme);
@@ -35,8 +36,11 @@ public class LeaderboardDialog extends Dialog {
 		close.setImageResource(R.drawable.ic_button_close);
 		close.setOnClickListener(onClickListener);
 		
-		scores = (TextView) findViewById(R.id.l_lb);
-		scores.setText(lobbyActivity.getLeaderboardScores());
+		leaderNames = (TextView) findViewById(R.id.l_leadernames);
+		leaderNames.setText(lobbyActivity.getLeaderboardNames());
+		
+		leaderScores = (TextView) findViewById(R.id.l_leaderscores);
+		leaderScores.setText(lobbyActivity.getLeaderboardScores());
 	}
 
 	private View.OnClickListener onClickListener = new View.OnClickListener() {

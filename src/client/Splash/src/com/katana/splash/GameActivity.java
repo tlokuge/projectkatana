@@ -89,6 +89,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	
 	private MoveModifier mod;
 
+	private boolean gameEnd = false;
 	/** ANDROID ACTIVITY LIFECYCLE **/
 	/** DO NOT REMOVE **/
 	protected void onStart() {
@@ -106,12 +107,13 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 
 	public void onBackPressed() {
 		super.onBackPressed();
-		
 		Log.d("CDA", "onBackPressed");
 		System.err.println("onBackPressed");
-		katanaService.sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
-		doKillService();
-		this.finish();
+		if(!gameEnd) {
+			katanaService.sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
+			doKillService();
+			this.finish();
+		}
 		// TODO: Add logic for "do you want to quit"
 	}
 
@@ -119,7 +121,6 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 		super.onPause();
 		Log.d("CDA", "onPause");
 		System.err.println("onPause");
-		katanaService.sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
 		doUnbindService();
 		this.finish();
 	}
@@ -508,6 +509,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	// --------------------------------------------------- //
 
 	public void showScoresDialog(ArrayList<String> al) {
+		gameEnd = true;
 		ScoresDialog dialog = new ScoresDialog(this, al, R.style.DialogTheme);
     	dialog.show(); 
 	}

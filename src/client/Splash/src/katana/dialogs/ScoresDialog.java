@@ -38,7 +38,10 @@ public class ScoresDialog extends Dialog {
 		scoresList = "";
 		
 		for(int i = 0; i < al.size(); i++){
-			scoresList = scoresList + al.get(i) + "\n";
+			String line[] = al.get(i).split(";");
+			if (line.length < 2)
+				continue;
+			scoresList = scoresList + line[0] + ":\t " + line[1] + "\n";
 		}
 		
 		close = (ImageButton) findViewById(R.id.b_close);
