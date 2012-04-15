@@ -107,8 +107,8 @@ public class KatanaReceiver extends BroadcastReceiver {
     				String[] lines = pl_lines[i].split(";");
     				if(lines.length < 2)
     					continue;
-    				score = score + lines[0] + "\n";
-    				names = names + lines[1] + "\n";
+    				score = score + lines[1] + "\n";
+    				names = names + lines[0] + "\n";
     			}
     			
     			activity.setLeaderboardNames(names);
@@ -120,6 +120,7 @@ public class KatanaReceiver extends BroadcastReceiver {
     			gBundle.putString(KatanaService.EXTRAS_GAMEBG, intent.getStringExtra(KatanaService.EXTRAS_GAMEBG));
     			gBundle.putStringArrayList(KatanaService.EXTRAS_GAMESTART, intent.getStringArrayListExtra(KatanaService.EXTRAS_GAMESTART));
     			System.out.println("gBundle: " + gBundle);
+    			activity.setInValidLocation(false);
     			startMyActivity(context, GameActivity.class, gBundle);
     		}
 		} else if(mode == 3) {

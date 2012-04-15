@@ -164,7 +164,8 @@ public class LobbyActivity extends Activity {
             case R.id.about:
                 return true;
             case R.id.leaderboards:
-            	katanaService.sendPacket(new KatanaPacket(Opcode.C_LEADERBOARD));
+            	if(client_inValidLocation)
+            		katanaService.sendPacket(new KatanaPacket(Opcode.C_LEADERBOARD));
                 return true;
             case R.id.refresh:
             	lobbyRefresh(null);
