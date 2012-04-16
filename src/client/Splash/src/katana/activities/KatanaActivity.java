@@ -1,5 +1,6 @@
 package katana.activities;
 
+import katana.constants.Opcode;
 import katana.objects.KatanaPacket;
 import katana.receivers.KatanaReceiver;
 import katana.receivers.LocationReceiver;
@@ -34,6 +35,7 @@ public class KatanaActivity extends Activity {
 	@Override
 	protected void onStop() {
 		super.onStop();
+		doUnregisterReceivers();
 	}
 	
 	// ------------------------ //
@@ -104,9 +106,12 @@ public class KatanaActivity extends Activity {
     }
 	
 	public void doUnregisterReceivers() {
+		System.err.println("Removing katanaReceiver " + katanaReceiver + " ...");
 		unregisterReceiver(katanaReceiver);
-	    if(locationMode)
+	    if(locationMode) {
+	    	System.err.println("Location was registered, removing " + katanaLocReceiver + " ...");
 	    	unregisterReceiver(katanaLocReceiver);
+	    }
 	}
 	
 	public Location getLastKnownLocation(){
@@ -140,4 +145,13 @@ public class KatanaActivity extends Activity {
             serviceBound = false;
         }
     };
+    
+    // ---------------------- //
+    // KatanaActivity methods //
+    // ---------------------- //
+    public void logout() {
+    	sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
+    	doKillService();
+    	finish();
+    }
 }

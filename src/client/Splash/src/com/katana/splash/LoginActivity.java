@@ -41,8 +41,6 @@ public class LoginActivity extends KatanaActivity {
     @Override
     protected void onStop() {
     	super.onStop();
-    	doUnbindService();
-    	doUnregisterReceivers();
     	finish();
     }
     
@@ -54,10 +52,7 @@ public class LoginActivity extends KatanaActivity {
 	public void onBackPressed() {
     	super.onBackPressed();
     	Log.d("CDA", "onBackPressed Called");
-    	KatanaPacket packet = new KatanaPacket(Opcode.C_LOGOUT);
-    	sendPacket(packet);
-    	doKillService();
-    	doUnregisterReceivers();
+    	logout();
     }
     
     // ------------------------ //

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/selectClass"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:layout_margin="10dp" >
+    
+    	<TextView android:id="@+id/dialog_quit_message"
+    	    android:layout_width="wrap_content"
+    	    android:layout_height="wrap_content"
+    	    android:layout_centerHorizontal="true"
+    	    android:text="@string/dialog_quit_message"
+    	    android:textSize="20dp"
+    	    android:gravity="center" />
+    	
+    	<Button android:id="@+id/dialog_quit_yes"
+    	    android:layout_width="wrap_content"
+    	    android:layout_height="wrap_content"
+    	    android:layout_below="@id/dialog_quit_message"
+    	    android:layout_alignParentLeft="true"
+    	    android:text="@string/dialog_quit_yes"
+    	    android:textSize="15dp" />
+    	
+    	<Button android:id="@+id/dialog_quit_no"
+    	    android:layout_width="wrap_content"
+    	    android:layout_height="wrap_content"
+    	    android:layout_below="@id/dialog_quit_message"
+    	    android:layout_toRightOf="@id/dialog_quit_yes"
+    	    android:text="@string/dialog_quit_no"
+    	    android:textSize="15dp" />
+</RelativeLayout>
