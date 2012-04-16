@@ -41,6 +41,7 @@ public class LoginActivity extends KatanaActivity {
     @Override
     protected void onStop() {
     	super.onStop();
+    	doUnbindService();
     	finish();
     }
     

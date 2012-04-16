@@ -71,6 +71,7 @@ public class SplashActivity extends KatanaActivity {
     @Override
     protected void onStop() {
     	super.onStop();
+    	doUnbindService();
     	finish();
     }
     

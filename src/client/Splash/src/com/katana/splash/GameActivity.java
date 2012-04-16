@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import katana.constants.KatanaConstants;
 import katana.constants.Opcode;
+import katana.dialogs.GameQuitDialog;
 import katana.dialogs.ScoresDialog;
 import katana.game.Unit;
 import katana.objects.KatanaPacket;
@@ -106,22 +107,18 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	}
 
 	public void onBackPressed() {
-		super.onBackPressed();
 		Log.d("CDA", "onBackPressed");
-		System.err.println("onBackPressed");
 		if(!gameEnd) {
-			katanaService.sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
-			doKillService();
-			this.finish();
+			GameQuitDialog dialog = new GameQuitDialog(this, R.style.DialogTheme);
+			dialog.show();
 		}
 		// TODO: Add logic for "do you want to quit"
 	}
-
-	public void onPause() {
-		super.onPause();
-		Log.d("CDA", "onPause");
-		System.err.println("onPause");
+	
+	public void onStop() {
+		super.onStop();
 		doUnbindService();
+		doUnregisterReceiver();
 		this.finish();
 	}
 
@@ -478,16 +475,18 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 		if (serviceBound) {
 			// Detach our existing connection and broadcast receiver
 			unbindService(katanaConnection);
-			unregisterReceiver(katanaReceiver);
 			serviceBound = false;
 		}
 	}
 
 	private void doKillService() {
 		unbindService(katanaConnection);
-		unregisterReceiver(katanaReceiver);
 		stopService(new Intent(this, KatanaService.class));
 		serviceBound = false;
+	}
+	
+	private void doUnregisterReceiver(){
+		unregisterReceiver(katanaReceiver);
 	}
 
 	private ServiceConnection katanaConnection = new ServiceConnection() {
@@ -508,6 +507,12 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 	// ---------------- END KATANASERVICE ---------------- //
 	// --------------------------------------------------- //
 
+	public void logout(){
+		katanaService.sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
+    	doKillService();
+    	finish();
+	}
+	
 	public void showScoresDialog(ArrayList<String> al) {
 		gameEnd = true;
 		ScoresDialog dialog = new ScoresDialog(this, al, R.style.DialogTheme);
