@@ -90,8 +90,10 @@ public class KatanaService extends Service {
 	
 	/* methods for clients */
 	public void sendPacket(KatanaPacket packet) {
-		if(socket == null)
+		if(socket == null) {
+			System.err.println("Socket is null!");
 			return;
+		}
 		try	{
 	    	System.out.println("Sending packet: " + packet.getOpcode().name());
 	    	System.out.println("** Packet Content ** ");

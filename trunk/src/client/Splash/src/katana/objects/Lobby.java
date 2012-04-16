@@ -4,18 +4,18 @@ import java.util.ArrayList;
 
 import katana.adapters.RoomListAdapter;
 import katana.constants.Opcode;
+import android.app.Activity;
 import android.widget.GridView;
 
-import com.katana.splash.LobbyActivity;
 import com.katana.splash.R;
 
 public class Lobby extends ArrayList<Room> {
 	private static final long serialVersionUID = 1L;
 	
-	private LobbyActivity context;
+	private Activity context;
 	private int selectedRoom;
 	
-	public Lobby(LobbyActivity a){
+	public Lobby(Activity a){
 		context = a;
 		selectedRoom = -1;
 	}

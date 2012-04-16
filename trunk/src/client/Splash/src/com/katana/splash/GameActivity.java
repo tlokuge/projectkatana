@@ -467,7 +467,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 
 	private void doBindService() {
 		System.err.println("doBindService");
-		katanaReceiver = new KatanaReceiver(3);
+		katanaReceiver = new KatanaReceiver(KatanaReceiver.MODE_GAME);
 		Intent intent = new Intent(this, KatanaService.class);
 		bindService(intent, katanaConnection, Context.BIND_AUTO_CREATE);
 		registerReceiver(katanaReceiver, new IntentFilter(
