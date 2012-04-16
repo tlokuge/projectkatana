@@ -57,17 +57,17 @@ public class GameRoom
     public void setLeader(int id)  { this.leader_id = id; }
     public int getLeader()         { return leader_id; }
     
-    public boolean addPlayer(Player pl)
+    public synchronized boolean addPlayer(Player pl)
     {
         if(players.size() == max_players)
             return false;
         players.add(pl.getId());
         return true;
     }
-    public void removePlayer(Player pl) { players.remove((Object)pl.getId()); }
-    public void clearPlayers()  { players.clear(); }
+    public synchronized void removePlayer(Player pl) { players.remove((Object)pl.getId()); }
+    public synchronized void clearPlayers()  { players.clear(); }
     
-    public ArrayList<Integer> getPlayers() { return players; }
+    public synchronized ArrayList<Integer> getPlayers() { return players; }
     
     public String toString()
     {
