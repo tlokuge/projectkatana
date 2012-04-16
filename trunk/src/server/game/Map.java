@@ -106,8 +106,8 @@ public class Map
     public float getRandX()                  { return GameHandler.instance().getRandInt(max_x); }
     public float getRandY()                  { return GameHandler.instance().getRandInt(max_y); }
     
-    public void addPlayer(Player pl) { player_list.add(pl.getId()); }
-    public void removePlayer(int pid)
+    public synchronized void addPlayer(Player pl) { player_list.add(pl.getId()); }
+    public synchronized void removePlayer(int pid)
     {
         player_list.remove((Integer)pid);
         if(player_list.isEmpty())
@@ -117,7 +117,7 @@ public class Map
         }
     }
     
-    public ArrayList<Integer> getPlayers() { return player_list; }
+    public synchronized ArrayList<Integer> getPlayers() { return player_list; }
     
     public Creature spawnCreature(int cid, float pos_x, float pos_y)
     {
@@ -138,7 +138,7 @@ public class Map
     
     public Creature getCreature(int cguid) { return creature_map.get(cguid); }
     
-    public void notifyMovement(Player pl)
+    public synchronized void notifyMovement(Player pl)
     {
         Creature boss = creature_map.get(boss_guid);
         if(boss == null || pl == null)

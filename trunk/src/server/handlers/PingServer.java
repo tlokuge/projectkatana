@@ -40,11 +40,10 @@ public class PingServer implements Runnable
                 client.sendPacket(packet);
             }
             
-            HashMap<Integer, Player> map = GameHandler.instance().getPlayers();
-            Set<Integer> keys = map.keySet();
+            Set<Integer> keys = GameHandler.instance().getPlayers().keySet();
             for(Integer key : keys)
             {
-                Player player = map.get(key);
+                Player player = GameHandler.instance().getPlayer(key);
                 if(player.getClient().getPingsSent() > max_pings)
                 {
                     System.err.println("Maximum number of pings (" + max_pings + ") sent to player " + player + " - disconnecting them");

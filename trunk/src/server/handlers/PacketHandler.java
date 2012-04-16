@@ -423,10 +423,14 @@ public abstract class PacketHandler
         
         KatanaPacket packet = new KatanaPacket(Opcode.S_ROOM_LIST);
         packet.addData(lobby.getName());
-        for(int room_id : lobby.getRoomIds())
+        Set<Integer> roomids = lobby.getRoomIds();
+        synchronized(roomids)
         {
-            GameRoom room = lobby.getRoom(room_id);
-            packet.addData(room.getId() + ";" + room.getName() + ";" + room.getDifficulty() + ";" + room.getMaxPlayers() + ";");
+            for(int room_id : roomids)
+            {
+                GameRoom room = lobby.getRoom(room_id);
+                packet.addData(room.getId() + ";" + room.getName() + ";" + room.getDifficulty() + ";" + room.getMaxPlayers() + ";");
+            }
         }
         
         return packet;

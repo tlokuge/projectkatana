@@ -36,11 +36,11 @@ public class Lobby
     
     public int getLocationId()    { return id; }
     
-    public void addPlayer(Player pl)      { players.add(pl.getId()); }
-    public void removePlayer(Player pl)   { players.remove((Object)pl.getId()); }
-    public ArrayList<Integer> getPlayers() { return players; }
+    public synchronized void addPlayer(Player pl)      { players.add(pl.getId()); }
+    public synchronized void removePlayer(Player pl)   { players.remove((Object)pl.getId()); }
+    public synchronized ArrayList<Integer> getPlayers() { return players; }
     
-    public void addRoom(GameRoom room)    
+    public synchronized void addRoom(GameRoom room)    
     {
         if(room == null)
         {
@@ -50,9 +50,9 @@ public class Lobby
         rooms.put(room.getId(), room);
         System.out.println("Lobby: " + name + " (" + id + ") added room: " + room.getId() + " - " + room.getName());
     }
-    public void removeRoom(int room) { rooms.remove(room); }
-    public GameRoom getRoom(int room){ return rooms.get(room);  }
-    public Set<Integer> getRoomIds() { return rooms.keySet(); }
+    public synchronized void removeRoom(int room) { rooms.remove(room); }
+    public synchronized GameRoom getRoom(int room){ return rooms.get(room);  }
+    public synchronized Set<Integer> getRoomIds() { return rooms.keySet(); }
     
     public double getLatitude()  { return latitude; }
     public double getLongitude() { return longitude; }
@@ -60,16 +60,19 @@ public class Lobby
     public String getName()      { return name; }
     public int getNextRoomId()   { return ++nextRoomId; }
     
-    public void broadcastToLobby(KatanaPacket packet)
+    public synchronized void broadcastToLobby(KatanaPacket packet)
     {
         if(packet == null)
             return;
         
-        for(int pid : players)
+        synchronized(players)
         {
-            Player p = GameHandler.instance().getPlayer(pid);
-            if(p != null)
-                p.sendPacket(packet);
+            for(int pid : players)
+            {
+                Player p = GameHandler.instance().getPlayer(pid);
+                if(p != null)
+                    p.sendPacket(packet);
+            }
         }
     }
     
