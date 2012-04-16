@@ -9,6 +9,7 @@ import katana.constants.KatanaConstants;
 import katana.constants.Opcode;
 import katana.dialogs.CreateRoomDialog;
 import katana.dialogs.LeaderboardDialog;
+import katana.dialogs.LobbyQuitDialog;
 import katana.dialogs.SelectClassDialog;
 import katana.objects.KatanaPacket;
 import katana.objects.Lobby;
@@ -93,7 +94,6 @@ public class LobbyActivity extends KatanaActivity {
 	protected void onStop() {
 		if(isServiceBound()){
 			doUnbindService();
-			doUnregisterReceivers();
 		}
 		super.onStop();
 
@@ -124,11 +124,7 @@ public class LobbyActivity extends KatanaActivity {
 				return;
 			}
 		} else {
-			super.onBackPressed();
-			sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
-			doKillService();
-			doUnregisterReceivers();
-			this.finish();
+			showQuitDialog();
 		}
 	}
 	
@@ -330,6 +326,11 @@ public class LobbyActivity extends KatanaActivity {
     
     public void showLeaderboardDialog(){
     	LeaderboardDialog dialog = new LeaderboardDialog(this, R.style.DialogTheme);
+    	dialog.show();
+    }
+    
+    public void showQuitDialog() {
+    	LobbyQuitDialog dialog = new LobbyQuitDialog(this,R.style.DialogTheme);
     	dialog.show();
     }
 	

@@ -37,6 +37,7 @@ public class SplashActivity extends KatanaActivity {
         		Looper.myLooper().prepare();
         		try {
     				doBindService(KatanaReceiver.MODE_SPLASH, false);
+    				sleep(3500);
     				int slept = 0;
     				while(!isServiceBound()) {
     					if(slept > 5000) {
@@ -45,6 +46,7 @@ public class SplashActivity extends KatanaActivity {
     					}
     					System.out.println("Sleeping: Waiting for service to be bound");
     					sleep(500);
+    					slept += 500;
     				}
         			
         			client_prefs = getSharedPreferences(KatanaConstants.PREFS_LOGIN, MODE_PRIVATE);
@@ -69,9 +71,7 @@ public class SplashActivity extends KatanaActivity {
     @Override
     protected void onStop() {
     	super.onStop();
-        doUnbindService();
-        doUnregisterReceivers();
-        finish();
+    	finish();
     }
     
 	// ------------------------ //
@@ -82,9 +82,7 @@ public class SplashActivity extends KatanaActivity {
 	public void onBackPressed() {
 		super.onBackPressed();
 		Log.d("CDA", "onBackPressed Called"); 
-		sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
-		doKillService();
-		doUnregisterReceivers();
+		logout();
 	}
 	
 	// ---------------------- //
