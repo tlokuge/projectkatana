@@ -51,4 +51,10 @@
 	<string name="l_wroomdiff">Difficulty</string>
 	<string name="b_start">Start!</string>
 	<string name="icon">Class Icon</string>
+	
+	<!-- Quit Dialog -->
+	<string name="dialog_quit_message">Are you sure you want to quit?</string>
+	<string name="dialog_quit_yes">Yes</string>
+	<string name="dialog_quit_no">No</string>
+	
 </resources>

@@ -3,6 +3,7 @@ package com.katana.splash;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import katana.activities.KatanaActivity;
 import katana.adapters.PlayerListAdapter;
 import katana.constants.KatanaConstants;
 import katana.constants.Opcode;
@@ -12,22 +13,11 @@ import katana.dialogs.SelectClassDialog;
 import katana.objects.KatanaPacket;
 import katana.objects.Lobby;
 import katana.objects.Player;
-import katana.objects.Room;
 import katana.receivers.KatanaReceiver;
-import katana.receivers.LocationReceiver;
-import katana.services.KatanaService;
-import katana.services.KatanaService.KatanaSBinder;
-import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
+import android.location.Location;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.PowerManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -40,21 +30,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
-public class LobbyActivity extends Activity {
-	/** Lobby Class **/
+public class LobbyActivity extends KatanaActivity {
+	
+	// Lobby Variables
 	public Lobby lobby;
+	private String lobby_lbScores;
+	private String lobby_lbNames;
 	
-	/** Lobby Variables */
-	Room lobby_selectedRoom;
-	ArrayList<Room> lobby_roomList;
-	String lobby_lbScores;
-	String lobby_lbNames;
-	
-	/** Waiting room Variables */
+	// Waiting Room Variables
 	private ArrayList<Player> room_playerList;
 	private HashMap<Integer, Integer> room_playerRef;
 	
-	/** Client Variables */
+	// Client Variables
 	private boolean client_inRoom;
 	private boolean client_inValidLocation;
 	private boolean client_roomLeader;
@@ -62,13 +49,13 @@ public class LobbyActivity extends Activity {
 	private double client_longitude;
 	private SharedPreferences client_gamePrefs;
 	
-	/** Android Power Manager */
-	private PowerManager.WakeLock wakeLockManager;
+	// UI Variables
+	private Typeface font;
 	
-	/** HARDCODING STUFF :D **/
-	Typeface font;
+	// -------------------------- //
+	// Android Activity Lifecycle //
+	// -------------------------- //
 	
-	/** Android Activity Lifecycle */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -97,20 +84,19 @@ public class LobbyActivity extends Activity {
 	}
 	
 	@Override
-	protected void onStart(){
+	protected void onStart() {
+		doBindService(KatanaReceiver.MODE_LOBBY, true);
 		super.onStart();
-		doBindService();
-		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        wakeLockManager = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, "My Tag");
-        wakeLockManager.acquire();	
 	}
 	
 	@Override
-	protected void onStop(){
+	protected void onStop() {
+		if(isServiceBound()){
+			doUnbindService();
+			doUnregisterReceivers();
+		}
 		super.onStop();
-		doUnbindService();
-		wakeLockManager.release();
-		this.finish();
+
 	}
 	
 	@Override
@@ -118,7 +104,10 @@ public class LobbyActivity extends Activity {
 		super.onDestroy();
 	}
 	
-	/** Android Hardware Buttons */
+	// ------------------------ //
+	// Android Hardware Buttons //
+	// ------------------------ //
+	
 	@Override
 	public void onBackPressed() {
 		Log.d("CDA", "onBackPressed Called");
@@ -126,24 +115,27 @@ public class LobbyActivity extends Activity {
 			client_inRoom = false;
 			if(client_roomLeader) {
 				client_roomLeader = false;
-				KatanaPacket packet = new KatanaPacket(Opcode.C_ROOM_DESTROY);
-				katanaService.sendPacket(packet);
+				sendPacket(new KatanaPacket(Opcode.C_ROOM_DESTROY));
 				lobbyRefresh(null);
 				transitionToLobby();
 			} else {
-				katanaService.sendPacket(new KatanaPacket(Opcode.C_ROOM_LEAVE));
+				sendPacket(new KatanaPacket(Opcode.C_ROOM_LEAVE));
 				transitionToLobby();
 				return;
 			}
 		} else {
 			super.onBackPressed();
-			katanaService.sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
+			sendPacket(new KatanaPacket(Opcode.C_LOGOUT));
 			doKillService();
+			doUnregisterReceivers();
 			this.finish();
 		}
 	}
 	
-	/** Android Menus */
+	// ------------- //
+	// Android Menus //
+	// ------------- //
+	
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
     	menu.clear();
@@ -166,7 +158,7 @@ public class LobbyActivity extends Activity {
                 return true;
             case R.id.leaderboards:
             	if(client_inValidLocation)
-            		katanaService.sendPacket(new KatanaPacket(Opcode.C_LEADERBOARD));
+            		sendPacket(new KatanaPacket(Opcode.C_LEADERBOARD));
                 return true;
             case R.id.refresh:
             	lobbyRefresh(null);
@@ -179,7 +171,10 @@ public class LobbyActivity extends Activity {
         }
     } 
     
-    /** Button View onPress */
+	// -------------------- //
+	// Button View on Press //
+	// -------------------- //
+    
     public void lobbyCreateButton(View v) {
     	if(!client_inValidLocation) {
     		Toast.makeText(getApplicationContext(), R.string.b_norealm, Toast.LENGTH_SHORT);
@@ -190,13 +185,19 @@ public class LobbyActivity extends Activity {
     }
     
     public void lobbyRefresh(View v) {
-    	// Use last known location
-    	client_latitude = katanaService.getLastKnownLocation().getLatitude();
-    	client_longitude = katanaService.getLastKnownLocation().getLongitude();
-    	katanaService.sendPacket(lobby.getRefreshPacket(client_latitude, client_longitude));
+    	Location loc = getLastKnownLocation();
+    	if(loc != null) {
+	    	client_latitude = getLastKnownLocation().getLatitude();
+	    	client_longitude = getLastKnownLocation().getLongitude();
+	    	sendPacket(lobby.getRefreshPacket(client_latitude, client_longitude));
+    	} else {
+    		Toast.makeText(getApplicationContext(), "Wait for GPS location!", Toast.LENGTH_SHORT).show();
+    	}
     }
     
-    /** Lobby Methods */
+	// ------------- //
+	// Lobby Methods //
+	// ------------- //
 	public void lobbyShowRooms(String locName, ArrayList<String> al){
 		lobby.populate(al);
 		lobby.showRooms();
@@ -206,7 +207,7 @@ public class LobbyActivity extends Activity {
 	}
     
 	public void lobbySendJoinRequest(){		
-		katanaService.sendPacket(lobby.getJoinRequestPacket(client_gamePrefs.getInt(KatanaConstants.PREFS_GAME_CLASS, 1)));
+		sendPacket(lobby.getJoinRequestPacket(client_gamePrefs.getInt(KatanaConstants.PREFS_GAME_CLASS, 1)));
 	}
 	
 	public void lobbySendCreateRequest(){
@@ -215,7 +216,7 @@ public class LobbyActivity extends Activity {
 		int maxp = client_gamePrefs.getInt(KatanaConstants.PREFS_GAME_MAXP, KatanaConstants.ROOM_MAXP_DEFAULT);
 		int classid = client_gamePrefs.getInt(KatanaConstants.PREFS_GAME_CLASS, 1);
 		
-		katanaService.sendPacket(lobby.getCreateRequestPacket(name,diff,maxp,classid));
+		sendPacket(lobby.getCreateRequestPacket(name,diff,maxp,classid));
 	}
 
 	public void lobbyTransitionToWaitingRoom(){
@@ -235,7 +236,10 @@ public class LobbyActivity extends Activity {
 		transitionToWaitingRoom();
 	}
 	
-	/** Waiting room methods */
+	// -------------------- //
+	// Waiting Room Methods //
+	// -------------------- //
+	
 	public void waitingRoomShowPlayers(ArrayList<String> al) {
 		// Update user interface and bounce user to waiting room
 		room_playerList = new ArrayList<Player>();
@@ -297,7 +301,7 @@ public class LobbyActivity extends Activity {
 		
 		KatanaPacket packet = new KatanaPacket(Opcode.C_CLASS_CHANGE);
 		packet.addData(Integer.toString(i));
-		katanaService.sendPacket(packet);
+		sendPacket(packet);
 		
 		waitingRoomUpdatePlayers();
     }
@@ -308,11 +312,12 @@ public class LobbyActivity extends Activity {
 	}
 	
     public void waitingRoomStartGame(View view) {
-		KatanaPacket packet = new KatanaPacket(Opcode.C_GAME_START);
-		katanaService.sendPacket(packet);
+		sendPacket(new KatanaPacket(Opcode.C_GAME_START));
 	}
 
-	/** Show Dialog Methods */
+	// ------------------- //
+	// Show Dialog Methods //
+	// ------------------- //
     public void showSelectClassDialog() {
     	SelectClassDialog dialog = new SelectClassDialog(this, R.style.DialogTheme);
     	dialog.show();
@@ -328,7 +333,9 @@ public class LobbyActivity extends Activity {
     	dialog.show();
     }
 	
-    /** onClickListeners */
+	// ------------------ //
+	// on Click Listeners //
+	// ------------------ //
 	private OnItemClickListener selectRoomListener = new OnItemClickListener() {
 		@Override
 		public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
@@ -342,54 +349,9 @@ public class LobbyActivity extends Activity {
 		}
 	};
     
-	/** Required for KatanaService */
-	private KatanaService katanaService;
-	private KatanaReceiver katanaReceiver;
-	private LocationReceiver katanaLocReceiver;
-	private boolean serviceBound;
-	
-    private void doBindService() {
-    	katanaReceiver = new KatanaReceiver(2);
-    	katanaLocReceiver = new LocationReceiver();
-        Intent intent = new Intent(this,KatanaService.class);
-        bindService(intent, katanaConnection, Context.BIND_AUTO_CREATE);
-        registerReceiver(katanaReceiver, new IntentFilter(KatanaService.BROADCAST_ACTION));
-        registerReceiver(katanaLocReceiver, new IntentFilter(KatanaService.BROADCAST_LOCATION));
-    }
-    
-    private void doUnbindService() {
-        if (serviceBound) {
-            // Detach our existing connection and broadcast receiver
-            unbindService(katanaConnection);
-            unregisterReceiver(katanaReceiver);
-            unregisterReceiver(katanaLocReceiver);
-            serviceBound = false;
-        }
-    }
-    
-	private void doKillService() {
-        unbindService(katanaConnection);
-        unregisterReceiver(katanaReceiver);
-        unregisterReceiver(katanaLocReceiver);
-        stopService(new Intent(this, KatanaService.class));
-        serviceBound = false;
-    }
-	
-    private ServiceConnection katanaConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            KatanaSBinder binder = (KatanaSBinder) service;
-            katanaService = binder.getService();
-            serviceBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            serviceBound = false;
-        }
-    };
-    
-	/** Viewflipper transitions */
+	// ----------------------- //
+	// ViewFlipper Transitions //
+	// ----------------------- //
 	public void transitionToLobby() {
 		ViewFlipper viewFlipper = (ViewFlipper) findViewById(R.id.flipper);
 		viewFlipper.setInAnimation(this, R.anim.transition_infrom_right);
@@ -404,7 +366,9 @@ public class LobbyActivity extends Activity {
 		viewFlipper.showNext();
 	}
 	
-    /** Public getter/setter methods */
+	// --------------------- //
+	// LobbyActivity Methods //
+	// --------------------- //
     public void setRoomLeader(boolean b) {
     	client_roomLeader = b;
     }

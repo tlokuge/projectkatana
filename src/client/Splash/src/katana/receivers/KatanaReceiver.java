@@ -16,6 +16,11 @@ import com.katana.splash.LobbyActivity;
 import com.katana.splash.LoginActivity;
 
 public class KatanaReceiver extends BroadcastReceiver {
+	public static final int MODE_SPLASH = 0;
+	public static final int MODE_LOGIN = 1;
+	public static final int MODE_LOBBY = 2;
+	public static final int MODE_GAME = 3;
+	
 	private int mode;
 	
 	public KatanaReceiver(int m){
@@ -121,7 +126,8 @@ public class KatanaReceiver extends BroadcastReceiver {
     			gBundle.putStringArrayList(KatanaService.EXTRAS_GAMESTART, intent.getStringArrayListExtra(KatanaService.EXTRAS_GAMESTART));
     			System.out.println("gBundle: " + gBundle);
     			activity.setInValidLocation(false);
-    			startMyActivity(context, GameActivity.class, gBundle);
+    			startMyActivity(activity, GameActivity.class, gBundle);
+    			activity.finish();
     		}
 		} else if(mode == 3) {
 			// GameActivity
