@@ -48,7 +48,7 @@ public abstract class Unit
         this.pos_x  = 0.0f;
         this.pos_y  = 0.0f;
         
-        System.out.println("UNIT [" + id + ", " + name + "]");
+        //System.out.println("UNIT [" + id + ", " + name + "]");
     }
     
     public void setId(int id)        { this.id = id; }

@@ -33,6 +33,7 @@ public abstract class CreatureAI
     
     public void despawnCreature(int cguid)
     {
+        System.err.println("Despawning " + cguid);
         Map map = GameHandler.instance().getMap(m_creature.getMap());
         if(map == null)
             return;

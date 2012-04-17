@@ -2,7 +2,6 @@ package server.game;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import server.game.ai.GenericAI;
 import server.handlers.GameHandler;
 import server.handlers.SQLHandler;
@@ -25,6 +24,7 @@ public class Map
     private ArrayList<Integer> player_list;
     private HashMap<Integer, Creature> creature_map;
     private ArrayList<Creature> temp_creature_holder;
+    private ArrayList<Integer> creature_remove_list;
     
     private boolean ready;
     
@@ -54,10 +54,11 @@ public class Map
         this.player_list  = new ArrayList<Integer>();
         this.creature_map = new HashMap<Integer, Creature>();
         this.temp_creature_holder = new ArrayList<Creature>();
+        this.creature_remove_list = new ArrayList<Integer>();
         
         this.ready = false;
         
-        interval        = UPDATE_INTERVAL*2;
+        interval        = UPDATE_INTERVAL;
         gameEndTimer    = Constants.GAME_END_TIMER;
         
         this.max_x = DEFAULT_MAX_X;
@@ -119,7 +120,7 @@ public class Map
     
     public synchronized ArrayList<Integer> getPlayers() { return player_list; }
     
-    public Creature spawnCreature(int cid, float pos_x, float pos_y)
+    public synchronized Creature spawnCreature(int cid, float pos_x, float pos_y)
     {
         Creature creature = new Creature(cid, guid);
         temp_creature_holder.add(creature);
@@ -127,9 +128,9 @@ public class Map
         return creature;
     }
     
-    public void despawnCreature(int cguid)
+    public synchronized void despawnCreature(int cguid)
     {
-        creature_map.remove((Integer)cguid);
+        creature_remove_list.add(cguid);
         
         KatanaPacket packet = new KatanaPacket(Opcode.S_GAME_DESPAWN_UNIT);
         packet.addData(cguid + "");
@@ -206,22 +207,24 @@ public class Map
             interval = UPDATE_INTERVAL;
         }else interval -= diff;
         
-        Iterator<Integer> itr = creature_map.keySet().iterator();
-        while(itr.hasNext())
+        for(Integer cguid : creature_map.keySet())
         {
-            if(itr == null)
-            {
-                System.err.println("null itr");
-                break;
-            }
-            
-            Creature c = creature_map.get(itr.next());
+            Creature c = creature_map.get(cguid);
             if(c != null)
                 c.update(diff);
         }
+        
+        for(Integer cguid : creature_remove_list)
+        {
+            System.out.print(cguid + ",");
+            creature_map.remove(cguid);
+        }
+        
+        creature_remove_list.clear();
+        mergeTempHolder();
     }
     
-    public synchronized void broadcastPacketToAll(KatanaPacket packet, int ignore_player_id)
+    public void broadcastPacketToAll(KatanaPacket packet, int ignore_player_id)
     {
         if(packet == null)
         {
@@ -229,13 +232,18 @@ public class Map
             return;
         }
         
-        for(int pid : player_list)
+        synchronized(player_list)
         {
-            Player p = GameHandler.instance().getPlayer(pid);
-            if(p != null && pid != ignore_player_id)
-                p.sendPacket(packet);
+            for(int pid : player_list)
+            {
+                Player p = GameHandler.instance().getPlayer(pid);
+                if(p != null && pid != ignore_player_id)
+                    p.sendPacket(packet);
+            }
         }
     }
+    
+    public HashMap<Integer, Creature> getCreatures() { return creature_map; }
     
     public String getPopulateData()
     {
@@ -259,8 +267,6 @@ public class Map
                         c.getX() + ";" + c.getY() + ";" +
                         SQLCache.getModel(c.getModelId()) + ";\n");
         }
-        
-        mergeTempHolder();
         
         return data;
     }
