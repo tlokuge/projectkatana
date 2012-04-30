@@ -2,7 +2,6 @@ package server.game;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import server.game.ai.GenericAI;
 import server.handlers.GameHandler;
 import server.handlers.SQLHandler;
 import server.shared.Constants;
@@ -83,7 +82,7 @@ public class Map
         
         int creature_id = entries.get(GameHandler.instance().getRandInt(entries.size()));
         
-        Creature creature = spawnCreature(creature_id, getRandX(), getRandY());
+        Creature creature = spawnCreature(creature_id, max_x + 50, max_y/2);
         if(creature != null)
         {
             System.out.println("Spawned creature: " + creature);
@@ -139,13 +138,17 @@ public class Map
     
     public Creature getCreature(int cguid) { return creature_map.get(cguid); }
     
+    /**
+     * This method notifies the AI when a player moves
+     * @param pl The player that moves
+     */
     public synchronized void notifyMovement(Player pl)
     {
         Creature boss = creature_map.get(boss_guid);
         if(boss == null || pl == null)
             return;
         
-        ((GenericAI)boss.getAI()).checkMovement(pl);
+        boss.getAI().onPlayerMoveComplete(pl);
     }
     
     private void mergeTempHolder()
@@ -157,6 +160,17 @@ public class Map
             creature_map.put(cr.getId(), cr);
         
         temp_creature_holder.clear();
+    }
+    
+    private void safelyDespawnCreatures()
+    {
+        if(creature_remove_list.isEmpty())
+            return;
+        
+        for(int i : creature_remove_list)
+            creature_map.remove(i);
+        
+        creature_remove_list.clear();
     }
     
     private void clearCreatures()
@@ -214,14 +228,8 @@ public class Map
                 c.update(diff);
         }
         
-        for(Integer cguid : creature_remove_list)
-        {
-            System.out.print(cguid + ",");
-            creature_map.remove(cguid);
-        }
-        
-        creature_remove_list.clear();
         mergeTempHolder();
+        safelyDespawnCreatures();
     }
     
     public void broadcastPacketToAll(KatanaPacket packet, int ignore_player_id)

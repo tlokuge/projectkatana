@@ -1,6 +1,5 @@
 package server.game;
 
-import server.handlers.AIHandler;
 import server.handlers.GameHandler;
 import server.templates.CreatureTemplate;
 import server.utils.SQLCache;
@@ -31,12 +30,7 @@ public class Creature extends Unit
         this.setSpeed(template.getMoveSpeed());
         this.setModelId(template.getModelId());
         this.addToMap(map_id);
-        this.ai = loadAI(template.getScript());
-    }
-    
-    private CreatureAI loadAI(String script_name)
-    {
-        return AIHandler.instance().getAIByName(script_name, this);
+        this.ai = CreatureAI.getAIByName(template.getScript(), Creature.this);
     }
     
     public static int getNextGUID() { return GameHandler.instance().getNextGUID(); }

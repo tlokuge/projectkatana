@@ -12,11 +12,4 @@ public class DoNothingAI extends CreatureAI
     public void updateAI(int diff) 
     {
     }
-
-    @Override
-    public CreatureAI getAI(Creature creature) 
-    {
-        return new DoNothingAI(creature);
-    }
-    
 }

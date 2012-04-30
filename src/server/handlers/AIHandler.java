@@ -1,5 +1,6 @@
 package server.handlers;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import server.game.Creature;
 import server.game.CreatureAI;
@@ -18,12 +19,19 @@ public class AIHandler
         loadAI();
     }
     
-    public CreatureAI getAIByName(String name, Creature creature)
+    private static CreatureAI getAIByName(String name, Creature creature)
     {
-        if(ai_map.get(name) == null)
-            return new GenericAI(creature);
-        
-        return ai_map.get(name).getAI(creature);
+        try
+        {
+            name = "server.game.ai." + name;
+            Constructor cons = Class.forName(name).getConstructor(Creature.class);
+            return (CreatureAI)cons.newInstance(creature);
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        return null;
     }
     
     public Object clone() throws CloneNotSupportedException

@@ -1,23 +1,48 @@
 package server.game;
 
+import java.lang.reflect.Constructor;
+import server.game.ai.DoNothingAI;
 import server.handlers.GameHandler;
 
 public abstract class CreatureAI 
 {
     protected Creature m_creature;
+    protected Map m_instance;
     
     public CreatureAI(Creature creature)
     {
         this.m_creature = creature;
+        this.m_instance = GameHandler.instance().getMap(m_creature.getMap());
     }
     
-    public Creature summonCreature(int creature_entry, float pos_x, float pos_y)
+    public static CreatureAI getAIByName(String name, Creature creature)
     {
-        Map map = GameHandler.instance().getMap(m_creature.getMap());
-        if(map == null)
-            return null;
+        try
+        {
+            name = "server.game.ai." + name;
+            Constructor con = Class.forName(name).getConstructor(Creature.class);
+            return (CreatureAI)con.newInstance(creature);
+        }
+        catch(Exception ex)
+        {
+            System.err.println("ERROR: Unable to instantiate AI " + name);
+            ex.printStackTrace();
+        }
         
-        Creature cr = map.spawnCreature(creature_entry, pos_x, pos_y);
+        // By default, return the idle AI
+        return new DoNothingAI(creature);
+    }
+    
+    public Creature summonCreature(int creature_entry)
+    {
+        float px = m_instance.getRandX();
+        float py = m_instance.getRandY();
+        return summonCreature(creature_entry, px, py);
+    }
+    
+    public Creature summonCreature(int creature_entry, float tx, float ty)
+    {
+        Creature cr = m_instance.spawnCreature(creature_entry, tx, ty);
         this.onSummon(cr);
         
         return cr;
@@ -25,20 +50,14 @@ public abstract class CreatureAI
     
     public Creature getCreatureFromMap(int cguid)
     {
-        Map map = GameHandler.instance().getMap(m_creature.getMap());
-        if(map == null)
-            return null;
-        return map.getCreature(cguid);
+        return m_instance.getCreature(cguid);
     }
     
     public void despawnCreature(int cguid)
     {
         System.err.println("Despawning " + cguid);
-        Map map = GameHandler.instance().getMap(m_creature.getMap());
-        if(map == null)
-            return;
         
-        map.despawnCreature(cguid);
+        m_instance.despawnCreature(cguid);
     }
     
     public void onDamageTaken(Unit attacker, int damage) {}
@@ -48,7 +67,7 @@ public abstract class CreatureAI
     public void onSpellCast(Unit target, Spell spell) {}
     
     public void castSpell(Spell spell, Unit target) {}
+    public void onPlayerMoveComplete(Player pl) {}
     
     public abstract void updateAI(int diff);
-    public abstract CreatureAI getAI(Creature creature);
 }
