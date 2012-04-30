@@ -23,7 +23,7 @@ public abstract class Config
             {
                 String line = scan.nextLine();
                 String[] split = line.split(Constants.CONFIG_LINE_SEPERATOR);
-                if(split.length == 1 || line.contains("*")) // Ignore any lines without a seperator or containing asterisks (kinda hacky)
+                if(split.length == 1 || line.startsWith("*") || line.startsWith("/")) // Ignore any lines without a seperator or starting with * or /
                     continue;
                 System.out.println("Loaded: [" + split[0].toUpperCase().trim() + " - '" + split[1].trim() + "']");
                 config_map.put(split[0].toUpperCase().trim(), split[1].trim());

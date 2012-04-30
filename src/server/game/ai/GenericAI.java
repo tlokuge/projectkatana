@@ -66,6 +66,7 @@ public class GenericAI extends CreatureAI
         }
     }
     
+    @Override
     public void updateAI(int diff)
     {        
         if(moveTimer < diff)

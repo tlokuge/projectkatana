@@ -13,7 +13,7 @@ public class Creature extends Unit
     
     public Creature(int entry, int map_id)
     {
-        super(getNextGUID(), "", 0, 0, 0, 0f, 0);
+        super(getNextGUID(), "", map_id, 0, 0, 0, 0f, 0);
         
         this.entry = entry;
         CreatureTemplate template = SQLCache.getCreature(entry);

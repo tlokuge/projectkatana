@@ -1,7 +1,7 @@
 package server.game;
 
-import java.lang.reflect.Constructor;
 import server.game.ai.DoNothingAI;
+import server.game.ai.GenericAI;
 import server.handlers.GameHandler;
 
 public abstract class CreatureAI 
@@ -11,23 +11,17 @@ public abstract class CreatureAI
     
     public CreatureAI(Creature creature)
     {
+        System.out.println("Creating CreatureAI - MapID: " + creature.getMap());
         this.m_creature = creature;
         this.m_instance = GameHandler.instance().getMap(m_creature.getMap());
     }
     
     public static CreatureAI getAIByName(String name, Creature creature)
     {
-        try
-        {
-            name = "server.game.ai." + name;
-            Constructor con = Class.forName(name).getConstructor(Creature.class);
-            return (CreatureAI)con.newInstance(creature);
-        }
-        catch(Exception ex)
-        {
-            System.err.println("ERROR: Unable to instantiate AI " + name);
-            ex.printStackTrace();
-        }
+        if(name.equalsIgnoreCase("GenericAI"))
+            return new GenericAI(creature);
+        if(name.equalsIgnoreCase("DoNothingAI"))
+            return new DoNothingAI(creature);
         
         // By default, return the idle AI
         return new DoNothingAI(creature);

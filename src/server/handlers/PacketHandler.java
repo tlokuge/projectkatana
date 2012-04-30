@@ -614,8 +614,6 @@ public abstract class PacketHandler
         response.addData(instance.getBackground());
         response.addData(instance.getPopulateData());
         instance.broadcastPacketToAll(response, -1);
-
-        GameHandler.instance().addMap(instance.getGUID(), instance);
        
         room.clearPlayers();
         lobby.removeRoom(room.getId());

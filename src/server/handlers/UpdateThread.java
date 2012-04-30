@@ -36,7 +36,6 @@ public class UpdateThread implements Runnable
         {
             if(ping_timer < diff)
             {
-                System.out.println("pingg");
                 // SQL Connection keep alive
                 SQLHandler.instance().runPingQuery();
 

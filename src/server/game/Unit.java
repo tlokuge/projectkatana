@@ -28,7 +28,7 @@ public abstract class Unit
     
     private final int TEMP_BASIC_DAMAGE = 100;
     
-    public Unit(int id, String name, int max_health, int atk_speed, int atk_damage, float move_speed, int model_id)
+    public Unit(int id, String name, int map_id, int max_health, int atk_speed, int atk_damage, float move_speed, int model_id)
     {
         this.id = id;
         this.name = name;
@@ -44,7 +44,7 @@ public abstract class Unit
         
         this.current_target = null;
         
-        this.map_id = -1;
+        this.map_id = map_id;
         this.pos_x  = 0.0f;
         this.pos_y  = 0.0f;
         
