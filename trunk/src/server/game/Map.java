@@ -44,7 +44,7 @@ public class Map
         MapTemplate template = SQLCache.getMap(id);
         
         this.id          = template.getId();
-        this.guid        = getNextMapGUID();
+        this.guid        = GameHandler.instance().getNextGUID();
         this.location_id = template.getLocation();
         this.difficulty  = difficulty;
         this.name        = template.getName();
@@ -91,9 +91,6 @@ public class Map
             boss_guid = creature.getId();
         }
     }
-    
-    public static int getNextMapGUID() { return GameHandler.instance().getNextGUID(); }
-    
     public int getMapId()           { return id; }
     public int getGUID()            { return guid; }
     public int getLocationId()      { return location_id; }
