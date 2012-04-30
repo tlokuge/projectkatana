@@ -20,7 +20,7 @@ public class KatanaServer implements Runnable
         
         waitingClients = new ArrayList<KatanaClient>();
         
-        thread = new Thread(this, "KatanaServer-Thread");
+        thread = new Thread(this, "KatanaServer");
         thread.start();
     }
     

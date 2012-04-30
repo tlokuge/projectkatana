@@ -26,7 +26,7 @@ public class Player extends Unit
     
     public Player(int id, String name, int max_health, int atk_speed, int atk_damage, float move_speed, int model_id, KatanaClient client)
     {
-        super(id, name, max_health, atk_speed, atk_damage, move_speed, model_id);
+        super(id, name, -1, max_health, atk_speed, atk_damage, move_speed, model_id);
         
         this.client = client;
         m_class = null;

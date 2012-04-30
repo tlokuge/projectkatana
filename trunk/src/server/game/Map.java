@@ -65,6 +65,8 @@ public class Map
         
         boss_guid = -1;
         
+        GameHandler.instance().addMap(guid, this);
+        
         spawnRandomCreatureFromTemplate(template);
     }
     

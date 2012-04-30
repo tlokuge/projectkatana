@@ -4,8 +4,6 @@ import server.communication.KatanaServer;
 import java.util.Random;
 import server.game.Creature;
 import server.game.Map;
-import server.handlers.AIHandler;
-import server.handlers.PingServer;
 import server.handlers.SQLHandler;
 import server.handlers.UpdateThread;
 import server.shared.Constants;
