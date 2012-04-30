@@ -9,14 +9,12 @@ import server.game.Player;
 import server.shared.KatanaPacket;
 import server.shared.Opcode;
 
-public class UpdateThread implements Runnable
+public class UpdateThread
 {
     private int diff;
     private int ping_interval;
     private int ping_timer;
     private int max_pings;
-    
-    private Thread thread;
     
     public UpdateThread(int diff, int ping_interval, int max_pings)
     {
@@ -25,9 +23,6 @@ public class UpdateThread implements Runnable
         this.ping_interval = ping_interval;
         this.ping_timer    = ping_interval;
         this.max_pings     = max_pings;
-        
-        thread = new Thread(this, "UpdateThread");
-        thread.start();
     }
     
     public void updateLoop(int update_diff)
@@ -78,7 +73,7 @@ public class UpdateThread implements Runnable
         }
     }
     
-    public void run()
+    public void start()
     {
         try
         {
@@ -87,7 +82,7 @@ public class UpdateThread implements Runnable
             {
                 updateLoop((int)(System.currentTimeMillis() - time));
                 time = System.currentTimeMillis();
-                thread.sleep(diff);
+                Thread.currentThread().sleep(diff);
             }
         }
         catch(Exception ex)
