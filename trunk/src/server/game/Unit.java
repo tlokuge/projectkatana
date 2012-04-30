@@ -37,7 +37,7 @@ public abstract class Unit
         this.max_health = max_health;
         this.atk_speed  = atk_speed;
         this.atk_damage = atk_damage;
-        this.move_speed = move_speed;
+        this.move_speed = move_speed; // Should be 5?
         this.model_id   = model_id;
         
         this.attack_timer = atk_speed;
@@ -68,10 +68,31 @@ public abstract class Unit
     
     public void setSpeed(float speed) { this.move_speed = speed; }
     public float getMoveSpeed()       { return move_speed; }
-    
-    public void moveTo(float x, float y) 
+  
+    public int moveRandom()
     {
-        this.pos_x = x; 
+        Map instance = GameHandler.instance().getMap(map_id);
+        if(instance == null)
+            return -1;
+        
+        return moveTo(instance.getRandX(), instance.getRandY());
+    }
+    
+    public int moveTo(Unit target)
+    {
+        if(target == null)
+            return -1;
+        
+        float tx = target.getX();
+        float ty = target.getY();
+        return moveTo(tx, ty);
+    }
+    
+    public int moveTo(float x, float y) 
+    {
+        int time = getTravelTime(x, y);
+        
+        this.pos_x = x;
         this.pos_y = y;
         
         KatanaPacket packet = new KatanaPacket(Opcode.S_GAME_UPDATE_MOVE);
@@ -81,7 +102,18 @@ public abstract class Unit
         Map map = GameHandler.instance().getMap(map_id);
         if(map != null)
             map.broadcastPacketToAll(packet, id);
+        
+        return time;
     }
+
+    public int getTravelTime(float x, float y)
+    {
+        float dx = Math.abs(pos_x - x);
+        float dy = Math.abs(pos_y - y);
+        double hyp = Math.sqrt((dx * dx) + (dy * dy));
+        return (int) (hyp * move_speed);
+    }
+    
     public void setPosition(float x, float y) { this.pos_x = x; this.pos_y = y; }
     public float getX()                  { return pos_x; }
     public float getY()                  { return pos_y; }
@@ -106,6 +138,29 @@ public abstract class Unit
     public abstract void onSpellHit(Spell spell, Unit caster);
     public abstract void onSpellCast(Spell spell, Unit target);
     public abstract void onDeath(Unit killer);
+    
+    public int getDistance(Unit target)
+    {
+        if(target == null || target.getMap() != map_id)
+            return -1;
+        
+        float tar_x = target.getX();
+        float tar_y = target.getY();
+        
+        float dx = Math.abs(pos_x - tar_x);
+        float dy = Math.abs(pos_y - tar_y);
+        
+        return (int)Math.floor(dx + dy);
+    }
+    
+    public boolean isWithinRangeOf(Unit target, int range)
+    {
+        int distance = getDistance(target);
+        if(distance == -1)
+            return false;
+        
+        return distance <= range;
+    }
     
     public boolean castSpell(Spell spell, Unit target)
     {

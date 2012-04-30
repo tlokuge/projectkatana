@@ -36,10 +36,11 @@ public class Lobby
     
     public int getLocationId()    { return id; }
     
-    public synchronized void addPlayer(Player pl)      { players.add(pl.getId()); }
+    public synchronized void addPlayer(Player pl)      { if(!containsPlayer(pl.getId())) players.add(pl.getId()); }
     public synchronized void removePlayer(Player pl)   { players.remove((Object)pl.getId()); }
+    public boolean containsPlayer(int pid){ return players.contains(pid); }
     public synchronized ArrayList<Integer> getPlayers() { return players; }
-    
+	
     public synchronized void addRoom(GameRoom room)    
     {
         if(room == null)

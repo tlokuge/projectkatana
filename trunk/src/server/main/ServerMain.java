@@ -2,6 +2,8 @@ package server.main;
 
 import server.communication.KatanaServer;
 import java.util.Random;
+import server.game.Creature;
+import server.game.Map;
 import server.handlers.AIHandler;
 import server.handlers.PingServer;
 import server.handlers.SQLHandler;
@@ -28,14 +30,10 @@ public class ServerMain
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_SERVER_PORT)));
         SQLCache.createCache();
         
-        // Load AI
-        AIHandler.instance();
-        
-        PingServer ping = new PingServer(
+        UpdateThread update = new UpdateThread(
+                Integer.parseInt(Config.getConfig(Constants.CONFIG_UPDATE_DIFF)),
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_PING_INTERVAL)),
                 Integer.parseInt(Config.getConfig(Constants.CONFIG_MAX_PINGS)));
-        UpdateThread update = new UpdateThread(
-                Integer.parseInt(Config.getConfig(Constants.CONFIG_UPDATE_DIFF)));
         
     }
     
@@ -52,9 +50,9 @@ public class ServerMain
             Thread.currentThread().sleep(1000);
             
             // Streessss testtt
-            for(int i = 0; i < 100; ++i)
+            for(int i = 100; i < 200; ++i)
             {
-                KatanaSocket client = new KatanaSocket("projectkatana.no-ip.org", 7777);
+                KatanaSocket client = new KatanaSocket("localhost", 7777);
                 Thread.currentThread().sleep(1000);
 
                 KatanaPacket packet = new KatanaPacket(Opcode.C_REGISTER);
@@ -64,8 +62,8 @@ public class ServerMain
                 Thread.currentThread().sleep(500);
 
                 packet = new KatanaPacket(Opcode.C_ROOM_LIST);
-                packet.addData("43");
-                packet.addData("-78");
+                packet.addData("90");
+                packet.addData("90");
                 client.sendPacket(packet);
                 Thread.currentThread().sleep(500);
 
@@ -114,7 +112,6 @@ public class ServerMain
         System.out.println(" |_|\\_|_/    \\_\\_/_/    \\_\\_| \\_/_/    \\_\\");
         
         setupServer();
-        
         //testStuff();
     }
 }
