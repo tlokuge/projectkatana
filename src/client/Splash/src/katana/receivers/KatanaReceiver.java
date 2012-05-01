@@ -68,6 +68,8 @@ public class KatanaReceiver extends BroadcastReceiver {
 			// LobbyActivity
 			LobbyActivity activity = (LobbyActivity) context;
 			if(intent.getStringExtra(KatanaService.OPCODE).equals(Opcode.S_ROOM_LIST.name())){
+				
+				activity.setLayoutTheme(intent.getIntExtra(KatanaService.EXTRAS_LOCID, 0));
 				activity.setInValidLocation(true);
     			String locName = intent.getStringExtra(KatanaService.EXTRAS_LOCNAME);
     			ArrayList<String> al = intent.getStringArrayListExtra(KatanaService.EXTRAS_ROOMSLIST);

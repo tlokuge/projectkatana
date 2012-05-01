@@ -41,6 +41,7 @@ public class KatanaService extends Service {
 	public static final String EXTRAS_GAMESYNC = "gameSync";
 	public static final String EXTRAS_DESPAWN = "despawn";
 	public static final String EXTRAS_GAMESCORES = "gameScore";
+	public static final String EXTRAS_LOCID = "locid";
 	
 	
 	public static int player_id = 0;
@@ -237,11 +238,13 @@ public class KatanaService extends Service {
 	private void handleRoomListReply(KatanaPacket packet, Intent intent){
 		ArrayList<String> roomsList = new ArrayList<String>();
 		String[] lines = packet.getData().split(KatanaConstants.PACKET_DATA_SEPERATOR);
-		String locName = lines[0];
-		for(int i = 1; i < lines.length; i++) {
+		int locID = Integer.parseInt(lines[0]);
+		String locName = lines[1];
+		for(int i = 2; i < lines.length; i++) {
 			roomsList.add(lines[i]);
 		}
 		
+		intent.putExtra(EXTRAS_LOCID, locID);
 		intent.putExtra(EXTRAS_LOCNAME , locName);
 		intent.putStringArrayListExtra(EXTRAS_ROOMSLIST, roomsList);
 	}
