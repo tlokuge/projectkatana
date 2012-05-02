@@ -422,6 +422,7 @@ public abstract class PacketHandler
         }
         
         KatanaPacket packet = new KatanaPacket(Opcode.S_ROOM_LIST);
+        packet.addData(lobby.getLocationId() + "");
         packet.addData(lobby.getName());
         Set<Integer> roomids = lobby.getRoomIds();
         synchronized(roomids)

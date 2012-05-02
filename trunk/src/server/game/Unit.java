@@ -147,10 +147,10 @@ public abstract class Unit
         float tar_x = target.getX();
         float tar_y = target.getY();
         
-        float dx = Math.abs(pos_x - tar_x);
-        float dy = Math.abs(pos_y - tar_y);
+        double dx = Math.pow(pos_x - tar_x, 2);
+        double dy = Math.pow(pos_y - tar_y, 2);
         
-        return (int)Math.floor(dx + dy);
+        return (int)Math.floor(Math.sqrt(dx + dy));
     }
     
     public boolean isWithinRangeOf(Unit target, int range)
