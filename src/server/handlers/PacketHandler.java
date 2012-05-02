@@ -265,7 +265,7 @@ public abstract class PacketHandler
         lobby.broadcastToLobby(notify);
     }
     
-    // Room ID? Is it necessary? Room ID should be stored inside player.
+    // No data, destroys the room that the player is in if she is the leader.
     public static void handleRoomDestroyPacket(KatanaClient client, KatanaPacket packet)
     {
         Player pl = client.getPlayer();
