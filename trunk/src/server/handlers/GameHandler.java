@@ -14,7 +14,6 @@ public class GameHandler
     private HashMap<Integer, Lobby> lobbies;
     private HashMap<Integer, Map> maps;
     
-    private ArrayList<Integer> removePlayerList;
     private ArrayList<Integer> removeMapList;
     
     private Random randGenerator;
@@ -29,8 +28,7 @@ public class GameHandler
         lobbies        = new HashMap<Integer, Lobby>();
         maps           = new HashMap<Integer, Map>();
         
-        removePlayerList = new ArrayList<Integer>();
-        removeMapList    = new ArrayList<Integer>();
+        removeMapList = new ArrayList<Integer>();
         
         randGenerator  = new Random(System.currentTimeMillis());
     }
@@ -52,17 +50,8 @@ public class GameHandler
     public Player getPlayer(int id)             { return players.get(id); }
     public boolean containsPlayer(Player p)     { return containsPlayer(p.getId()); }
     public boolean containsPlayer(int id)       { return players.containsKey(id); }
-    public void removePlayer(int id)            { removePlayerList.add(id); }
+    public void removePlayer(int id)            { players.remove(id); }
     public HashMap<Integer, Player> getPlayers(){ return players; }
-    
-    public void safelyRemovePlayers()
-    {
-        if(removePlayerList.isEmpty())
-            return;
-        
-        for(Integer i : removePlayerList)
-            players.remove(i);
-    }
     
     public void addLobby(int id, Lobby lobby)   { lobbies.put(id, lobby); }
     public Lobby getLobby(int id)               { return lobbies.get(id); }

@@ -43,7 +43,7 @@ public abstract class Constants
     public static final int DEFAULT_PLAYER_HEALTH  = 5000;
     public static final int DEFAULT_PLAYER_ATKSPD  = 1000;
     public static final int DEFAULT_PLAYER_ATKDMG  = 10;
-    public static final float DEFAULT_PLAYER_MOVE  = 5.0f;
+    public static final float DEFAULT_PLAYER_MOVE  = 1.0f;
     
     // Waiting Room
     public static final int ROOM_MAX_PLAYERS    = 4;
@@ -53,7 +53,7 @@ public abstract class Constants
     public static final int DIFFICULTY_MEDIUM = 2;
     public static final int DIFFICULTY_EASY   = 1;
     
-    public static final int GAME_END_TIMER = 30000;
+    public static final int GAME_END_TIMER = 60000;
     
     public static final int CREATURE_WATERMELON_ENTRY = 2;
 }
