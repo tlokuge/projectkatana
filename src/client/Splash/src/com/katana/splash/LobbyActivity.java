@@ -435,18 +435,4 @@ public class LobbyActivity extends KatanaActivity {
 	public boolean isRoomLeader() {
 		return client_roomLeader;
 	}
-
-	public void setLayoutTheme(int locID) {
-		this.setInValidLocation(true);
-		switch(locID) {
-			case 1: 
-				setContentView(R.layout.ryerson_vf);
-				font = Typeface.createFromAsset(getAssets(), "fonts/majalla.ttf");
-			case 2:		
-				setContentView(R.layout.notebook_vf);
-				font = Typeface.createFromAsset(getAssets(), "fonts/mvboli.ttf");
-				break;
-			default: break;
-		}
-	}
 }
