@@ -107,7 +107,7 @@ public class GenericAI extends CreatureAI
         if(target == null)
             return -1;
         
-        System.out.println("Mastoras moving to " + target);
+        System.out.println("Professor moving to " + target);
         float mx = m_creature.getX();
         float my = m_creature.getY();
         float dest_x = target.getX();
@@ -118,11 +118,11 @@ public class GenericAI extends CreatureAI
     
     private int moveToRandomLocation()
     {
-        System.out.println("Mastoras random move");
+        System.out.println("Professor random move");
         Map map = GameHandler.instance().getMap(m_creature.getMap());
         if(map == null)
         {
-            System.err.println("omg map nul moveToRandmLoc");
+            System.err.println("null map");
             return -1;
         }
         
@@ -173,7 +173,7 @@ public class GenericAI extends CreatureAI
                     {
                         itr.remove();
                         despawnCreature(cguid);
-                        System.err.println("Mastoras eating " + cguid);
+                        System.err.println("Professor eating " + cguid);
                         break;
                     }
                 }
